@@ -1,0 +1,6 @@
+//
+// Prefix header for all source files of the 'ElectroCraft CPU' target in the 'ElectroCraft CPU' project
+//
+
+#include <iostream>
+
