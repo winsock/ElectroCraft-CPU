@@ -7,21 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		762D84CE15CC1AF100FAF876 /* ElectroCraft_CPU.cp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cp */; };
+		762D853A15CCD8AD00FAF876 /* ElectroCraft_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */; };
+		762D853B15CCD8AD00FAF876 /* ElectroCraftMemory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */; };
+		762D853C15CCD8AD00FAF876 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84DA15CC2B5800FAF876 /* Utils.cpp */; };
+		76D9EA1515CD7EDA007D64D2 /* ElectroCraftStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */; };
+		76D9EA1615CD7EDA007D64D2 /* ElectroCraftStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		762D84C415CC1AF100FAF876 /* ElectroCraft CPU.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "ElectroCraft CPU.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		762D84C815CC1AF100FAF876 /* ElectroCraft CPU-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ElectroCraft CPU-Prefix.pch"; sourceTree = "<group>"; };
 		762D84C915CC1AF100FAF876 /* ElectroCraft_CPUProj.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ElectroCraft_CPUProj.xcconfig; sourceTree = "<group>"; };
 		762D84CA15CC1AF100FAF876 /* ElectroCraft_CPUTarget.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ElectroCraft_CPUTarget.xcconfig; sourceTree = "<group>"; };
 		762D84CB15CC1AF100FAF876 /* ElectroCraft_CPU.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElectroCraft_CPU.h; sourceTree = "<group>"; };
-		762D84CC15CC1AF100FAF876 /* ElectroCraft_CPUPriv.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElectroCraft_CPUPriv.h; sourceTree = "<group>"; };
-		762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraft_CPU.cp; sourceTree = "<group>"; };
+		762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraft_CPU.cpp; sourceTree = "<group>"; };
+		762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftMemory.cpp; sourceTree = "<group>"; };
+		762D84D715CC279300FAF876 /* ElectroCraftMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftMemory.h; sourceTree = "<group>"; };
+		762D84DA15CC2B5800FAF876 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
+		762D84DB15CC2B5800FAF876 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libElectroCraftCPU.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftStack.cpp; sourceTree = "<group>"; };
+		76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftStack.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		762D84C115CC1AF100FAF876 /* Frameworks */ = {
+		762D853315CCD89A00FAF876 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -35,16 +43,8 @@
 			isa = PBXGroup;
 			children = (
 				762D84C615CC1AF100FAF876 /* ElectroCraft CPU */,
-				762D84C515CC1AF100FAF876 /* Products */,
+				762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */,
 			);
-			sourceTree = "<group>";
-		};
-		762D84C515CC1AF100FAF876 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				762D84C415CC1AF100FAF876 /* ElectroCraft CPU.dylib */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		762D84C615CC1AF100FAF876 /* ElectroCraft CPU */ = {
@@ -53,49 +53,46 @@
 				762D84C915CC1AF100FAF876 /* ElectroCraft_CPUProj.xcconfig */,
 				762D84CA15CC1AF100FAF876 /* ElectroCraft_CPUTarget.xcconfig */,
 				762D84CB15CC1AF100FAF876 /* ElectroCraft_CPU.h */,
-				762D84CC15CC1AF100FAF876 /* ElectroCraft_CPUPriv.h */,
-				762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cp */,
-				762D84C715CC1AF100FAF876 /* Supporting Files */,
+				762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */,
+				762D84D715CC279300FAF876 /* ElectroCraftMemory.h */,
+				762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */,
+				762D84DB15CC2B5800FAF876 /* Utils.h */,
+				762D84DA15CC2B5800FAF876 /* Utils.cpp */,
+				76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */,
+				76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */,
 			);
 			path = "ElectroCraft CPU";
-			sourceTree = "<group>";
-		};
-		762D84C715CC1AF100FAF876 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				762D84C815CC1AF100FAF876 /* ElectroCraft CPU-Prefix.pch */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		762D84C215CC1AF100FAF876 /* Headers */ = {
+		762D853415CCD89A00FAF876 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76D9EA1615CD7EDA007D64D2 /* ElectroCraftStack.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		762D84C315CC1AF100FAF876 /* ElectroCraft CPU */ = {
+		762D853515CCD89A00FAF876 /* ElectroCraftCPU */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 762D84D115CC1AF100FAF876 /* Build configuration list for PBXNativeTarget "ElectroCraft CPU" */;
+			buildConfigurationList = 762D853715CCD89A00FAF876 /* Build configuration list for PBXNativeTarget "ElectroCraftCPU" */;
 			buildPhases = (
-				762D84C015CC1AF100FAF876 /* Sources */,
-				762D84C115CC1AF100FAF876 /* Frameworks */,
-				762D84C215CC1AF100FAF876 /* Headers */,
+				762D853215CCD89A00FAF876 /* Sources */,
+				762D853315CCD89A00FAF876 /* Frameworks */,
+				762D853415CCD89A00FAF876 /* Headers */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = "ElectroCraft CPU";
-			productName = "ElectroCraft CPU";
-			productReference = 762D84C415CC1AF100FAF876 /* ElectroCraft CPU.dylib */;
+			name = ElectroCraftCPU;
+			productName = ElectroCraftCPU;
+			productReference = 762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -115,21 +112,24 @@
 				en,
 			);
 			mainGroup = 762D84B915CC1AF100FAF876;
-			productRefGroup = 762D84C515CC1AF100FAF876 /* Products */;
+			productRefGroup = 762D84B915CC1AF100FAF876;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				762D84C315CC1AF100FAF876 /* ElectroCraft CPU */,
+				762D853515CCD89A00FAF876 /* ElectroCraftCPU */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		762D84C015CC1AF100FAF876 /* Sources */ = {
+		762D853215CCD89A00FAF876 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				762D84CE15CC1AF100FAF876 /* ElectroCraft_CPU.cp in Sources */,
+				762D853A15CCD8AD00FAF876 /* ElectroCraft_CPU.cpp in Sources */,
+				762D853B15CCD8AD00FAF876 /* ElectroCraftMemory.cpp in Sources */,
+				762D853C15CCD8AD00FAF876 /* Utils.cpp in Sources */,
+				76D9EA1515CD7EDA007D64D2 /* ElectroCraftStack.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +142,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -169,6 +170,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -183,16 +185,18 @@
 			};
 			name = Release;
 		};
-		762D84D215CC1AF100FAF876 /* Debug */ = {
+		762D853815CCD89A00FAF876 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		762D84D315CC1AF100FAF876 /* Release */ = {
+		762D853915CCD89A00FAF876 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -209,13 +213,14 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		762D84D115CC1AF100FAF876 /* Build configuration list for PBXNativeTarget "ElectroCraft CPU" */ = {
+		762D853715CCD89A00FAF876 /* Build configuration list for PBXNativeTarget "ElectroCraftCPU" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				762D84D215CC1AF100FAF876 /* Debug */,
-				762D84D315CC1AF100FAF876 /* Release */,
+				762D853815CCD89A00FAF876 /* Debug */,
+				762D853915CCD89A00FAF876 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
