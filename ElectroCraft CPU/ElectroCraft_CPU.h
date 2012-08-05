@@ -138,7 +138,7 @@ struct StackData {
 };
 
 struct TokenData {
-    std::string name;
+    std::wstring name;
     DoubleWord offset;
 };
 
@@ -243,19 +243,19 @@ class ElectroCraft_CPU
 public:
     ElectroCraft_CPU();
     ~ElectroCraft_CPU();
-    AssembledData assemble(std::vector<std::string>);
+    AssembledData assemble(std::vector<std::wstring>);
     void execMemory(Address baseAddress);
     Address loadIntoMemory(Byte* data, int length);
     void stop();
     void reset();
 private:
-    FirstPassData* firstPass(std::string line, DoubleWord offset);
-    Registers getRegister(std::string token);
+    FirstPassData* firstPass(std::wstring line, DoubleWord offset);
+    Registers getRegister(std::wstring token);
     DoubleWord readDoubleWord(Byte* data);
     DoubleWord::Word readWord(Byte* data);
     Byte* doubleWordToBytes(DoubleWord word);
     Byte* wordToBytes(DoubleWord::Word word);
-    OPCode readOPCode(std::string token);
+    OPCode readOPCode(std::wstring token);
     DoubleWord getRegisterData(Registers reg);
     RegisterSizes registerToSize(Registers reg);
     RegisterType getRegisterType(Registers reg);

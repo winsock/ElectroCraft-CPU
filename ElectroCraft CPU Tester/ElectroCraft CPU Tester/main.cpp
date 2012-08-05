@@ -13,17 +13,17 @@
 
 int main(int argc, const char * argv[])
 {
-    std::vector<std::string> ecAsm = {
-        "PUSH EBX",
-        "PUSH EAX",
-        "MOV EAX, 10",
-        "MOV ECX, 5",
-        "loopl:",
-        "MOV EBX, 1",
-        "SUB EAX, EBX",
-        "loop loopl",
-        "halt:",
-        "HLT"
+    std::vector<std::wstring> ecAsm = {
+        L"PUSH EBX",
+        L"PUSH EAX",
+        L"MOV EAX, 10",
+        L"MOV ECX, 5",
+        L"loopl:",
+        L"MOV EBX, 1",
+        L"SUB EAX, EBX",
+        L"loop loopl",
+        L"halt:",
+        L"HLT"
     };
     
     ElectroCraft_CPU *cpu = new ElectroCraft_CPU;

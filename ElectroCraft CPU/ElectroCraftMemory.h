@@ -23,6 +23,7 @@ enum MemoryState {
 
 struct Memory {
     Byte data;
+    MemoryState state = MemoryState::FREE;
 };
 
 struct MemoryInfo {
@@ -63,14 +64,13 @@ class ElectroCraftMemory {
     std::vector<MemoryInfo*> memoryStates;
     Address virtualBaseAddress;
     unsigned int sizeOfMemory = 128 * 1024 * 1024; // 128MB
-    unsigned int sizeOfIOMemory = 16 * 1024 * 1024; // 16MB
-    MemoryInfo *memoryMappedIOSpace;
 public:
     ElectroCraftMemory(unsigned int size, Address baseAddress);
     ~ElectroCraftMemory();
     Byte* readData(Address offset, unsigned int length);
     void writeData(Address offset, unsigned int length, Byte* data);
     MemoryInfo* allocate(unsigned int size);
+    MemoryInfo* assignIOMemory(Address beginOffset, Address endOffset);
     void free(MemoryInfo *memory);
 };
 

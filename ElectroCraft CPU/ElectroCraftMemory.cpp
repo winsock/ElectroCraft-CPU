@@ -20,24 +20,14 @@ ElectroCraftMemory::ElectroCraftMemory(unsigned int size, Address baseAddress) {
     // Allocate our memory
     memory = (Memory*)malloc(sizeof(Memory) * size);
     
-    MemoryInfo* memoryMappedIOInfo = new MemoryInfo;
-    memoryMappedIOInfo->stateOfMemory = MemoryState::SYSTEM;
-    memoryMappedIOInfo->startOffset = baseAddress;
-    memoryMappedIOInfo->front = &memory[0];
-    memoryMappedIOInfo->back = memory + sizeOfIOMemory;
-    memoryMappedIOInfo->memoryLength.doubleWord = sizeOfIOMemory;
-    memoryMappedIOInfo->previous = nullptr;
-    memoryStates.push_back(memoryMappedIOInfo);
-    
     MemoryInfo* freeMemoryInfo = new MemoryInfo;
-    freeMemoryInfo->previous = memoryMappedIOInfo;
-    memoryMappedIOInfo->next = freeMemoryInfo;
-    freeMemoryInfo->startOffset.doubleWord = baseAddress.doubleWord + memoryMappedIOInfo->memoryLength.doubleWord + 1;
+    freeMemoryInfo->startOffset = baseAddress;
     freeMemoryInfo->stateOfMemory = MemoryState::FREE;
-    freeMemoryInfo->front = memoryMappedIOInfo->back + 1;
+    freeMemoryInfo->front = &memory[0];
     freeMemoryInfo->back = memory + size;
-    freeMemoryInfo->memoryLength.doubleWord = size - memoryMappedIOInfo->memoryLength.doubleWord;
+    freeMemoryInfo->memoryLength.doubleWord = size;
     freeMemoryInfo->next = nullptr;
+    freeMemoryInfo->previous = nullptr;
     memoryStates.push_back(freeMemoryInfo);
 }
 
@@ -75,9 +65,52 @@ MemoryInfo* ElectroCraftMemory::allocate(unsigned int size) {
         }
     }
     
-    std::cerr<<"ElectroCraft CPU: Error ran out of memory!"<<std::endl;
+    std::cerr<<"ElectroCraft Memory: Error ran out of memory!"<<std::endl;
     // Otherwise return that there isn't enough free memory
     return nullptr;
+}
+
+MemoryInfo* ElectroCraftMemory::assignIOMemory(Address beginOffset, Address endOffset) {
+    if(endOffset.doubleWord - beginOffset.doubleWord <= 0) {
+        return nullptr;
+    }
+    
+    if (endOffset.doubleWord > sizeOfMemory) {
+        std::cerr<<"ElectroCraft Memory: Error range out of bounds!"<<std::endl;
+        return nullptr;
+    }
+    
+    MemoryInfo *info = new MemoryInfo;
+    MemoryInfo *next;
+    MemoryInfo *previous;
+    for (int i = 0; i < this->memoryStates.size(); i++) {
+        if (beginOffset.doubleWord >= memoryStates[i]->startOffset.doubleWord && beginOffset.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
+            std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
+            return nullptr;
+        } else if (endOffset.doubleWord >= memoryStates[i]->startOffset.doubleWord && endOffset.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
+            std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
+            return nullptr;
+        }
+        
+        if (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord < beginOffset.doubleWord) {
+            previous = memoryStates[i];
+        }
+        
+        if (memoryStates[i]->startOffset.doubleWord > endOffset.doubleWord) {
+            next = memoryStates[i];
+        }
+    }
+    
+    info->front = this->memory + beginOffset.doubleWord;
+    info->back = this->memory + endOffset.doubleWord;
+    info->next = next;
+    info->previous = previous;
+    info->startOffset = beginOffset;
+    info->stateOfMemory = MemoryState::SYSTEM;
+    info->memoryLength.doubleWord = endOffset.doubleWord - beginOffset.doubleWord;
+    memoryStates.push_back(info);
+    
+    return info;
 }
 
 void ElectroCraftMemory::free(MemoryInfo *memoryInfo) {
