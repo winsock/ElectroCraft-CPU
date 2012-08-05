@@ -70,12 +70,13 @@ MemoryInfo* ElectroCraftMemory::allocate(unsigned int size) {
     return nullptr;
 }
 
-MemoryInfo* ElectroCraftMemory::assignIOMemory(Address beginOffset, Address endOffset) {
-    if(endOffset.doubleWord - beginOffset.doubleWord <= 0) {
+MemoryInfo* ElectroCraftMemory::assignIOMemory(MemoryMappedIODevice* device) {
+    MemoryMappedIOSection section = device->getMappedIO();
+    if(section.endAddress.doubleWord - section.beginAddress.doubleWord <= 0) {
         return nullptr;
     }
     
-    if (endOffset.doubleWord > sizeOfMemory) {
+    if (section.endAddress.doubleWord > sizeOfMemory) {
         std::cerr<<"ElectroCraft Memory: Error range out of bounds!"<<std::endl;
         return nullptr;
     }
@@ -84,31 +85,32 @@ MemoryInfo* ElectroCraftMemory::assignIOMemory(Address beginOffset, Address endO
     MemoryInfo *next;
     MemoryInfo *previous;
     for (int i = 0; i < this->memoryStates.size(); i++) {
-        if (beginOffset.doubleWord >= memoryStates[i]->startOffset.doubleWord && beginOffset.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
+        if (section.beginAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
             std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
             return nullptr;
-        } else if (endOffset.doubleWord >= memoryStates[i]->startOffset.doubleWord && endOffset.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
+        } else if (section.endAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.endAddress.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
             std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
             return nullptr;
         }
         
-        if (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord < beginOffset.doubleWord) {
+        if (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord < section.beginAddress.doubleWord) {
             previous = memoryStates[i];
         }
         
-        if (memoryStates[i]->startOffset.doubleWord > endOffset.doubleWord) {
+        if (memoryStates[i]->startOffset.doubleWord > section.endAddress.doubleWord) {
             next = memoryStates[i];
         }
     }
     
-    info->front = this->memory + beginOffset.doubleWord;
-    info->back = this->memory + endOffset.doubleWord;
+    info->front = this->memory + section.beginAddress.doubleWord;
+    info->back = this->memory + section.endAddress.doubleWord;
     info->next = next;
     info->previous = previous;
-    info->startOffset = beginOffset;
+    info->startOffset = section.beginAddress;
     info->stateOfMemory = MemoryState::SYSTEM;
-    info->memoryLength.doubleWord = endOffset.doubleWord - beginOffset.doubleWord;
+    info->memoryLength.doubleWord = section.endAddress.doubleWord - section.beginAddress.doubleWord;
     memoryStates.push_back(info);
+    memoryMappedIO[device] = info;
     
     return info;
 }

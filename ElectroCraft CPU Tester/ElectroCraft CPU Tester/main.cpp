@@ -10,6 +10,7 @@
 #include "ElectroCraft_CPU.h"
 #include <vector>
 #include <string>
+#include <thread>
 
 int main(int argc, const char * argv[])
 {
@@ -28,7 +29,10 @@ int main(int argc, const char * argv[])
     
     ElectroCraft_CPU *cpu = new ElectroCraft_CPU;
     AssembledData data = cpu->assemble(ecAsm);
-    cpu->execMemory(cpu->loadIntoMemory(data.data, data.length));
+    cpu->start(cpu->loadIntoMemory(data.data, data.length));
+    while (cpu->isRunning()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
     return 0;
 }
 

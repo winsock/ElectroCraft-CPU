@@ -59,11 +59,23 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
     cpu = new ElectroCraft_CPU;
 }
 
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_execMemory (JNIEnv *env, jobject, jlong address) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_start (JNIEnv *env, jobject, jlong address) {
     if (cpu != nullptr) {
         Address cppAddress;
         cppAddress.doubleWord = static_cast<unsigned int>(address);
-        cpu->execMemory(cppAddress);
+        cpu->start(cppAddress);
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return;
+        env->ThrowNew(cls, "CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        return;
+    }
+}
+
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_manualTick (JNIEnv *env, jobject) {
+    if (cpu != nullptr) {
+        cpu->operator()(0l);
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
@@ -90,9 +102,11 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
     }
 }
 
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_reset(JNIEnv *env, jobject) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_reset (JNIEnv *env, jobject, jlong address) {
     if (cpu != nullptr) {
-        cpu->reset();
+        Address cppAddress;
+        cppAddress.doubleWord = static_cast<unsigned int>(address);
+        cpu->reset(cppAddress);
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)

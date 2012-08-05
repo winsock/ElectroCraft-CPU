@@ -13,6 +13,7 @@
 #include <map>
 #include <string>
 #include "Utils.h"
+#include "MemoryMappedIODevice.h"
 
 enum MemoryState {
     FREE = 0,
@@ -62,6 +63,7 @@ struct MemoryInfo {
 class ElectroCraftMemory {
     Memory* memory;
     std::vector<MemoryInfo*> memoryStates;
+    std::map<MemoryMappedIODevice*, MemoryInfo*> memoryMappedIO;
     Address virtualBaseAddress;
     unsigned int sizeOfMemory = 128 * 1024 * 1024; // 128MB
 public:
@@ -70,7 +72,7 @@ public:
     Byte* readData(Address offset, unsigned int length);
     void writeData(Address offset, unsigned int length, Byte* data);
     MemoryInfo* allocate(unsigned int size);
-    MemoryInfo* assignIOMemory(Address beginOffset, Address endOffset);
+    MemoryInfo* assignIOMemory(MemoryMappedIODevice* device);
     void free(MemoryInfo *memory);
 };
 

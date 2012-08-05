@@ -4,7 +4,6 @@
 
 #ifndef _Included_info_cerios_electrocraft_core_computer_XECInterface
 #define _Included_info_cerios_electrocraft_core_computer_XECInterface
-#pragma GCC visibility push(default)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,19 +25,27 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
 
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    execMemory
- * Signature: (J)V
+ * Method:    loadIntoMemory
+ * Signature: ([BI)J
  */
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_execMemory
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory
+  (JNIEnv *, jobject, jbyteArray, jint);
 
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    loadIntoMemory
- * Signature: ([Ljava/lang/Byte;I)J
+ * Method:    manualTick
+ * Signature: ()V
  */
-JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory
-  (JNIEnv *, jobject, jobjectArray, jint);
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_manualTick
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECInterface
+ * Method:    start
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_start
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
@@ -51,13 +58,12 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
  * Method:    reset
- * Signature: ()V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_reset
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }
 #endif
-#pragma GCC visibility pop
 #endif

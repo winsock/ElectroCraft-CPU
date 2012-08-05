@@ -41,6 +41,16 @@ union DoubleWord {
 typedef DoubleWord Address;
 typedef unsigned char Byte;
 
+struct MemoryMappedIOSection {
+    Address beginAddress;
+    MemoryMappedIOSection* subSections;
+    Address endAddress;
+    
+    inline bool containsAddress(Address address) {
+        return address.doubleWord >= beginAddress.doubleWord && address.doubleWord <= endAddress.doubleWord;
+    }
+};
+
 class Utils {
 public:
     static std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);

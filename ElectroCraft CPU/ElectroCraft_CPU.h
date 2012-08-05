@@ -15,6 +15,7 @@
 #include <bitset>
 #include <vector>
 #include "Utils.h"
+#include "ElectroCraftTickable.h"
 
 /* The classes below are exported */
 #pragma GCC visibility push(default)
@@ -184,6 +185,14 @@ struct OPCode {
         infoBits.set(position + 4);
     }
     
+    bool isOffsetNegitive(int position) {
+        return infoBits.test(position + 6);
+    }
+    
+    void setOffsetNegitiveInPosition(int position) {
+        infoBits.set(position + 6);
+    }
+    
     DoubleWord* args = new DoubleWord[2];
 };
 
@@ -232,22 +241,25 @@ struct EFLAGSState {
 
 class ElectroCraftMemory;
 class ElectroCraftStack;
+class ElectroCraftClock;
 
-class ElectroCraft_CPU
-{
+class ElectroCraft_CPU : ElectroCraftTickable {
     RegisterState registers;
     EFLAGSState eflags;
-    ElectroCraftMemory *memory;
-    ElectroCraftStack *stack;
+    ElectroCraftMemory* memory;
+    ElectroCraftStack* stack;
+    ElectroCraftClock* clock;
     Section currentSection = Section::CODE;
 public:
     ElectroCraft_CPU();
     ~ElectroCraft_CPU();
     AssembledData assemble(std::vector<std::wstring>);
-    void execMemory(Address baseAddress);
     Address loadIntoMemory(Byte* data, int length);
+    void start(Address baseAddress);
     void stop();
-    void reset();
+    void reset(Address baseAddress);
+    bool isRunning();
+    virtual void operator()(long tickTime);
 private:
     FirstPassData* firstPass(std::wstring line, DoubleWord offset);
     Registers getRegister(std::wstring token);
