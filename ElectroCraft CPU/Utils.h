@@ -31,10 +31,10 @@ union DoubleWord {
             uint16_t word;
             HighLowByte byte;
         };
-        HighWord highWord;
         LowWord lowWord;
+        HighWord highWord;
     };
-    uint32_t doubleWord;
+    uint32_t doubleWord = 0;
     Word word;
 };
 

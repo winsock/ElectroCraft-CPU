@@ -15,14 +15,14 @@ int main(int argc, const char * argv[])
 {
     std::vector<std::string> ecAsm = {
         "PUSH EBX",
-        "MOV EBX, 564123",
-        "ADD EBX, 1",
-        "PUSH EBX",
-        "MOV EBX, 5",
-        "SUB EBX, 1",
-        "POP EAX",
-        "ADD EAX, EBX",
-        "POP EBX",
+        "PUSH EAX",
+        "MOV EAX, 10",
+        "MOV ECX, 5",
+        "loopl:",
+        "MOV EBX, 1",
+        "SUB EAX, EBX",
+        "loop loopl",
+        "halt:",
         "HLT"
     };
     

@@ -44,8 +44,8 @@ enum InstructionSet {
     RET = 18,
     POPA = 19,
     PUSHA = 20,
-    SAL = 21,
-    SAR = 22,
+    SHL = 21,
+    SHR = 22,
     LOOPWE = 23,
     LOOPWNE = 24,
     JNZ = 25,
@@ -56,6 +56,8 @@ enum InstructionSet {
     LOOPNZ = 30,
     CALL = 31,
     JMP = 32,
+    NEG = 33,
+    LOOP = 34,
     UNKOWN = 63
     };
 
@@ -95,6 +97,9 @@ enum Registers {
     CL = 25,
     DH = 26,
     DL = 27,
+    
+    EFLAGS = 28,
+    TOAL_SIZE,
     UNKNOWN = 63
     };
 
@@ -122,6 +127,7 @@ struct RegisterState {
     DoubleWord IP;
     DoubleWord SP;
     DoubleWord MC;
+    DoubleWord EFLAGS;
 };
 
 typedef unsigned char Byte;
@@ -175,7 +181,7 @@ struct OPCode {
     }
     
     void setOffsetInPosition(int position) {
-        infoBits.set(position);
+        infoBits.set(position + 4);
     }
     
     DoubleWord* args = new DoubleWord[2];
@@ -193,12 +199,44 @@ struct AssembledData {
     int length;
 };
 
+enum EFLAGS {
+    CF = 0,
+    PF = 1,
+    AF = 2,
+    ZF = 3,
+    SF = 4,
+    TF = 5,
+    IF = 6,
+    DF = 7,
+    OF = 8,
+    RF = 9,
+    ID = 10,
+    TOTAL_SIZE
+};
+
+struct EFLAGSState {
+    std::bitset<EFLAGS::TOTAL_SIZE> flagStates;
+    
+    bool getFlagState(enum EFLAGS flag) {
+        return flagStates.test(flag);
+    }
+    
+    void setFlagState(enum EFLAGS flag) {
+        flagStates.set(flag);
+    }
+    
+    void resetFlag(enum EFLAGS flag) {
+        flagStates.reset(flag);
+    }
+};
+
 class ElectroCraftMemory;
 class ElectroCraftStack;
 
 class ElectroCraft_CPU
 {
     RegisterState registers;
+    EFLAGSState eflags;
     ElectroCraftMemory *memory;
     ElectroCraftStack *stack;
     Section currentSection = Section::CODE;
