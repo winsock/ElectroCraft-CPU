@@ -1,0 +1,28 @@
+//
+//  ElectroCraftStack.h
+//  ElectroCraft CPU
+//
+//  Created by Andrew Querol on 8/4/12.
+//  Copyright (c) 2012 Cerios Software. All rights reserved.
+//
+
+#ifndef __ElectroCraft_CPU__ElectroCraftStack__
+#define __ElectroCraft_CPU__ElectroCraftStack__
+
+#include "Utils.h"
+
+struct MemoryInfo;
+class ElectroCraftMemory;
+
+class ElectroCraftStack {
+    MemoryInfo* memoryBlock;
+    ElectroCraftMemory * memory;
+    Address currentAddress;
+public:
+    ElectroCraftStack(ElectroCraftMemory *memory, unsigned int size);
+    ~ElectroCraftStack();
+    void push(DoubleWord data);
+    DoubleWord pop();
+};
+
+#endif /* defined(__ElectroCraft_CPU__ElectroCraftStack__) */
