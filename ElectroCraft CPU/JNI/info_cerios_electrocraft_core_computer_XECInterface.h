@@ -17,6 +17,14 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
 
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
+ * Method:    getVideoCard
+ * Signature: ()Linfo/cerios/electrocraft/core/computer/XECVGACard;
+ */
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getVideoCard
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECInterface
  * Method:    assemble
  * Signature: (Ljava/lang/String;)Linfo/cerios/electrocraft/core/computer/XECInterface/AssembledData;
  */

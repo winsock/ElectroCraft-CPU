@@ -13,17 +13,21 @@
 
 class ElectroCraftMemory;
 struct MemoryInfo;
+struct Memory;
 
-class ElectroCraftVGA : MemoryMappedIODevice {
+class ElectroCraftVGA : public MemoryMappedIODevice {
     MemoryInfo* vgaIOMemory;
-    
+    Memory* displayBuffer;
+    DoubleWord displayBufferSize;
 public:
     ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width, unsigned int height);
     ~ElectroCraftVGA();
     void setScreenSize(unsigned int width, unsigned int height);
     void clear();
     Byte* getScreenData();
+    DoubleWord getDisplayBufferSize();
     virtual MemoryMappedIOSection getMappedIO();
+    virtual void operator()(long tickTime);
 };
 
 #endif /* defined(__ElectroCraft_CPU__ElectroCraftVGA__) */

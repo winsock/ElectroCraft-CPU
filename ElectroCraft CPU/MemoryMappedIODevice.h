@@ -10,8 +10,9 @@
 #define ElectroCraft_CPU_MemoryMappedIODevice_h
 
 #include "Utils.h"
+#include "ElectroCraftTickable.h"
 
-class MemoryMappedIODevice {
+class MemoryMappedIODevice : public ElectroCraftTickable {
 public:
     virtual MemoryMappedIOSection getMappedIO() = 0;
 };

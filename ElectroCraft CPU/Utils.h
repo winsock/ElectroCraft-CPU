@@ -55,6 +55,10 @@ class Utils {
 public:
     static std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
     static std::vector<std::string> split(const std::string &s, char delim);
+    static DoubleWord readDoubleWord(Byte* data);
+    static DoubleWord::Word readWord(Byte* data);
+    static Byte* doubleWordToBytes(DoubleWord word);
+    static Byte* wordToBytes(DoubleWord::Word word);
 };
 
 #endif /* defined(__ElectroCraft_CPU__Utils__) */

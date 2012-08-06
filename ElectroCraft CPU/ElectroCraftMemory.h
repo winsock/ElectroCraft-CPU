@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <iostream>
 #include "Utils.h"
 #include "MemoryMappedIODevice.h"
 
@@ -24,7 +25,6 @@ enum MemoryState {
 
 struct Memory {
     Byte data;
-    MemoryState state = MemoryState::FREE;
 };
 
 struct MemoryInfo {
@@ -47,6 +47,21 @@ struct MemoryInfo {
             data[j++] = (front + i)->data;
         }
         return data;
+    }
+    
+    void setData(Byte* data, unsigned int offset, unsigned int length) {
+        if (offset >memoryLength.doubleWord) {
+            std::cerr<<"ElectroCraft Memory: Error! Tried to write outside of its bounds!"<<std::endl;
+            return;
+        }
+        
+        if (length > memoryLength.doubleWord) {
+            length = memoryLength.doubleWord;
+        }
+        
+        for (int i = 0; i < length; i ++) {
+            (front + i)->data = data[i];
+        }
     }
     
     void setData(Byte* data, unsigned int length) {

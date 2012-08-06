@@ -242,6 +242,7 @@ struct EFLAGSState {
 class ElectroCraftMemory;
 class ElectroCraftStack;
 class ElectroCraftClock;
+class ElectroCraftVGA;
 
 class ElectroCraft_CPU : ElectroCraftTickable {
     RegisterState registers;
@@ -249,6 +250,7 @@ class ElectroCraft_CPU : ElectroCraftTickable {
     ElectroCraftMemory* memory;
     ElectroCraftStack* stack;
     ElectroCraftClock* clock;
+    ElectroCraftVGA* videoCard;
     Section currentSection = Section::CODE;
 public:
     ElectroCraft_CPU();
@@ -258,15 +260,12 @@ public:
     void start(Address baseAddress);
     void stop();
     void reset(Address baseAddress);
+    ElectroCraftVGA* getVideoCard();
     bool isRunning();
     virtual void operator()(long tickTime);
 private:
     FirstPassData* firstPass(std::wstring line, DoubleWord offset);
     Registers getRegister(std::wstring token);
-    DoubleWord readDoubleWord(Byte* data);
-    DoubleWord::Word readWord(Byte* data);
-    Byte* doubleWordToBytes(DoubleWord word);
-    Byte* wordToBytes(DoubleWord::Word word);
     OPCode readOPCode(std::wstring token);
     DoubleWord getRegisterData(Registers reg);
     RegisterSizes registerToSize(Registers reg);

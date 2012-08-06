@@ -18,6 +18,7 @@
 		768BD51115CF20F900AD9E16 /* ElectroCraftClock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 768BD50F15CF20F900AD9E16 /* ElectroCraftClock.cpp */; };
 		768BD51215CF20F900AD9E16 /* ElectroCraftClock.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD51015CF20F900AD9E16 /* ElectroCraftClock.h */; };
 		768BD51615CF212A00AD9E16 /* ElectroCraftTickable.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */; };
+		768BD51815CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */; };
 		76D9EA1515CD7EDA007D64D2 /* ElectroCraftStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */; };
 		76D9EA1615CD7EDA007D64D2 /* ElectroCraftStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */; };
 /* End PBXBuildFile section */
@@ -41,6 +42,7 @@
 		768BD50F15CF20F900AD9E16 /* ElectroCraftClock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftClock.cpp; sourceTree = "<group>"; };
 		768BD51015CF20F900AD9E16 /* ElectroCraftClock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftClock.h; sourceTree = "<group>"; };
 		768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftTickable.h; sourceTree = "<group>"; };
+		768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECVGACard.h; sourceTree = "<group>"; };
 		76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftStack.cpp; sourceTree = "<group>"; };
 		76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftStack.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -91,6 +93,7 @@
 		768BD4FE15CEF1CA00AD9E16 /* JNI */ = {
 			isa = PBXGroup;
 			children = (
+				768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */,
 				768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */,
 				768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */,
 				768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */,
@@ -112,6 +115,7 @@
 				768BD50D15CF19F000AD9E16 /* ElectroCraftVGA.h in Headers */,
 				768BD51215CF20F900AD9E16 /* ElectroCraftClock.h in Headers */,
 				768BD51615CF212A00AD9E16 /* ElectroCraftTickable.h in Headers */,
+				768BD51815CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
