@@ -8,13 +8,39 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU Tester/ElectroCraft CPU Tester/main.cpp"
-         timestampString = "365921040.258133"
+         timestampString = "365960430.416402"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "42"
-         endingLineNumber = "42"
+         startingLineNumber = "43"
+         endingLineNumber = "43"
          landmarkName = "main(int argc, const char * argv[])"
          landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
+         timestampString = "365960772.195267"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "1038"
+         endingLineNumber = "1038"
+         landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
+         timestampString = "365960894.346399"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "1717"
+         endingLineNumber = "1717"
+         landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
+         landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>
 </Bucket>

@@ -26,7 +26,7 @@ ElectroCraft_CPU::ElectroCraft_CPU() {
     stack = new ElectroCraftStack(memory, 4096);
     clock = new ElectroCraftClock(540000000);
     clock->registerCallback(this);
-    //clock->registerCallback(videoCard);
+    clock->registerCallback(videoCard);
 }
 
 ElectroCraft_CPU::~ElectroCraft_CPU() {
@@ -170,7 +170,9 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             Registers reg = getRegister(token.substr(1, token.size() - 2));
                             if (reg != Registers::UNKNOWN) {
                                 data->opcode->setShouldUseRegisterAsAddress(tokenNumber - 1);
+                                data->opcode->infoBits.set(tokenNumber - 1);
                                 data->opcode->args[tokenNumber - 1].doubleWord = reg;
+                                tokenNumber++;
                             }
                         }
                     } else {
