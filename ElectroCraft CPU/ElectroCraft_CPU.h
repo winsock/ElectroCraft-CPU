@@ -21,7 +21,7 @@
 #pragma GCC visibility push(default)
 
 // The size of an operation in bytes
-#define OPERATION_SZIE 10
+#define OPERATION_SZIE 11
 
 enum InstructionSet {
     PUSH = 0,
@@ -59,6 +59,7 @@ enum InstructionSet {
     JMP = 32,
     NEG = 33,
     LOOP = 34,
+    RANDI = 35,
     UNKOWN = 63
     };
 
@@ -139,7 +140,7 @@ struct StackData {
 };
 
 struct TokenData {
-    std::wstring name;
+    std::string name;
     DoubleWord offset;
 };
 
@@ -147,6 +148,7 @@ struct OPCode {
     InstructionSet opCode = InstructionSet::UNKOWN; // 6 Bits max size of 63
     uint8_t numOprands; // Only uses the first two bits MAX number of 3
     std::bitset<8> infoBits;
+    std::bitset<8> extendedInfoBits;
     
     Byte getOpCodeByte() {
         return ((numOprands << 6) | (opCode & 0x3F));
@@ -161,8 +163,16 @@ struct OPCode {
         return infoBits.to_ulong();
     }
     
+    Byte getExtendedInfoByte() {
+        return extendedInfoBits.to_ulong();
+    }
+    
     void readInfoByte(Byte info) {
         infoBits = std::bitset<8>(info);
+    }
+    
+    void readExtendedInfoByte(Byte extendedInfo) {
+        extendedInfoBits = std::bitset<8>(extendedInfo);
     }
     
     bool isRegisterInPosition(int position) {
@@ -191,6 +201,14 @@ struct OPCode {
     
     void setOffsetNegitiveInPosition(int position) {
         infoBits.set(position + 6);
+    }
+    
+    bool shouldUseRegisterAsAddress(int position) {
+        return extendedInfoBits.test(position);
+    }
+    
+    void setShouldUseRegisterAsAddress(int postition) {
+        extendedInfoBits.set(postition);
     }
     
     DoubleWord* args = new DoubleWord[2];
@@ -255,7 +273,7 @@ class ElectroCraft_CPU : ElectroCraftTickable {
 public:
     ElectroCraft_CPU();
     ~ElectroCraft_CPU();
-    AssembledData assemble(std::vector<std::wstring>);
+    AssembledData assemble(std::vector<std::string>);
     Address loadIntoMemory(Byte* data, int length);
     void start(Address baseAddress);
     void stop();
@@ -264,9 +282,9 @@ public:
     bool isRunning();
     virtual void operator()(long tickTime);
 private:
-    FirstPassData* firstPass(std::wstring line, DoubleWord offset);
-    Registers getRegister(std::wstring token);
-    OPCode readOPCode(std::wstring token);
+    FirstPassData* firstPass(std::string line, DoubleWord offset);
+    Registers getRegister(std::string token);
+    OPCode readOPCode(std::string token);
     DoubleWord getRegisterData(Registers reg);
     RegisterSizes registerToSize(Registers reg);
     RegisterType getRegisterType(Registers reg);

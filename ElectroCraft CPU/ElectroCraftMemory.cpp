@@ -85,12 +85,14 @@ MemoryInfo* ElectroCraftMemory::assignIOMemory(MemoryMappedIODevice* device) {
     MemoryInfo *next;
     MemoryInfo *previous;
     for (int i = 0; i < this->memoryStates.size(); i++) {
-        if (section.beginAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
-            std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
-            return nullptr;
-        } else if (section.endAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.endAddress.doubleWord <= memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) {
-            std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
-            return nullptr;
+        if (memoryStates[i]->stateOfMemory != MemoryState::FREE){
+            if (section.beginAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord <= (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) {
+                std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
+                return nullptr;
+            } else if (section.endAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.endAddress.doubleWord <= (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) {
+                std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
+                return nullptr;
+            }
         }
         
         if (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord < section.beginAddress.doubleWord) {

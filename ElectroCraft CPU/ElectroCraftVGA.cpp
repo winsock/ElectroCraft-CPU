@@ -12,7 +12,7 @@
 
 ElectroCraftVGA::ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width, unsigned int height) {
     vgaIOMemory = memory->assignIOMemory(this);
-    // Thee bytes per pixel(RGB)
+    // Three bytes per pixel(RGB)
     if ((width * height * 3) > vgaIOMemory->memoryLength.doubleWord) {
         std::cerr<<"ElectroCraft VGA: Error! Not enough memory for the requested screen size!"<<std::endl;
     }

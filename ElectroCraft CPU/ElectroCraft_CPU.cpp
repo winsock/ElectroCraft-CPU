@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <random>
 #include "ElectroCraft_CPU.h"
 #include "ElectroCraftMemory.h"
 #include "ElectroCraftStack.h"
@@ -21,8 +22,8 @@ ElectroCraft_CPU::ElectroCraft_CPU() {
     Address baseAddress;
     baseAddress.doubleWord = 0x0;
     memory = new ElectroCraftMemory(128 * 1024 * 1024, baseAddress);
-    stack = new ElectroCraftStack(memory, 4096);
     videoCard = new ElectroCraftVGA(memory, 800, 600);
+    stack = new ElectroCraftStack(memory, 4096);
     clock = new ElectroCraftClock(540000000);
     clock->registerCallback(this);
     clock->registerCallback(videoCard);
@@ -32,10 +33,10 @@ ElectroCraft_CPU::~ElectroCraft_CPU() {
     delete memory;
 }
 
-AssembledData ElectroCraft_CPU::assemble(std::vector<std::wstring> data) {
+AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     // The first pass
     std::vector<FirstPassData> firstPassData;
-    std::map<std::wstring, TokenData> tokens;
+    std::map<std::string, TokenData> tokens;
     DoubleWord currentOffset;
     currentOffset.doubleWord = 0;
     for (unsigned int line = 0; line < data.size(); line++) {
@@ -83,8 +84,9 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::wstring> data) {
     for (int i = 0; i < firstPassData.size(); i++) {
         rawData[firstPassData[i].beginOffset.doubleWord] = firstPassData[i].opcode.getOpCodeByte();
         rawData[firstPassData[i].beginOffset.doubleWord + 1] = firstPassData[i].opcode.getInfoByte();
-        memcpy(&rawData[firstPassData[i].beginOffset.doubleWord + 2], &firstPassData[i].opcode.args[0].doubleWord, sizeof(uint32_t));
-        memcpy(&rawData[firstPassData[i].beginOffset.doubleWord + 2 + sizeof(uint32_t)], &firstPassData[i].opcode.args[1].doubleWord, sizeof(uint32_t));
+        rawData[firstPassData[i].beginOffset.doubleWord + 2] = firstPassData[i].opcode.getExtendedInfoByte();
+        memcpy(&rawData[firstPassData[i].beginOffset.doubleWord + 3], &firstPassData[i].opcode.args[0].doubleWord, sizeof(uint32_t));
+        memcpy(&rawData[firstPassData[i].beginOffset.doubleWord + 3 + sizeof(uint32_t)], &firstPassData[i].opcode.args[1].doubleWord, sizeof(uint32_t));
     }
     assembledData.data = rawData;
     assembledData.length = currentOffset.doubleWord;
@@ -92,11 +94,11 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::wstring> data) {
     return assembledData;
 }
 
-FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOffset) {
-    if (line == L".code") {
+FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOffset) {
+    if (line == ".code") {
         currentSection = Section::CODE;
         return nullptr;
-    } else if (line == L".data") {
+    } else if (line == ".data") {
         currentSection = Section::DATA;
         return nullptr;
     }
@@ -105,7 +107,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
     FirstPassData *data = new FirstPassData;
     data->beginOffset = beginOffset;
     
-    std::wstringstream tokenBuffer;
+    std::stringstream tokenBuffer;
     int tokenNumber = 0;
     for (int i = 0; i < line.size(); i++) {
         // We only allow max of 1 Op Code and 2 arguments
@@ -124,8 +126,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
                 tokenBuffer<<line[i];
             }
             
-            std::wstring token = tokenBuffer.str();
-            tokenBuffer.str(std::wstring());
+            std::string token = tokenBuffer.str();
+            tokenBuffer.str(std::string());
             if (token.size() > 0 && tokenNumber == 0) {
                 if(token.back() == ':') {
                     TokenData tokenData;
@@ -138,7 +140,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
                     if (opcode.opCode != InstructionSet::UNKOWN) {
                         data->opcode = opcode;
                     } else {
-                        std::cerr<<"ElectroCraft CPU: Unknown operation: "<<&token<<std::endl;
+                        std::cerr<<"ElectroCraft CPU: Unknown operation: "<<token<<std::endl;
                         continue;
                     }
                 }
@@ -153,9 +155,9 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
                 } else {
                     // Lets see if is a address
                     if (token.front() == '[' && token.back() == ']') {
-                        bool isHexNumber = (token.find_first_not_of(L"x0123456789ABCDEF") == std::wstring::npos);
-                        if (isHexNumber) {
-                            std::wstringstream ss;
+                        bool isHexNumber = (token.substr(1, token.size() - 2).find_first_not_of("X0123456789ABCDEF") == std::string::npos);
+                        if (isHexNumber && *(&token.front() + 1) == '0' && *(&token.front() + 2) == 'X') {
+                            std::stringstream ss;
                             ss << std::hex << token.substr(1, token.size() - 2);
                             if (ss.good()) {
                                 DoubleWord address;
@@ -164,13 +166,19 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
                                 data->opcode.setAddressInPosition(tokenNumber - 1);
                                 tokenNumber++;
                             }
+                        } else {
+                            Registers reg = getRegister(token.substr(1, token.size() - 2));
+                            if (reg != Registers::UNKNOWN) {
+                                data->opcode.setShouldUseRegisterAsAddress(tokenNumber - 1);
+                                data->opcode.args[tokenNumber - 1].doubleWord = reg;
+                            }
                         }
                     } else {
-                        bool isHexNumber = (token.find_first_not_of(L"x0123456789ABCDEF") == std::wstring::npos);
-                        bool isDecimalNumber = (token.find_first_not_of(L"0123456789") == std::wstring::npos);
+                        bool isHexNumber = (token.find_first_not_of("X0123456789ABCDEF") == std::string::npos);
+                        bool isDecimalNumber = (token.find_first_not_of("0123456789") == std::string::npos);
                         if (isDecimalNumber) {
                             // Lets see if it is a decimal number
-                            std::wstringstream ss;
+                            std::stringstream ss;
                             ss << std::dec << token;
                             if (ss.good()) {
                                 DoubleWord number;
@@ -179,7 +187,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
                             }
                         } else if (isHexNumber) {
                             // Lets see if it is a hex number
-                            std::wstringstream ss;
+                            std::stringstream ss;
                             ss<< std::hex << token;
                             if (ss) {
                                 DoubleWord number;
@@ -192,8 +200,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
                             unresolved.name = token;
                             data->unresolvedTokens[tokenNumber - 1] = unresolved;
                         }
+                        tokenNumber++;
                     }
-                    tokenNumber++;
                 }
             }
         } else {
@@ -208,178 +216,181 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::wstring line, DoubleWord beginOf
     return data;
 }
 
-Registers ElectroCraft_CPU::getRegister(std::wstring token) {
-    if (token == L"EAX") {
+Registers ElectroCraft_CPU::getRegister(std::string token) {
+    if (token == "EAX") {
         return Registers::EAX;
-    } else if (token == L"EBX") {
+    } else if (token == "EBX") {
         return Registers::EBX;
-    } else if (token == L"ECX") {
+    } else if (token == "ECX") {
         return Registers::ECX;
-    } else if (token == L"EDX") {
+    } else if (token == "EDX") {
         return Registers::EDX;
-    } else if (token == L"ESI") {
+    } else if (token == "ESI") {
         return Registers::ESI;
-    } else if (token == L"EDI") {
+    } else if (token == "EDI") {
         return Registers::EDI;
-    } else if (token == L"EBP") {
+    } else if (token == "EBP") {
         return Registers::EBP;
-    } else if (token == L"EIP") {
+    } else if (token == "EIP") {
         return Registers::EIP;
-    } else if (token == L"ESP") {
+    } else if (token == "ESP") {
         return Registers::ESP;
-    } else if (token == L"EMC") {
+    } else if (token == "EMC") {
         return Registers::EMC;
-    } else if (token == L"EFLAGS") {
+    } else if (token == "EFLAGS") {
         return Registers::EFLAGS;
-    } else if (token == L"AX") {
+    } else if (token == "AX") {
         return Registers::AX;
-    } else if (token == L"BX") {
+    } else if (token == "BX") {
         return Registers::BX;
-    } else if (token == L"CX") {
+    } else if (token == "CX") {
         return Registers::CX;
-    } else if (token == L"DX") {
+    } else if (token == "DX") {
         return Registers::DX;
-    } else if (token == L"SI") {
+    } else if (token == "SI") {
         return Registers::SI;
-    } else if (token == L"DI") {
+    } else if (token == "DI") {
         return Registers::DI;
-    } else if (token == L"BP") {
+    } else if (token == "BP") {
         return Registers::BP;
-    } else if (token == L"IP") {
+    } else if (token == "IP") {
         return Registers::IP;
-    } else if (token == L"SP") {
+    } else if (token == "SP") {
         return Registers::SP;
-    } else if (token == L"MC") {
+    } else if (token == "MC") {
         return Registers::MC;
-    } else if (token == L"AH") {
+    } else if (token == "AH") {
         return Registers::AH;
-    } else if (token == L"AL") {
+    } else if (token == "A") {
         return Registers::AL;
-    } else if (token == L"BH") {
+    } else if (token == "BH") {
         return Registers::BH;
-    } else if (token == L"BL") {
+    } else if (token == "B") {
         return Registers::BL;
-    } else if (token == L"CH") {
+    } else if (token == "CH") {
         return Registers::CH;
-    } else if (token == L"CL") {
+    } else if (token == "C") {
         return Registers::CL;
-    } else if (token == L"DH") {
+    } else if (token == "DH") {
         return Registers::DH;
-    } else if (token == L"DL") {
+    } else if (token == "D") {
         return Registers::DL;
     } else {
         return Registers::UNKNOWN;
     }
 }
 
-OPCode ElectroCraft_CPU::readOPCode(std::wstring token) {
+OPCode ElectroCraft_CPU::readOPCode(std::string token) {
     OPCode opcode;
 #pragma mark Instruction Set
-    if (token == L"PUSH") {
+    if (token == "PUSH") {
         opcode.opCode = InstructionSet::PUSH;
         opcode.numOprands = 1;
-    } else if (token == L"POP") {
+    } else if (token == "POP") {
         opcode.opCode = InstructionSet::POP;
         opcode.numOprands = 1;
-    } else if (token == L"HLT") {
+    } else if (token == "HLT") {
         opcode.opCode = InstructionSet::HLT;
         opcode.numOprands = 0;
-    } else if (token == L"JE") {
+    } else if (token == "JE") {
         opcode.opCode = InstructionSet::JE;
         opcode.numOprands = 1;
-    } else if (token == L"JNE") {
+    } else if (token == "JNE") {
         opcode.opCode = InstructionSet::JNE;
         opcode.numOprands = 1;
-    } else if (token == L"MOV") {
+    } else if (token == "MOV") {
         opcode.opCode = InstructionSet::MOV;
         opcode.numOprands = 2;
-    } else if (token == L"CMP") {
+    } else if (token == "CMP") {
         opcode.opCode = InstructionSet::CMP;
         opcode.numOprands = 2;
-    } else if (token == L"NOP") {
+    } else if (token == "NOP") {
         opcode.opCode = InstructionSet::NOP;
         opcode.numOprands = 0;
-    } else if (token == L"LOOPE") {
+    } else if (token == "LOOPE") {
         opcode.opCode = InstructionSet::LOOPE;
         opcode.numOprands = 1;
-    } else if (token == L"LOOPNE") {
+    } else if (token == "LOOPNE") {
         opcode.opCode = InstructionSet::LOOPNE;
         opcode.numOprands = 1;
-    } else if (token == L"NOT") {
+    } else if (token == "NOT") {
         opcode.opCode = InstructionSet::NOT;
         opcode.numOprands = 2;
-    } else if (token == L"AND") {
+    } else if (token == "AND") {
         opcode.opCode = InstructionSet::AND;
         opcode.numOprands = 2;
-    } else if (token == L"OR") {
+    } else if (token == "OR") {
         opcode.opCode = InstructionSet::OR;
         opcode.numOprands = 2;
-    } else if (token == L"XOR") {
+    } else if (token == "XOR") {
         opcode.opCode = InstructionSet::XOR;
         opcode.numOprands = 2;
-    } else if (token == L"MUL") {
+    } else if (token == "MU") {
         opcode.opCode = InstructionSet::MUL;
         opcode.numOprands = 2;
-    } else if (token == L"ADD") {
+    } else if (token == "ADD") {
         opcode.opCode = InstructionSet::ADD;
         opcode.numOprands = 2;
-    } else if (token == L"DIV") {
+    } else if (token == "DIV") {
         opcode.opCode = InstructionSet::DIV;
         opcode.numOprands = 2;
-    } else if (token == L"SUB") {
+    } else if (token == "SUB") {
         opcode.opCode = InstructionSet::SUB;
         opcode.numOprands = 2;
-    } else if (token == L"RET") {
+    } else if (token == "RET") {
         opcode.opCode = InstructionSet::RET;
         opcode.numOprands = 0;
-    } else if (token == L"POPA") {
+    } else if (token == "POPA") {
         opcode.opCode = InstructionSet::POPA;
         opcode.numOprands = 0;
-    } else if (token == L"PUSHA") {
+    } else if (token == "PUSHA") {
         opcode.opCode = InstructionSet::PUSHA;
         opcode.numOprands = 0;
-    } else if (token == L"SAL") {
+    } else if (token == "SA") {
         opcode.opCode = InstructionSet::SHL;
         opcode.numOprands = 2;
-    } else if (token == L"SAR") {
+    } else if (token == "SAR") {
         opcode.opCode = InstructionSet::SHR;
         opcode.numOprands = 2;
-    } else if (token == L"LOOPWE") {
+    } else if (token == "LOOPWE") {
         opcode.opCode = InstructionSet::LOOPWE;
         opcode.numOprands = 1;
-    } else if (token == L"LOOPWNE") {
+    } else if (token == "LOOPWNE") {
         opcode.opCode = InstructionSet::LOOPWNE;
         opcode.numOprands = 1;
-    } else if (token == L"JNZ") {
+    } else if (token == "JNZ") {
         opcode.opCode = InstructionSet::JNZ;
         opcode.numOprands = 1;
-    } else if (token == L"JZ") {
+    } else if (token == "JZ") {
         opcode.opCode = InstructionSet::JZ;
         opcode.numOprands = 1;
-    } else if (token == L"CPUID") {
+    } else if (token == "CPUID") {
         opcode.opCode = InstructionSet::CPUID;
         opcode.numOprands = 0;
-    } else if (token == L"ROUND") {
+    } else if (token == "ROUND") {
         opcode.opCode = InstructionSet::ROUND;
         opcode.numOprands = 2;
-    } else if (token == L"LOOPZ") {
+    } else if (token == "LOOPZ") {
         opcode.opCode = InstructionSet::LOOPZ;
         opcode.numOprands = 1;
-    } else if (token == L"LOOPNZ") {
+    } else if (token == "LOOPNZ") {
         opcode.opCode = InstructionSet::LOOPNZ;
         opcode.numOprands = 1;
-    } else if (token == L"CALL") {
+    } else if (token == "CALL") {
         opcode.opCode = InstructionSet::CALL;
         opcode.numOprands = 1;
-    } else if (token == L"JMP") {
+    } else if (token == "JMP") {
         opcode.opCode = InstructionSet::JMP;
         opcode.numOprands = 1;
-    } else if (token == L"NEG") {
+    } else if (token == "NEG") {
         opcode.opCode = InstructionSet::NEG;
         opcode.numOprands = 1;
-    } else if (token == L"LOOP") {
+    } else if (token == "LOOP") {
         opcode.opCode = InstructionSet::LOOP;
         opcode.numOprands = 1;
+    } else if (token == "RANDI") {
+        opcode.opCode = InstructionSet::RANDI;
+        opcode.numOprands = 2;
     } else {
         opcode.opCode = InstructionSet::UNKOWN;
         opcode.numOprands = 0;
@@ -621,8 +632,9 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     instructionData = memory->readData(registers.IP, OPERATION_SZIE);
     instruction.opCodeFromByte(instructionData[0]);
     instruction.readInfoByte(instructionData[1]);
-    instruction.args[0] = Utils::readDoubleWord(&instructionData[2]);
-    instruction.args[1] = Utils::readDoubleWord(&instructionData[6]);
+    instruction.readExtendedInfoByte(instructionData[2]);
+    instruction.args[0] = Utils::readDoubleWord(&instructionData[3]);
+    instruction.args[1] = Utils::readDoubleWord(&instructionData[7]);
     switch (instruction.opCode) {
         case InstructionSet::ADD:
             if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
@@ -1284,8 +1296,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                 DoubleWord* optionalConstant = nullptr;
                 
                 if (instruction.isRegisterInPosition(0)) {
-                    reg = Registers(instruction.args[0].doubleWord);
-                    regSize = registerToSize(reg);
+                    if (instruction.shouldUseRegisterAsAddress(0)) {
+                        address = getRegisterData(Registers(instruction.args[0].doubleWord));
+                    } else {
+                        reg = Registers(instruction.args[0].doubleWord);
+                        regSize = registerToSize(reg);
+                    }
                 } else if (instruction.isAddressInPosition(0)) {
                     address = instruction.args[0];
                 } else {
@@ -1625,6 +1641,61 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                 stack->push(data);
             }
             break;
+        case InstructionSet::RANDI:
+            if (instruction.isAddressInPosition(0)) {
+                if (instruction.isAddressInPosition(1)) {
+                    DoubleWord upperBound = Utils::readDoubleWord(memory->readData(instruction.args[1], 4));
+                    DoubleWord result;
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(Utils::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord, upperBound.doubleWord);
+                    result.doubleWord = dis(gen);
+                    memory->writeData(instruction.args[0], 4, Utils::doubleWordToBytes(result));
+                } else if (instruction.isRegisterInPosition(1)) {
+                    DoubleWord upperBound = getRegisterData(Registers(instruction.args[1].doubleWord));
+                    DoubleWord result;
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(Utils::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord, upperBound.doubleWord);
+                    result.doubleWord = dis(gen);
+                    memory->writeData(instruction.args[0], 4, Utils::doubleWordToBytes(result));
+                } else {
+                    DoubleWord result;
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(Utils::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord, instruction.args[1].doubleWord);
+                    result.doubleWord = dis(gen);
+                    memory->writeData(instruction.args[0], 4, Utils::doubleWordToBytes(result));
+                }
+            } else if (instruction.isRegisterInPosition(0)) {
+                if (instruction.isAddressInPosition(1)) {
+                    DoubleWord upperBound = Utils::readDoubleWord(memory->readData(instruction.args[1], 4));
+                    DoubleWord result;
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord, upperBound.doubleWord);
+                    result.doubleWord = dis(gen);
+                    setRegisterData(result, Registers(instruction.args[0].doubleWord));
+                } else if (instruction.isRegisterInPosition(1)) {
+                    DoubleWord upperBound = getRegisterData(Registers(instruction.args[1].doubleWord));
+                    DoubleWord result;
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord, upperBound.doubleWord);
+                    result.doubleWord = dis(gen);
+                    setRegisterData(result, Registers(instruction.args[0].doubleWord));
+                } else {
+                    DoubleWord result;
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord, instruction.args[1].doubleWord);
+                    result.doubleWord = dis(gen);
+                    setRegisterData(result, Registers(instruction.args[0].doubleWord));
+                }
+            } else {
+                std::cerr<<"ElectroCraft CPU: Incorrect arguments for RANDI!"<<std::endl;
+            }
+            break;
         case InstructionSet::RET:
         {
             Address addressToReturnTo = stack->pop();
@@ -1651,7 +1722,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         }
                         setRegisterData(result, Registers(instruction.args[0].doubleWord));
                     } else {
-                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL"<<std::endl;
+                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
                     }
                 }
             } else if (instruction.isAddressInPosition(0)) {
@@ -1670,10 +1741,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     }
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
                 } else {
-                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL"<<std::endl;
+                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
                 }
             } else {
-                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL"<<std::endl;
+                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
             }
             break;
         case InstructionSet::SHR:
@@ -1694,7 +1765,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         }
                         setRegisterData(result, Registers(instruction.args[0].doubleWord));
                     } else {
-                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL"<<std::endl;
+                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
                     }
                 }
             } else if (instruction.isAddressInPosition(0)) {
@@ -1713,10 +1784,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     }
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
                 } else {
-                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL"<<std::endl;
+                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
                 }
             } else {
-                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL"<<std::endl;
+                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
             }
             break;
         case InstructionSet::SUB:
