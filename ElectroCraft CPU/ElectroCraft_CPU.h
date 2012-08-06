@@ -150,6 +150,20 @@ struct OPCode {
     std::bitset<8> infoBits;
     std::bitset<8> extendedInfoBits;
     
+    OPCode() {};
+    
+    ~OPCode() {
+        delete[] args;
+    }
+    
+    OPCode(const OPCode &copy) {
+        opCode = copy.opCode;
+        numOprands = copy.numOprands;
+        infoBits = copy.infoBits;
+        extendedInfoBits = copy.extendedInfoBits;
+        args = copy.args;
+    }
+    
     Byte getOpCodeByte() {
         return ((numOprands << 6) | (opCode & 0x3F));
     }
@@ -215,10 +229,16 @@ struct OPCode {
 };
 
 struct FirstPassData {
-    OPCode opcode;
+    OPCode* opcode;
     DoubleWord beginOffset;
     TokenData token;
     TokenData* unresolvedTokens = new TokenData[2];
+    
+    FirstPassData() {}
+    ~FirstPassData() {
+        delete [] unresolvedTokens;
+        delete opcode;
+    }
 };
 
 struct AssembledData {
@@ -284,7 +304,7 @@ public:
 private:
     FirstPassData* firstPass(std::string line, DoubleWord offset);
     Registers getRegister(std::string token);
-    OPCode readOPCode(std::string token);
+    OPCode* readOPCode(std::string token);
     DoubleWord getRegisterData(Registers reg);
     RegisterSizes registerToSize(Registers reg);
     RegisterType getRegisterType(Registers reg);

@@ -83,7 +83,7 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
         jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
         jmethodID constructor = env->GetMethodID(videoCardClass, "<init>", "(J)V");
         jobject videoCard = env->NewObject(videoCardClass, constructor, id);
-        jfieldID idField = env->GetFieldID(videoCardClass, "id", "J");
+        jfieldID idField = env->GetFieldID(videoCardClass, "internalID", "J");
         env->SetLongField(videoCard, idField, id);
         idVideoCardMap[id] = cpu->getVideoCard();
         videoCardIDMap[cpu->getVideoCard()] = id;
@@ -163,7 +163,7 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
 
 ElectroCraftVGA* getVideoCardFromJVideoCard(JNIEnv *env, jobject jVideoCard) {
     jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
-    jfieldID idField = env->GetFieldID(videoCardClass, "id", "J");
+    jfieldID idField = env->GetFieldID(videoCardClass, "internalID", "J");
     unsigned long id = env->GetLongField(jVideoCard, idField);
     
     if (idVideoCardMap.find(id) != idVideoCardMap.end()) {
@@ -233,5 +233,31 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_ma
             return;
         env->ThrowNew(cls, "ElectroCraft JNI: Unknown GPU ID!");
         return;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_getScreenWidth (JNIEnv *env, jobject caller) {
+    ElectroCraftVGA *videoCard = getVideoCardFromJVideoCard(env, caller);
+    if (videoCard != nullptr) {
+        return videoCard->getWidth();
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return 0;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown GPU ID!");
+        return 0;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_getScreenHeight (JNIEnv *env, jobject caller) {
+    ElectroCraftVGA *videoCard = getVideoCardFromJVideoCard(env, caller);
+    if (videoCard != nullptr) {
+        return videoCard->getHeight();
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return 0;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown GPU ID!");
+        return 0;
     }
 }

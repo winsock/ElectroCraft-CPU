@@ -19,6 +19,8 @@ ElectroCraftVGA::ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width,
     displayBufferSize.doubleWord = width * height * 3;
     displayBuffer = vgaIOMemory->front + 4;
     vgaIOMemory->setData(Utils::doubleWordToBytes(displayBufferSize), 0, 4);
+    this->width = width;
+    this->height = height;
 }
 
 MemoryMappedIOSection ElectroCraftVGA::getMappedIO() {
@@ -50,6 +52,16 @@ void ElectroCraftVGA::setScreenSize(unsigned int width, unsigned int height) {
     }
     displayBufferSize.doubleWord = width * height * 3;
     vgaIOMemory->setData(Utils::doubleWordToBytes(displayBufferSize), 0, 4);
+    this->width = width;
+    this->height = height;
+}
+
+unsigned int ElectroCraftVGA::getWidth() {
+    return width;
+}
+
+unsigned int ElectroCraftVGA::getHeight() {
+    return height;
 }
 
 void ElectroCraftVGA::operator()(long tickTime) {

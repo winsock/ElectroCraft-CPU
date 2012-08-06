@@ -19,6 +19,8 @@ class ElectroCraftVGA : public MemoryMappedIODevice {
     MemoryInfo* vgaIOMemory;
     Memory* displayBuffer;
     DoubleWord displayBufferSize;
+    unsigned int width;
+    unsigned int height;
 public:
     ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width, unsigned int height);
     ~ElectroCraftVGA();
@@ -26,6 +28,8 @@ public:
     void clear();
     Byte* getScreenData();
     DoubleWord getDisplayBufferSize();
+    unsigned int getWidth();
+    unsigned int getHeight();
     virtual MemoryMappedIOSection getMappedIO();
     virtual void operator()(long tickTime);
 };

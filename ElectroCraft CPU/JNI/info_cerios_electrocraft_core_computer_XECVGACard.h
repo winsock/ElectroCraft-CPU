@@ -39,6 +39,22 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_se
 JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_manualTick
   (JNIEnv *, jobject);
 
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECVGACard
+ * Method:    getScreenWidth
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_getScreenWidth
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECVGACard
+ * Method:    getScreenHeight
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_getScreenHeight
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

@@ -24,15 +24,15 @@ std::vector<std::string> Utils::split(const std::string &s, char delim) {
 }
 
 DoubleWord Utils::readDoubleWord(Byte *data) {
-    DoubleWord *doubleWord = new DoubleWord;
-    memcpy(&doubleWord->doubleWord, data, 4);
-    return *doubleWord;
+    DoubleWord doubleWord ;
+    memcpy(&doubleWord.doubleWord, data, 4);
+    return doubleWord;
 }
 
 DoubleWord::Word Utils::readWord(Byte *data) {
-    DoubleWord::Word *word = new DoubleWord::Word;
-    memcpy(&word->lowWord.word, data, 2);
-    return *word;
+    DoubleWord::Word word;
+    memcpy(&word.lowWord.word, data, 2);
+    return word;
 }
 
 Byte* Utils::doubleWordToBytes(DoubleWord word) {

@@ -26,7 +26,7 @@ ElectroCraft_CPU::ElectroCraft_CPU() {
     stack = new ElectroCraftStack(memory, 4096);
     clock = new ElectroCraftClock(540000000);
     clock->registerCallback(this);
-    clock->registerCallback(videoCard);
+    //clock->registerCallback(videoCard);
 }
 
 ElectroCraft_CPU::~ElectroCraft_CPU() {
@@ -35,7 +35,7 @@ ElectroCraft_CPU::~ElectroCraft_CPU() {
 
 AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     // The first pass
-    std::vector<FirstPassData> firstPassData;
+    std::vector<FirstPassData*> firstPassData;
     std::map<std::string, TokenData> tokens;
     DoubleWord currentOffset;
     currentOffset.doubleWord = 0;
@@ -45,8 +45,8 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
             if (!readData->token.name.empty()) {
                 // Only way this can happen if there was a token returned
                 tokens[readData->token.name] = readData->token;
-            } else if (readData->opcode.opCode != InstructionSet::UNKOWN) {
-                firstPassData.push_back(*readData);
+            } else if (readData->opcode->opCode != InstructionSet::UNKOWN) {
+                firstPassData.push_back(readData);
                 currentOffset.doubleWord += OPERATION_SZIE;
             }
         }
@@ -56,21 +56,21 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     currentOffset.doubleWord = 0;
     
     // The second pass try to resolve unknown tokens
-    for (FirstPassData &firstPass : firstPassData) {
+    for (FirstPassData *firstPass : firstPassData) {
         for (int i = 0; i < 2; i++) {
-            if (!firstPass.unresolvedTokens[i].name.empty()) {
-                if (tokens.find(firstPass.unresolvedTokens[i].name) != tokens.end()) {
-                    firstPass.opcode.setOffsetInPosition(i);
-                    long realOffset = tokens[firstPass.unresolvedTokens[i].name].offset.doubleWord - currentOffset.doubleWord;
+            if (!firstPass->unresolvedTokens[i].name.empty()) {
+                if (tokens.find(firstPass->unresolvedTokens[i].name) != tokens.end()) {
+                    firstPass->opcode->setOffsetInPosition(i);
+                    long realOffset = tokens[firstPass->unresolvedTokens[i].name].offset.doubleWord - currentOffset.doubleWord;
                     if (realOffset < 0) {
-                        firstPass.opcode.setOffsetNegitiveInPosition(i);
+                        firstPass->opcode->setOffsetNegitiveInPosition(i);
                         realOffset = -realOffset;
                     }
                     DoubleWord offset;
                     offset.doubleWord = static_cast<uint32_t>(realOffset);
-                    firstPass.opcode.args[i] = offset;
+                    firstPass->opcode->args[i] = offset;
                 } else {
-                    std::cerr<<"Unkown token: "<<&firstPass.unresolvedTokens[i].name<<std::endl;
+                    std::cerr<<"Unkown token: "<<firstPass->unresolvedTokens[i].name<<std::endl;
                     assembledData.data = nullptr;
                     return assembledData;
                 }
@@ -82,11 +82,11 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     // Finally pack the program into a byte array
     Byte* rawData = new Byte[currentOffset.doubleWord];
     for (int i = 0; i < firstPassData.size(); i++) {
-        rawData[firstPassData[i].beginOffset.doubleWord] = firstPassData[i].opcode.getOpCodeByte();
-        rawData[firstPassData[i].beginOffset.doubleWord + 1] = firstPassData[i].opcode.getInfoByte();
-        rawData[firstPassData[i].beginOffset.doubleWord + 2] = firstPassData[i].opcode.getExtendedInfoByte();
-        memcpy(&rawData[firstPassData[i].beginOffset.doubleWord + 3], &firstPassData[i].opcode.args[0].doubleWord, sizeof(uint32_t));
-        memcpy(&rawData[firstPassData[i].beginOffset.doubleWord + 3 + sizeof(uint32_t)], &firstPassData[i].opcode.args[1].doubleWord, sizeof(uint32_t));
+        rawData[firstPassData[i]->beginOffset.doubleWord] = firstPassData[i]->opcode->getOpCodeByte();
+        rawData[firstPassData[i]->beginOffset.doubleWord + 1] = firstPassData[i]->opcode->getInfoByte();
+        rawData[firstPassData[i]->beginOffset.doubleWord + 2] = firstPassData[i]->opcode->getExtendedInfoByte();
+        memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3], &firstPassData[i]->opcode->args[0].doubleWord, sizeof(uint32_t));
+        memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + sizeof(uint32_t)], &firstPassData[i]->opcode->args[1].doubleWord, sizeof(uint32_t));
     }
     assembledData.data = rawData;
     assembledData.length = currentOffset.doubleWord;
@@ -136,8 +136,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                     data->token = tokenData;
                     return data;
                 } else {
-                    OPCode opcode = readOPCode(token);
-                    if (opcode.opCode != InstructionSet::UNKOWN) {
+                    OPCode* opcode = readOPCode(token);
+                    if (opcode->opCode != InstructionSet::UNKOWN) {
                         data->opcode = opcode;
                     } else {
                         std::cerr<<"ElectroCraft CPU: Unknown operation: "<<token<<std::endl;
@@ -149,8 +149,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                 // Lets see if it is a register!
                 Registers reg = getRegister(token);
                 if (reg != Registers::UNKNOWN) {
-                    data->opcode.infoBits.set(tokenNumber - 1);
-                    data->opcode.args[tokenNumber - 1].doubleWord = reg;
+                    data->opcode->infoBits.set(tokenNumber - 1);
+                    data->opcode->args[tokenNumber - 1].doubleWord = reg;
                     tokenNumber++;
                 } else {
                     // Lets see if is a address
@@ -162,15 +162,15 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             if (ss.good()) {
                                 DoubleWord address;
                                 ss >> address.doubleWord;
-                                data->opcode.args[tokenNumber - 1] = address;
-                                data->opcode.setAddressInPosition(tokenNumber - 1);
+                                data->opcode->args[tokenNumber - 1] = address;
+                                data->opcode->setAddressInPosition(tokenNumber - 1);
                                 tokenNumber++;
                             }
                         } else {
                             Registers reg = getRegister(token.substr(1, token.size() - 2));
                             if (reg != Registers::UNKNOWN) {
-                                data->opcode.setShouldUseRegisterAsAddress(tokenNumber - 1);
-                                data->opcode.args[tokenNumber - 1].doubleWord = reg;
+                                data->opcode->setShouldUseRegisterAsAddress(tokenNumber - 1);
+                                data->opcode->args[tokenNumber - 1].doubleWord = reg;
                             }
                         }
                     } else {
@@ -183,7 +183,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             if (ss.good()) {
                                 DoubleWord number;
                                 ss >> number.doubleWord;
-                                data->opcode.args[tokenNumber - 1].doubleWord = number.doubleWord;
+                                data->opcode->args[tokenNumber - 1].doubleWord = number.doubleWord;
                             }
                         } else if (isHexNumber) {
                             // Lets see if it is a hex number
@@ -192,7 +192,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             if (ss) {
                                 DoubleWord number;
                                 ss >> number.doubleWord;
-                                data->opcode.args[tokenNumber - 1] = number;
+                                data->opcode->args[tokenNumber - 1] = number;
                             }
                         } else {
                             // Must be some token we haven't solved yet
@@ -209,7 +209,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
         }
     }
     
-    if (tokenNumber == 0 || data->opcode.opCode == InstructionSet::UNKOWN) {
+    if (tokenNumber == 0 || data->opcode->opCode == InstructionSet::UNKOWN) {
         return nullptr;
     }
     
@@ -280,120 +280,120 @@ Registers ElectroCraft_CPU::getRegister(std::string token) {
     }
 }
 
-OPCode ElectroCraft_CPU::readOPCode(std::string token) {
-    OPCode opcode;
+OPCode* ElectroCraft_CPU::readOPCode(std::string token) {
+    OPCode *opcode = new OPCode;
 #pragma mark Instruction Set
     if (token == "PUSH") {
-        opcode.opCode = InstructionSet::PUSH;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::PUSH;
+        opcode->numOprands = 1;
     } else if (token == "POP") {
-        opcode.opCode = InstructionSet::POP;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::POP;
+        opcode->numOprands = 1;
     } else if (token == "HLT") {
-        opcode.opCode = InstructionSet::HLT;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::HLT;
+        opcode->numOprands = 0;
     } else if (token == "JE") {
-        opcode.opCode = InstructionSet::JE;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::JE;
+        opcode->numOprands = 1;
     } else if (token == "JNE") {
-        opcode.opCode = InstructionSet::JNE;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::JNE;
+        opcode->numOprands = 1;
     } else if (token == "MOV") {
-        opcode.opCode = InstructionSet::MOV;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::MOV;
+        opcode->numOprands = 2;
     } else if (token == "CMP") {
-        opcode.opCode = InstructionSet::CMP;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::CMP;
+        opcode->numOprands = 2;
     } else if (token == "NOP") {
-        opcode.opCode = InstructionSet::NOP;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::NOP;
+        opcode->numOprands = 0;
     } else if (token == "LOOPE") {
-        opcode.opCode = InstructionSet::LOOPE;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOPE;
+        opcode->numOprands = 1;
     } else if (token == "LOOPNE") {
-        opcode.opCode = InstructionSet::LOOPNE;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOPNE;
+        opcode->numOprands = 1;
     } else if (token == "NOT") {
-        opcode.opCode = InstructionSet::NOT;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::NOT;
+        opcode->numOprands = 2;
     } else if (token == "AND") {
-        opcode.opCode = InstructionSet::AND;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::AND;
+        opcode->numOprands = 2;
     } else if (token == "OR") {
-        opcode.opCode = InstructionSet::OR;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::OR;
+        opcode->numOprands = 2;
     } else if (token == "XOR") {
-        opcode.opCode = InstructionSet::XOR;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::XOR;
+        opcode->numOprands = 2;
     } else if (token == "MU") {
-        opcode.opCode = InstructionSet::MUL;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::MUL;
+        opcode->numOprands = 2;
     } else if (token == "ADD") {
-        opcode.opCode = InstructionSet::ADD;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::ADD;
+        opcode->numOprands = 2;
     } else if (token == "DIV") {
-        opcode.opCode = InstructionSet::DIV;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::DIV;
+        opcode->numOprands = 2;
     } else if (token == "SUB") {
-        opcode.opCode = InstructionSet::SUB;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::SUB;
+        opcode->numOprands = 2;
     } else if (token == "RET") {
-        opcode.opCode = InstructionSet::RET;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::RET;
+        opcode->numOprands = 0;
     } else if (token == "POPA") {
-        opcode.opCode = InstructionSet::POPA;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::POPA;
+        opcode->numOprands = 0;
     } else if (token == "PUSHA") {
-        opcode.opCode = InstructionSet::PUSHA;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::PUSHA;
+        opcode->numOprands = 0;
     } else if (token == "SA") {
-        opcode.opCode = InstructionSet::SHL;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::SHL;
+        opcode->numOprands = 2;
     } else if (token == "SAR") {
-        opcode.opCode = InstructionSet::SHR;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::SHR;
+        opcode->numOprands = 2;
     } else if (token == "LOOPWE") {
-        opcode.opCode = InstructionSet::LOOPWE;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOPWE;
+        opcode->numOprands = 1;
     } else if (token == "LOOPWNE") {
-        opcode.opCode = InstructionSet::LOOPWNE;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOPWNE;
+        opcode->numOprands = 1;
     } else if (token == "JNZ") {
-        opcode.opCode = InstructionSet::JNZ;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::JNZ;
+        opcode->numOprands = 1;
     } else if (token == "JZ") {
-        opcode.opCode = InstructionSet::JZ;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::JZ;
+        opcode->numOprands = 1;
     } else if (token == "CPUID") {
-        opcode.opCode = InstructionSet::CPUID;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::CPUID;
+        opcode->numOprands = 0;
     } else if (token == "ROUND") {
-        opcode.opCode = InstructionSet::ROUND;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::ROUND;
+        opcode->numOprands = 2;
     } else if (token == "LOOPZ") {
-        opcode.opCode = InstructionSet::LOOPZ;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOPZ;
+        opcode->numOprands = 1;
     } else if (token == "LOOPNZ") {
-        opcode.opCode = InstructionSet::LOOPNZ;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOPNZ;
+        opcode->numOprands = 1;
     } else if (token == "CALL") {
-        opcode.opCode = InstructionSet::CALL;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::CALL;
+        opcode->numOprands = 1;
     } else if (token == "JMP") {
-        opcode.opCode = InstructionSet::JMP;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::JMP;
+        opcode->numOprands = 1;
     } else if (token == "NEG") {
-        opcode.opCode = InstructionSet::NEG;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::NEG;
+        opcode->numOprands = 1;
     } else if (token == "LOOP") {
-        opcode.opCode = InstructionSet::LOOP;
-        opcode.numOprands = 1;
+        opcode->opCode = InstructionSet::LOOP;
+        opcode->numOprands = 1;
     } else if (token == "RANDI") {
-        opcode.opCode = InstructionSet::RANDI;
-        opcode.numOprands = 2;
+        opcode->opCode = InstructionSet::RANDI;
+        opcode->numOprands = 2;
     } else {
-        opcode.opCode = InstructionSet::UNKOWN;
-        opcode.numOprands = 0;
+        opcode->opCode = InstructionSet::UNKOWN;
+        opcode->numOprands = 0;
     }
     return opcode;
 }
@@ -760,6 +760,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                                     result->word.lowWord.byte.lowByte = *memory->readData(Utils::readDoubleWord(data), 1) + getRegisterData(reg1).word.lowWord.byte.lowByte;
                                 }
                                 memory->writeData(Utils::readDoubleWord(data1), 4, Utils::doubleWordToBytes(*result));
+                                delete result;
                             }
                         } else {
                             std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD [Address], <Register, Const>"<<std::endl;
@@ -809,7 +810,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     } else {
                         std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
                     }
-                    
+                    if (data != nullptr) {
+                        delete data;
+                    }
+                    if (data1 != nullptr) {
+                        delete data1;
+                    }
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
                 }
@@ -959,6 +965,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                                     eflags.setFlagState(EFLAGS::ZF);
                                 }
                                 memory->writeData(Utils::readDoubleWord(data1), 4, Utils::doubleWordToBytes(*result));
+                                delete result;
                             }
                         } else {
                             std::cerr<<"ElectroCraft CPU: Invaid arguments for AND [Address], <Register, Const>"<<std::endl;
@@ -1012,7 +1019,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     } else {
                         std::cerr<<"ElectroCraft CPU: Invaid arguments for AND!"<<std::endl;
                     }
-                    
+                    if (data != nullptr) {
+                        delete data;
+                    }
+                    if (data1 != nullptr) {
+                        delete data1;
+                    }
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invaid arguments for AND!"<<std::endl;
                 }
@@ -1293,7 +1305,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                 RegisterSizes regSize1 = RegisterSizes::ZERO;
                 Address address;
                 Address address1;
-                DoubleWord* optionalConstant = nullptr;
+                DoubleWord optionalConstant;
                 
                 if (instruction.isRegisterInPosition(0)) {
                     if (instruction.shouldUseRegisterAsAddress(0)) {
@@ -1314,29 +1326,25 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     regSize1 = registerToSize(reg1);
                 } else if (instruction.isAddressInPosition(1)) {
                     address1 = instruction.args[1];
-                } else if (instruction.args != nullptr){
-                    optionalConstant = &instruction.args[1];
+                } else {
+                    optionalConstant = instruction.args[1];
                 }
                 
-                if(optionalConstant != nullptr) {
-                    if (reg != Registers::UNKNOWN) {
-                        setRegisterData(*optionalConstant, reg);
+                if (reg != Registers::UNKNOWN) {
+                    if (reg1 != Registers::UNKNOWN) {
+                        setRegisterData(getRegisterData(reg1), reg);
+                    } else if (instruction.isAddressInPosition(1)) {
+                        setRegisterData(Utils::readDoubleWord(memory->readData(address1, 4)), reg);
                     } else {
-                        memory->writeData(address, 4, Utils::doubleWordToBytes(*optionalConstant));
+                        setRegisterData(optionalConstant, reg);
                     }
                 } else {
-                    if (reg != Registers::UNKNOWN) {
-                        if (reg1 != Registers::UNKNOWN) {
-                            setRegisterData(getRegisterData(reg1), reg);
-                        } else {
-                            setRegisterData(Utils::readDoubleWord(memory->readData(address1, 4)), reg);
-                        }
+                    if (reg1 != Registers::UNKNOWN) {
+                        memory->writeData(address, 4, Utils::doubleWordToBytes(getRegisterData(reg1)));
+                    } else if (instruction.isAddressInPosition(1)) {
+                        memory->writeData(address, 4, memory->readData(address1, 4));
                     } else {
-                        if (reg != Registers::UNKNOWN) {
-                            setRegisterData(getRegisterData(reg), reg1);
-                        } else {
-                            setRegisterData(Utils::readDoubleWord(memory->readData(address, 4)), reg1);
-                        }
+                        memory->writeData(address, 4, Utils::doubleWordToBytes(optionalConstant));
                     }
                 }
             }
@@ -1539,6 +1547,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                                     eflags.setFlagState(EFLAGS::ZF);
                                 }
                                 memory->writeData(Utils::readDoubleWord(data1), 4, Utils::doubleWordToBytes(*result));
+                                delete result;
                             }
                         } else {
                             std::cerr<<"ElectroCraft CPU: Invaid arguments for OR [Address], <Register, Const>"<<std::endl;
@@ -1592,7 +1601,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     } else {
                         std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
                     }
-                    
+                    if (data != nullptr) {
+                        delete data;
+                    }
+                    if (data1 != nullptr) {
+                        delete data1;
+                    }
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
                 }
@@ -1932,6 +1946,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                                     eflags.setFlagState(EFLAGS::ZF);
                                 }
                                 memory->writeData(Utils::readDoubleWord(data1), 4, Utils::doubleWordToBytes(*result));
+                                delete result;
                             }
                         } else {
                             std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB [Address], <Register, Const>"<<std::endl;
@@ -1985,7 +2000,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     } else {
                         std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB!"<<std::endl;
                     }
-                    
+                    if (data != nullptr) {
+                        delete data;
+                    }
+                    if (data1 != nullptr) {
+                        delete data1;
+                    }
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB!"<<std::endl;
                 }
@@ -2135,6 +2155,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                                     eflags.setFlagState(EFLAGS::ZF);
                                 }
                                 memory->writeData(Utils::readDoubleWord(data1), 4, Utils::doubleWordToBytes(*result));
+                                delete result;
                             }
                         } else {
                             std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR [Address], <Register, Const>"<<std::endl;
@@ -2188,7 +2209,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     } else {
                         std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR!"<<std::endl;
                     }
-                    
+                    if (data != nullptr) {
+                        delete data;
+                    }
+                    if (data1 != nullptr) {
+                        delete data1;
+                    }
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR!"<<std::endl;
                 }
@@ -2201,6 +2227,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     }
     if (!hasJumped)
         registers.IP.doubleWord += OPERATION_SZIE;
+    delete instructionData;
 }
 
 ElectroCraftVGA* ElectroCraft_CPU::getVideoCard() {

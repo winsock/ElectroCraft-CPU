@@ -82,8 +82,8 @@ MemoryInfo* ElectroCraftMemory::assignIOMemory(MemoryMappedIODevice* device) {
     }
     
     MemoryInfo *info = new MemoryInfo;
-    MemoryInfo *next;
-    MemoryInfo *previous;
+    MemoryInfo *next = nullptr;
+    MemoryInfo *previous = nullptr;
     for (int i = 0; i < this->memoryStates.size(); i++) {
         if (memoryStates[i]->stateOfMemory != MemoryState::FREE){
             if (section.beginAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord <= (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) {
