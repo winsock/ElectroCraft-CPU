@@ -10,6 +10,7 @@
 #define __ElectroCraft_CPU__ElectroCraftVGA__
 
 #include "MemoryMappedIODevice.h"
+#include <string>
 
 class ElectroCraftMemory;
 struct MemoryInfo;

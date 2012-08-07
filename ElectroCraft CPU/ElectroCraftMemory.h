@@ -43,14 +43,14 @@ struct MemoryInfo {
         }
         
         Byte* data = new Byte[length];
-        for (int i = offset.doubleWord, j = 0; i < offset.doubleWord + length; i++) {
+        for (uint32_t i = offset.doubleWord, j = 0; i < offset.doubleWord + length; i++) {
             data[j++] = (front + i)->data;
         }
         return data;
     }
     
     void setData(Byte* data, unsigned int offset, unsigned int length) {
-        if (offset >memoryLength.doubleWord) {
+        if (offset > memoryLength.doubleWord) {
             std::cerr<<"ElectroCraft Memory: Error! Tried to write outside of its bounds!"<<std::endl;
             return;
         }
@@ -59,9 +59,17 @@ struct MemoryInfo {
             length = memoryLength.doubleWord;
         }
         
-        for (int i = 0; i < length; i ++) {
-            (front + i)->data = data[i];
+        for (uint32_t i = 0; i < length; i ++) {
+            (front + offset + i)->data = data[i];
         }
+    }
+    
+    void setData(Byte data, unsigned int offset) {
+        if (offset > memoryLength.doubleWord) {
+            std::cerr<<"ElectroCraft Memory: Error! Tried to write outside of its bounds!"<<std::endl;
+            return;
+        }
+        (front + offset)->data = data;
     }
     
     void setData(Byte* data, unsigned int length) {
@@ -69,7 +77,7 @@ struct MemoryInfo {
             length = memoryLength.doubleWord;
         }
         
-        for (int i = 0; i < length; i ++) {
+        for (uint32_t i = 0; i < length; i ++) {
             (front + i)->data = data[i];
         }
     }

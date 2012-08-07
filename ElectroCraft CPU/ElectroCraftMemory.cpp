@@ -36,7 +36,7 @@ MemoryInfo* ElectroCraftMemory::allocate(unsigned int size) {
         return nullptr;
     }
     
-    for (int i = 0; i < memoryStates.size(); i++) {
+    for (uint32_t i = 0; i < memoryStates.size(); i++) {
         if (memoryStates[i]->stateOfMemory == MemoryState::FREE) {
             if ((memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) > size) {
                 // Setup the new state
@@ -84,7 +84,7 @@ MemoryInfo* ElectroCraftMemory::assignIOMemory(MemoryMappedIODevice* device) {
     MemoryInfo *info = new MemoryInfo;
     MemoryInfo *next = nullptr;
     MemoryInfo *previous = nullptr;
-    for (int i = 0; i < this->memoryStates.size(); i++) {
+    for (uint32_t i = 0; i < this->memoryStates.size(); i++) {
         if (memoryStates[i]->stateOfMemory != MemoryState::FREE){
             if (section.beginAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord <= (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) {
                 std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
@@ -164,12 +164,16 @@ void ElectroCraftMemory::free(MemoryInfo *memoryInfo) {
 }
 
 Byte* ElectroCraftMemory::readData(Address offset, unsigned int length) {
-    if (length > sizeOfMemory) {
-        length = sizeOfMemory;
+    if (offset.doubleWord > sizeOfMemory) {
+        return nullptr;
+    }
+    
+    if (length + offset.doubleWord > sizeOfMemory) {
+        length = sizeOfMemory - offset.doubleWord;
     }
     
     Byte* data = new Byte[length];
-    for (int i = offset.doubleWord, j = 0; i < offset.doubleWord + length; i++) {
+    for (uint32_t i = offset.doubleWord, j = 0; i < offset.doubleWord + length; i++) {
         data[j++] = memory[i].data;
     }
     return data;
@@ -181,10 +185,10 @@ void ElectroCraftMemory::writeData(Address offset, unsigned int length, Byte *da
     }
     
     if (offset.doubleWord + length > sizeOfMemory) {
-        length = sizeOfMemory;
+        length = sizeOfMemory - offset.doubleWord;
     }
     
-    for (int i = 0; i < length; i++) {
+    for (uint32_t i = 0; i < length; i++) {
         memory[offset.doubleWord + i].data = data[i];
     }
 }

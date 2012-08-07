@@ -60,6 +60,7 @@ enum InstructionSet {
     NEG = 33,
     LOOP = 34,
     RANDI = 35,
+    INT = 36,
     UNKOWN = 63
     };
 
@@ -281,6 +282,7 @@ class ElectroCraftMemory;
 class ElectroCraftStack;
 class ElectroCraftClock;
 class ElectroCraftVGA;
+class ElectroCraftTerminal;
 
 class ElectroCraft_CPU : ElectroCraftTickable {
     RegisterState registers;
@@ -289,6 +291,8 @@ class ElectroCraft_CPU : ElectroCraftTickable {
     ElectroCraftStack* stack;
     ElectroCraftClock* clock;
     ElectroCraftVGA* videoCard;
+    ElectroCraftTerminal* terminal;
+    
     Section currentSection = Section::CODE;
 public:
     ElectroCraft_CPU();
@@ -299,6 +303,7 @@ public:
     void stop();
     void reset(Address baseAddress);
     ElectroCraftVGA* getVideoCard();
+    ElectroCraftTerminal* getTerminal();
     bool isRunning();
     virtual void operator()(long tickTime);
 private:

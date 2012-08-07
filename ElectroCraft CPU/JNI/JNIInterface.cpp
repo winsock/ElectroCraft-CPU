@@ -8,6 +8,7 @@
 
 #include "info_cerios_electrocraft_core_computer_XECInterface.h"
 #include "info_cerios_electrocraft_core_computer_XECVGACard.h"
+#include "info_cerios_electrocraft_core_computer_XECTerminal.h"
 #include "../ElectroCraft_CPU.h"
 #include "../ElectroCraftVGA.h"
 #include <vector>
@@ -15,6 +16,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 ElectroCraft_CPU *cpu;
 std::map<ElectroCraftVGA*, unsigned long> videoCardIDMap;
@@ -261,3 +263,10 @@ JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_ge
         return 0;
     }
 }
+
+// ################################################################# //
+//                                                                   //
+//                       ElectroCraft Terminal                       //
+//                                                                   //
+// ################################################################# //
+

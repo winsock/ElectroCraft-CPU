@@ -10,6 +10,9 @@
 		762D853A15CCD8AD00FAF876 /* ElectroCraft_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */; };
 		762D853B15CCD8AD00FAF876 /* ElectroCraftMemory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */; };
 		762D853C15CCD8AD00FAF876 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84DA15CC2B5800FAF876 /* Utils.cpp */; };
+		7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */; };
+		7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */; };
+		7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */; };
 		768BD50215CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */; };
 		768BD50415CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */; };
 		768BD50815CEF1F500AD9E16 /* JNIInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */; };
@@ -33,6 +36,9 @@
 		762D84DA15CC2B5800FAF876 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		762D84DB15CC2B5800FAF876 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libElectroCraftCPU.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftTerminal.cpp; sourceTree = "<group>"; };
+		7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftTerminal.h; sourceTree = "<group>"; };
+		7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECTerminal.h; sourceTree = "<group>"; };
 		768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECInterface.h; sourceTree = "<group>"; };
 		768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h; sourceTree = "<group>"; };
 		768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JNIInterface.cpp; sourceTree = "<group>"; };
@@ -86,6 +92,8 @@
 				768BD50F15CF20F900AD9E16 /* ElectroCraftClock.cpp */,
 				768BD51015CF20F900AD9E16 /* ElectroCraftClock.h */,
 				768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */,
+				7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */,
+				7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */,
 			);
 			path = "ElectroCraft CPU";
 			sourceTree = "<group>";
@@ -93,6 +101,7 @@
 		768BD4FE15CEF1CA00AD9E16 /* JNI */ = {
 			isa = PBXGroup;
 			children = (
+				7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */,
 				768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */,
 				768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */,
 				768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */,
@@ -116,6 +125,8 @@
 				768BD51215CF20F900AD9E16 /* ElectroCraftClock.h in Headers */,
 				768BD51615CF212A00AD9E16 /* ElectroCraftTickable.h in Headers */,
 				768BD51815CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h in Headers */,
+				7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */,
+				7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,6 +188,7 @@
 				768BD50815CEF1F500AD9E16 /* JNIInterface.cpp in Sources */,
 				768BD50C15CF19F000AD9E16 /* ElectroCraftVGA.cpp in Sources */,
 				768BD51115CF20F900AD9E16 /* ElectroCraftClock.cpp in Sources */,
+				7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

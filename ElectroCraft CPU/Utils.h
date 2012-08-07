@@ -51,14 +51,28 @@ struct MemoryMappedIOSection {
     }
 };
 
-class Utils {
-public:
-    static std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
-    static std::vector<std::string> split(const std::string &s, char delim);
-    static DoubleWord readDoubleWord(Byte* data);
-    static DoubleWord::Word readWord(Byte* data);
-    static Byte* doubleWordToBytes(DoubleWord word);
-    static Byte* wordToBytes(DoubleWord::Word word);
-};
+namespace Utils {
+    template <typename IntegerType>
+    IntegerType bitsToInt(IntegerType& result, const unsigned char* bits, bool little_endian = true) {
+        result = 0;
+        if (little_endian)
+            for (int n = sizeof(result); n >= 0; n--)
+                result = (result << 8) +bits[ n ];
+        else
+            for (unsigned n = 0; n < sizeof(result); n++)
+                result = (result << 8) +bits[ n ];
+        return result;
+    }
+    
+    class General {
+    public:
+        static std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+        static std::vector<std::string> split(const std::string &s, char delim);
+        static DoubleWord readDoubleWord(Byte* data);
+        static DoubleWord::Word readWord(Byte* data);
+        static Byte* doubleWordToBytes(DoubleWord word);
+        static Byte* wordToBytes(DoubleWord::Word word);
+    };
+}
 
 #endif /* defined(__ElectroCraft_CPU__Utils__) */
