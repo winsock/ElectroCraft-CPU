@@ -116,8 +116,7 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
                     firstPass->opcode->args[firstPass->unresolvedTokens[i].position] = offset;
                 } else {
                     std::cerr<<"Unkown token: "<<firstPass->unresolvedTokens[i].name<<std::endl;
-                    assembledData.data = nullptr;
-                    return assembledData;
+                    std::cerr<<"Program may or may not run correctly!"<<std::endl;
                 }
             }
         }
@@ -313,23 +312,33 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                                     
                                     bool isHexNumber = (subToken.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
                                     bool isDecimalNumber = (subToken.find_first_not_of("0123456789") == std::string::npos);
+                                    bool subTokenHasModifer = (subToken.find_first_of("-+") != std::string::npos);
                                     
-                                    Registers reg = getRegister(subToken);
-                                    if (reg != Registers::UNKNOWN) {
-                                        data->opcode->setShouldUseRegisterAsAddress(tokenNumber - 1);
-                                        data->opcode->infoBits.set(tokenNumber - 1);
-                                        data->opcode->args[tokenNumber - 1].doubleWord = reg;
-                                    } if (isDecimalNumber) {
-                                        std::stringstream ss;
-                                        ss << std::dec << subToken;
-                                        if (ss.good()) {
-                                            ss>>modifierValue.doubleWord;
-                                        }
-                                    } else if (isHexNumber) {
-                                        std::stringstream ss;
-                                        ss << std::hex << subToken;
-                                        if (ss.good()) {
-                                            ss>>modifierValue.doubleWord;
+                                    if (!subTokenHasModifer) {
+                                        Registers reg = getRegister(subToken);
+                                        if (reg != Registers::UNKNOWN) {
+                                            data->opcode->setShouldUseRegisterAsAddress(tokenNumber - 1);
+                                            data->opcode->infoBits.set(tokenNumber - 1);
+                                            data->opcode->args[tokenNumber - 1].doubleWord = reg;
+                                        } if (isDecimalNumber) {
+                                            std::stringstream ss;
+                                            ss << std::dec << subToken;
+                                            if (ss.good()) {
+                                                ss>>modifierValue.doubleWord;
+                                            }
+                                        } else if (isHexNumber) {
+                                            std::stringstream ss;
+                                            ss << std::hex << subToken;
+                                            if (ss.good()) {
+                                                ss>>modifierValue.doubleWord;
+                                            }
+                                        } else {
+                                            // Must be some token we haven't solved yet
+                                            TokenData unresolved;
+                                            unresolved.name = subToken;
+                                            unresolved.position = tokenNumber - 1;
+                                            unresolved.offset = beginOffset;
+                                            data->unresolvedTokens.push_back(unresolved);
                                         }
                                     }
                                 } else {

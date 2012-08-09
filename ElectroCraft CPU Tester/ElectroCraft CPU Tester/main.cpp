@@ -158,7 +158,7 @@ int main(int argc, const char * argv[])
         "string db \"hello world how is it going today?\", 0, 1, 0",
         ".code",
         "mov eax, [0x1010008]",
-        "mov [eax], string"
+        "mov [eax], [string + 4]"
     };
     
     ElectroCraft_CPU *cpu = new ElectroCraft_CPU;
