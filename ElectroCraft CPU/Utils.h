@@ -17,16 +17,16 @@ union DoubleWord {
     struct Word{
         union HighWord {
             struct  HighLowByte {
-                uint8_t hiByte;
                 uint8_t lowByte;
+                uint8_t hiByte;
             };
             uint16_t word;
             HighLowByte byte;
         };
         union LowWord {
             struct  HighLowByte {
-                uint8_t hiByte;
                 uint8_t lowByte;
+                uint8_t hiByte;
             };
             uint16_t word;
             HighLowByte byte;
@@ -36,6 +36,19 @@ union DoubleWord {
     };
     uint32_t doubleWord = 0;
     Word word;
+    
+    // Functions
+    DoubleWord(uint32_t initalValue) {
+        doubleWord = initalValue;
+    }
+    
+    DoubleWord() {}
+    
+    const inline DoubleWord operator+(const DoubleWord augend) const {
+        DoubleWord result;
+        result.doubleWord = doubleWord + augend.doubleWord;
+        return result;
+    }
 };
 
 typedef DoubleWord Address;

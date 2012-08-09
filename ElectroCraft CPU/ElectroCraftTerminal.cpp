@@ -44,14 +44,10 @@ void ElectroCraftTerminal::clear() {
 std::string ElectroCraftTerminal::getLine(int row) {
     std::stringstream lineBuffer;
     for (int i = 0; i < cols; i++) {
-        if ((terminalMemoryStart + ((row * cols) + i))->data == '\0') {
-            std::cout<<lineBuffer.str()<<std::endl;
-            return lineBuffer.str();
-        } else {
+        if ((terminalMemoryStart + ((row * cols) + i))->data != '\0') {
             lineBuffer<<(terminalMemoryStart + ((row * cols) + i))->data;
         }
     }
-    std::cout<<lineBuffer.str()<<std::endl;
     return lineBuffer.str();
 }
 
@@ -61,6 +57,14 @@ MemoryMappedIOSection ElectroCraftTerminal::getMappedIO() {
     section.beginAddress.doubleWord = 0x1010000;
     section.endAddress.doubleWord = 0x1210000;
     return section;
+}
+
+int ElectroCraftTerminal::getRows() {
+    return rows;
+}
+
+int ElectroCraftTerminal::getCols() {
+    return cols;
 }
 
 void ElectroCraftTerminal::operator()(long tickTime) {

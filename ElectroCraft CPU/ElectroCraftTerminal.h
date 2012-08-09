@@ -28,6 +28,8 @@ public:
     ~ElectroCraftTerminal();
     void clear();
     std::string getLine(int row);
+    int getRows();
+    int getCols();
     virtual MemoryMappedIOSection getMappedIO();
     virtual void operator()(long tickTime);
 };

@@ -9,8 +9,11 @@
 #include "info_cerios_electrocraft_core_computer_XECInterface.h"
 #include "info_cerios_electrocraft_core_computer_XECVGACard.h"
 #include "info_cerios_electrocraft_core_computer_XECTerminal.h"
+#include "info_cerios_electrocraft_core_computer_XECKeyboard.h"
 #include "../ElectroCraft_CPU.h"
 #include "../ElectroCraftVGA.h"
+#include "../ElectroCraftTerminal.h"
+#include "../ElectroCraftKeyboard.h"
 #include <vector>
 #include <chrono>
 #include <map>
@@ -19,9 +22,12 @@
 #include <iostream>
 
 ElectroCraft_CPU *cpu;
-std::map<ElectroCraftVGA*, unsigned long> videoCardIDMap;
+// VGA
 std::map<unsigned long, ElectroCraftVGA*> idVideoCardMap;
-std::map<unsigned long, jobject> idJVideoCardMap;
+// Terminal
+std::map<unsigned long, ElectroCraftTerminal*> idTerminalMap;
+// Keyboard
+std::map<unsigned long, ElectroCraftKeyboard*> idKeyboardMap;
 
 // ################################################################# //
 //                                                                   //
@@ -76,21 +82,46 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
 
 JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getVideoCard (JNIEnv *env, jobject) {
     if (cpu != nullptr) {
-        if (videoCardIDMap.find(cpu->getVideoCard()) != videoCardIDMap.end()) {
-            if (idJVideoCardMap.find(videoCardIDMap[cpu->getVideoCard()]) != idJVideoCardMap.end()) {
-                return idJVideoCardMap[videoCardIDMap[cpu->getVideoCard()]];
-            }
-        }
         unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
         jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
         jmethodID constructor = env->GetMethodID(videoCardClass, "<init>", "(J)V");
         jobject videoCard = env->NewObject(videoCardClass, constructor, id);
-        jfieldID idField = env->GetFieldID(videoCardClass, "internalID", "J");
-        env->SetLongField(videoCard, idField, id);
         idVideoCardMap[id] = cpu->getVideoCard();
-        videoCardIDMap[cpu->getVideoCard()] = id;
-        idJVideoCardMap[id] = videoCard;
         return videoCard;
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return nullptr;
+        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getTerminal (JNIEnv *env, jobject) {
+    if (cpu != nullptr) {
+        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECTerminal");
+        jmethodID constructor = env->GetMethodID(terminalClass, "<init>", "(J)V");
+        jobject terminal = env->NewObject(terminalClass, constructor, id);
+        idTerminalMap[id] = cpu->getTerminal();
+        return terminal;
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return nullptr;
+        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getKeyboard (JNIEnv *env, jobject) {
+    if (cpu != nullptr) {
+        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        jclass keyboardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECKeyboard");
+        jmethodID constructor = env->GetMethodID(keyboardClass, "<init>", "(J)V");
+        jobject keyboard = env->NewObject(keyboardClass, constructor, id);
+        idKeyboardMap[id] = cpu->getKeyboard();
+        return keyboard;
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
@@ -270,3 +301,99 @@ JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_ge
 //                                                                   //
 // ################################################################# //
 
+ElectroCraftTerminal* getTerminalFromJTerminal(JNIEnv *env, jobject jTerminal) {
+    jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECTerminal");
+    jfieldID idField = env->GetFieldID(terminalClass, "internalID", "J");
+    unsigned long id = env->GetLongField(jTerminal, idField);
+    
+    if (idTerminalMap.find(id) != idTerminalMap.end()) {
+        ElectroCraftTerminal* terminal = idTerminalMap[id];
+        return terminal;
+    } else {
+        return nullptr;
+    }
+}
+
+JNIEXPORT jstring JNICALL Java_info_cerios_electrocraft_core_computer_XECTerminal_getLine (JNIEnv *env, jobject caller, jint line) {
+    ElectroCraftTerminal *terminal = getTerminalFromJTerminal(env, caller);
+    if (terminal != nullptr) {
+        return env->NewStringUTF(terminal->getLine(line).c_str());
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return 0;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown Terminal ID!");
+        return 0;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECTerminal_getColoumns (JNIEnv *env, jobject caller) {
+    ElectroCraftTerminal *terminal = getTerminalFromJTerminal(env, caller);
+    if (terminal != nullptr) {
+        return terminal->getCols();
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return 0;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown Terminal ID!");
+        return 0;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECTerminal_getRows (JNIEnv *env, jobject caller) {
+    ElectroCraftTerminal *terminal = getTerminalFromJTerminal(env, caller);
+    if (terminal != nullptr) {
+        return terminal->getRows();
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return 0;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown Terminal ID!");
+        return 0;
+    }
+}
+
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECTerminal_clear (JNIEnv *env, jobject caller) {
+    ElectroCraftTerminal *terminal = getTerminalFromJTerminal(env, caller);
+    if (terminal != nullptr) {
+        terminal->clear();
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown Terminal ID!");
+        return;
+    }
+}
+
+// ################################################################# //
+//                                                                   //
+//                       ElectroCraft Keyboard                       //
+//                                                                   //
+// ################################################################# //
+
+ElectroCraftKeyboard* getKeyboardFromJKeyboard(JNIEnv *env, jobject jTerminal) {
+    jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECKeyboard");
+    jfieldID idField = env->GetFieldID(terminalClass, "internalID", "J");
+    unsigned long id = env->GetLongField(jTerminal, idField);
+    
+    if (idKeyboardMap.find(id) != idKeyboardMap.end()) {
+        ElectroCraftKeyboard* keyboard = idKeyboardMap[id];
+        return keyboard;
+    } else {
+        return nullptr;
+    }
+}
+
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECKeyboard_onKeyPress(JNIEnv *env, jobject caller, jint keycode) {
+    ElectroCraftKeyboard *keyboard = getKeyboardFromJKeyboard(env, caller);
+    if (keyboard != nullptr) {
+        keyboard->onKeyPress(keycode);
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown Keyboard ID!");
+        return;
+    }
+}

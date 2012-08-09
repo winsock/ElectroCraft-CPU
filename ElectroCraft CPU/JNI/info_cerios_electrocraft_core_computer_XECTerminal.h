@@ -9,14 +9,6 @@ extern "C" {
 #endif
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECTerminal
- * Method:    addChar
- * Signature: (C)C
- */
-JNIEXPORT jchar JNICALL Java_info_cerios_electrocraft_core_computer_XECTerminal_addChar
-  (JNIEnv *, jobject, jchar);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECTerminal
  * Method:    getLine
  * Signature: (I)Ljava/lang/String;
  */

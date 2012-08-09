@@ -13,6 +13,14 @@
 		7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */; };
 		7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */; };
 		7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */; };
+		766CAF7E15D2A94E00EF08A4 /* ElectroCraftStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */; };
+		766CAF7F15D2A94E00EF08A4 /* ElectroCraftStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */; };
+		766CAF8315D2B40D00EF08A4 /* IOPortHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */; };
+		766CAF8415D2B40D00EF08A4 /* IOPortHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8215D2B40D00EF08A4 /* IOPortHandler.h */; };
+		766CAF8815D2B43F00EF08A4 /* IOPortDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8615D2B43F00EF08A4 /* IOPortDevice.h */; };
+		766CAF8B15D2D72500EF08A4 /* ElectroCraftKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF8915D2D72500EF08A4 /* ElectroCraftKeyboard.cpp */; };
+		766CAF8C15D2D72500EF08A4 /* ElectroCraftKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8A15D2D72500EF08A4 /* ElectroCraftKeyboard.h */; };
+		766CAF8E15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */; };
 		768BD50215CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */; };
 		768BD50415CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */; };
 		768BD50815CEF1F500AD9E16 /* JNIInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */; };
@@ -39,6 +47,14 @@
 		7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftTerminal.cpp; sourceTree = "<group>"; };
 		7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftTerminal.h; sourceTree = "<group>"; };
 		7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECTerminal.h; sourceTree = "<group>"; };
+		766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftStorage.cpp; sourceTree = "<group>"; };
+		766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftStorage.h; sourceTree = "<group>"; };
+		766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOPortHandler.cpp; sourceTree = "<group>"; };
+		766CAF8215D2B40D00EF08A4 /* IOPortHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPortHandler.h; sourceTree = "<group>"; };
+		766CAF8615D2B43F00EF08A4 /* IOPortDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPortDevice.h; sourceTree = "<group>"; };
+		766CAF8915D2D72500EF08A4 /* ElectroCraftKeyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftKeyboard.cpp; sourceTree = "<group>"; };
+		766CAF8A15D2D72500EF08A4 /* ElectroCraftKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftKeyboard.h; sourceTree = "<group>"; };
+		766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECKeyboard.h; sourceTree = "<group>"; };
 		768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECInterface.h; sourceTree = "<group>"; };
 		768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h; sourceTree = "<group>"; };
 		768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JNIInterface.cpp; sourceTree = "<group>"; };
@@ -94,6 +110,13 @@
 				768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */,
 				7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */,
 				7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */,
+				766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */,
+				766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */,
+				766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */,
+				766CAF8215D2B40D00EF08A4 /* IOPortHandler.h */,
+				766CAF8615D2B43F00EF08A4 /* IOPortDevice.h */,
+				766CAF8915D2D72500EF08A4 /* ElectroCraftKeyboard.cpp */,
+				766CAF8A15D2D72500EF08A4 /* ElectroCraftKeyboard.h */,
 			);
 			path = "ElectroCraft CPU";
 			sourceTree = "<group>";
@@ -101,6 +124,7 @@
 		768BD4FE15CEF1CA00AD9E16 /* JNI */ = {
 			isa = PBXGroup;
 			children = (
+				766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */,
 				7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */,
 				768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */,
 				768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */,
@@ -127,6 +151,11 @@
 				768BD51815CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h in Headers */,
 				7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */,
 				7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */,
+				766CAF7F15D2A94E00EF08A4 /* ElectroCraftStorage.h in Headers */,
+				766CAF8415D2B40D00EF08A4 /* IOPortHandler.h in Headers */,
+				766CAF8815D2B43F00EF08A4 /* IOPortDevice.h in Headers */,
+				766CAF8C15D2D72500EF08A4 /* ElectroCraftKeyboard.h in Headers */,
+				766CAF8E15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +218,9 @@
 				768BD50C15CF19F000AD9E16 /* ElectroCraftVGA.cpp in Sources */,
 				768BD51115CF20F900AD9E16 /* ElectroCraftClock.cpp in Sources */,
 				7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */,
+				766CAF7E15D2A94E00EF08A4 /* ElectroCraftStorage.cpp in Sources */,
+				766CAF8315D2B40D00EF08A4 /* IOPortHandler.cpp in Sources */,
+				766CAF8B15D2D72500EF08A4 /* ElectroCraftKeyboard.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,6 +245,7 @@
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -236,6 +269,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;

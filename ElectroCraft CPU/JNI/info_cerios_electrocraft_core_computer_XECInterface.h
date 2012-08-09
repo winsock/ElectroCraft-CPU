@@ -25,6 +25,22 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
 
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
+ * Method:    getTerminal
+ * Signature: ()Linfo/cerios/electrocraft/core/computer/XECTerminal;
+ */
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getTerminal
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECInterface
+ * Method:    getKeyboard
+ * Signature: ()Linfo/cerios/electrocraft/core/computer/XECKeyboard;
+ */
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getKeyboard
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECInterface
  * Method:    assemble
  * Signature: (Ljava/lang/String;)Linfo/cerios/electrocraft/core/computer/XECInterface/AssembledData;
  */

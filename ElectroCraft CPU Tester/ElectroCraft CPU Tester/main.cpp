@@ -9,6 +9,7 @@
 #include <iostream>
 #include "ElectroCraft_CPU.h"
 #include "ElectroCraftTerminal.h"
+#include "ElectroCraftKeyboard.h"
 #include <vector>
 #include <string>
 #include <thread>
@@ -36,30 +37,51 @@ int main(int argc, const char * argv[])
     };
     
     std::vector<std::string> ecAsm2 = {
-        "mov ebx, [0x1010004]",
-        "mov ecx, [0x1010000]",
-        "mov edx, [0x1010008]",
-        "charLoop:",
+        "; Puts random text on the terminal buffer",
+        "mov eax, 0x1010000",
+        "mov edx, [eax + 8]",
+        "resetLoop:",
+        "mov ecx, [eax]",
+        "mul ecx, [eax + 4]",
         "push edx",
-        "mov eax, 0",
-        "loop:",
-        "add edx, eax",
-        "mov [edx], 0x4C",
-        "cmp eax, ecx",
-        "add eax, 1",
-        "jne loop",
-        "add edx, eax",
-        "mov [edx], 0x0",
+        "main:",
+        "add edx, 0x1",
+        "mov [edx], 0x4c",
+        "loop main",
         "pop edx",
-        "jmp charLoop",
-        "hlt"
+        "jmp resetLoop",
+    };
+    
+    std::vector<std::string> ecAsm3 = {
+        "mov ecx, 0",
+        "mov edx, 0",
+        "mov emc, [0x1010008]",
+        "mainLoop:",
+        "inp eax, 0x122",
+        "out 0x121, 0 ; Clear the buffer of any extra keys",
+        "cmp eax, 0xA",
+        "je enter",
+        "push ecx",
+        "mul ecx, edx",
+        "push emc",
+        "add emc, ecx",
+        "mov [emc], [ebx]",
+        "pop emc",
+        "pop ecx",
+        "add ecx, 1",
+        "jmp end",
+        "enter:",
+        "add edx, 1",
+        "jmp end",
+        "end:",
+        "jmp mainLoop",
     };
     
     ElectroCraft_CPU *cpu = new ElectroCraft_CPU;
     AssembledData data = cpu->assemble(ecAsm2);
     cpu->start(cpu->loadIntoMemory(data.data, data.length));
     while (cpu->isRunning()) {
-        cpu->getTerminal()->getLine(0);
+        cpu->getKeyboard()->onKeyPress(77);
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     return 0;

@@ -7,26 +7,42 @@
  *
  */
 
+// CPP Headers
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <random>
+#include <memory>
+
+// ElectroCraft Headers
 #include "ElectroCraft_CPU.h"
 #include "ElectroCraftMemory.h"
 #include "ElectroCraftStack.h"
 #include "ElectroCraftVGA.h"
 #include "ElectroCraftClock.h"
 #include "ElectroCraftTerminal.h"
+#include "ElectroCraftStorage.h"
+#include "ElectroCraftKeyboard.h"
+#include "IOPortHandler.h"
 #include "Utils.h"
 
 ElectroCraft_CPU::ElectroCraft_CPU() {
     Address baseAddress;
     baseAddress.doubleWord = 0x0;
+    
     memory = new ElectroCraftMemory(128 * 1024 * 1024, baseAddress);
-    videoCard = new ElectroCraftVGA(memory, 800, 600);
+    ioPortHandler = new IOPort::IOPortHandler();
+    videoCard = new ElectroCraftVGA(memory, 320, 240);
     terminal = new ElectroCraftTerminal(memory, 80, 20);
-    stack = new ElectroCraftStack(memory, 4096);
-    clock = new ElectroCraftClock(540000000);
+    stack = new ElectroCraftStack(memory, &registers, 4096);
+    
+    storage = new ElectroCraftStorage();
+    ioPortHandler->registerDevice(storage);
+    
+    keyboard = new ElectroCraftKeyboard();
+    ioPortHandler->registerDevice(keyboard);
+    
+    clock = new ElectroCraftClock(5000000);
     clock->registerCallback(this);
     clock->registerCallback(videoCard);
     clock->registerCallback(terminal);
@@ -88,8 +104,10 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
         rawData[firstPassData[i]->beginOffset.doubleWord] = firstPassData[i]->opcode->getOpCodeByte();
         rawData[firstPassData[i]->beginOffset.doubleWord + 1] = firstPassData[i]->opcode->getInfoByte();
         rawData[firstPassData[i]->beginOffset.doubleWord + 2] = firstPassData[i]->opcode->getExtendedInfoByte();
-        memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3], &firstPassData[i]->opcode->args[0].doubleWord, sizeof(uint32_t));
-        memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + sizeof(uint32_t)], &firstPassData[i]->opcode->args[1].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3], &firstPassData[i]->opcode->args[0].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + sizeof(uint32_t)], &firstPassData[i]->opcode->args[1].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + (sizeof(uint32_t) * 2)], &firstPassData[i]->opcode->modifier[0].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + (sizeof(uint32_t) * 3)], &firstPassData[i]->opcode->modifier[1].doubleWord, sizeof(uint32_t));
     }
     assembledData.data = rawData;
     assembledData.length = currentOffset.doubleWord;
@@ -111,21 +129,28 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
     data->beginOffset = beginOffset;
     
     std::stringstream tokenBuffer;
+    bool insideBrackets = false;
     int tokenNumber = 0;
     for (int i = 0; i < line.size(); i++) {
         // We only allow max of 1 Op Code and 2 arguments
         if (tokenNumber > 3) {
             break;
         }
+        
+        if (line[i] == '[')
+            insideBrackets = true;
+        else if(line[i] == ']')
+            insideBrackets = false;
+        
         // Ignore comments
         if (line[i] == ';') {
             if (tokenNumber > 0)
                 return data;
             else
                 return nullptr;
-        } else if (line[i] == ' ' || line[i] == ',' || &line[i] == &line.back()) {
+        } if ((line[i] == ' ' || line[i] == ',' || &line[i] == &line.back()) && !insideBrackets) {
             // If this is the last char make sure it gets put into the buffer
-            if (line[i] == line.back()) {
+            if (&line[i] == &line.back()) {
                 tokenBuffer<<line[i];
             }
             
@@ -159,7 +184,59 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                     // Lets see if is a address
                     if (token.front() == '[' && token.back() == ']') {
                         bool isHexNumber = (token.substr(1, token.size() - 2).find_first_not_of("X0123456789ABCDEF") == std::string::npos);
-                        if (isHexNumber && *(&token.front() + 1) == '0' && *(&token.front() + 2) == 'X') {
+                        bool hasAddModifier = (token.substr(1, token.size() - 2).find_first_of("+") != std::string::npos);
+                        bool hasSubtractModifier = (token.substr(1, token.size() - 2).find_first_of("-") != std::string::npos);
+                        
+                        Modifier modifier = Modifier::NOM;
+                        DoubleWord modifierValue;
+                        
+                        if (hasAddModifier) {
+                            modifier = Modifier::ADDM;
+                        } else if (hasSubtractModifier) {
+                            modifier = Modifier::SUBM;
+                        } else {
+                            modifier = Modifier::NOM;
+                        }
+                        
+                        if (modifier != Modifier::NOM){
+                            std::stringstream modifierBuff;
+                            for (int j = 0; j < token.size(); j++) {
+                                if (token[j] == '[' || token[j] == ' ' || token[j] == ',' || token[j] == ']' || &token[j] == &token.back()) {
+                                    if (&token[j] == &token.back() && token[j] != ']') {
+                                        modifierBuff<<token[j];
+                                    }
+                                    
+                                    std::string subToken = modifierBuff.str();
+                                    modifierBuff.str(std::string());
+                                    
+                                    bool isHexNumber = (subToken.find_first_not_of("X0123456789ABCDEF") == std::string::npos);
+                                    bool isDecimalNumber = (subToken.find_first_not_of("0123456789") == std::string::npos);
+                                    
+                                    Registers reg = getRegister(subToken);
+                                    if (reg != Registers::UNKNOWN) {
+                                        data->opcode->setShouldUseRegisterAsAddress(tokenNumber - 1);
+                                        data->opcode->infoBits.set(tokenNumber - 1);
+                                        data->opcode->args[tokenNumber - 1].doubleWord = reg;
+                                    } if (isDecimalNumber) {
+                                        std::stringstream ss;
+                                        ss << std::dec << subToken;
+                                        if (ss.good()) {
+                                            ss>>modifierValue.doubleWord;
+                                        }
+                                    } else if (isHexNumber) {
+                                        std::stringstream ss;
+                                        ss << std::hex << subToken;
+                                        if (ss.good()) {
+                                            ss>>modifierValue.doubleWord;
+                                        }
+                                    }
+                                } else {
+                                    modifierBuff<<token[j];
+                                }
+                            }
+                            data->opcode->setModifierForPosition(tokenNumber - 1, modifier, modifierValue);
+                            tokenNumber++;
+                        } else if (isHexNumber && *(&token.front() + 1) == '0' && *(&token.front() + 2) == 'X') {
                             std::stringstream ss;
                             ss << std::hex << token.substr(1, token.size() - 2);
                             if (ss.good()) {
@@ -242,8 +319,8 @@ Registers ElectroCraft_CPU::getRegister(std::string token) {
         return Registers::ESP;
     } else if (token == "EMC") {
         return Registers::EMC;
-    } else if (token == "EFLAGS") {
-        return Registers::EFLAGS;
+    } else if (token == "FLAGS") {
+        return Registers::FLAGS;
     } else if (token == "AX") {
         return Registers::AX;
     } else if (token == "BX") {
@@ -330,7 +407,7 @@ OPCode* ElectroCraft_CPU::readOPCode(std::string token) {
     } else if (token == "XOR") {
         opcode->opCode = InstructionSet::XOR;
         opcode->numOprands = 2;
-    } else if (token == "MU") {
+    } else if (token == "MUL") {
         opcode->opCode = InstructionSet::MUL;
         opcode->numOprands = 2;
     } else if (token == "ADD") {
@@ -399,6 +476,12 @@ OPCode* ElectroCraft_CPU::readOPCode(std::string token) {
     } else if (token == "INT") {
         opcode->opCode = InstructionSet::INT;
         opcode->numOprands = 1;
+    } else if (token == "INP") {
+        opcode->opCode = InstructionSet::INP;
+        opcode->numOprands = 1;
+    } else if (token == "OUT") {
+        opcode->opCode = InstructionSet::OUT;
+        opcode->numOprands = 1;
     } else {
         opcode->opCode = InstructionSet::UNKOWN;
         opcode->numOprands = 0;
@@ -457,9 +540,9 @@ DoubleWord ElectroCraft_CPU::getRegisterData(Registers reg) {
         case Registers::EMC:
             data = registers.MC;
             break;
-        case Registers::EFLAGS:
+        case Registers::FLAGS:
         {
-            data.doubleWord = static_cast<uint32_t>(eflags.flagStates.to_ulong());
+            data.doubleWord = static_cast<uint32_t>(eState.flagStates.to_ulong());
         }
         case Registers::UNKNOWN:
         default:
@@ -511,8 +594,8 @@ void ElectroCraft_CPU::setRegisterData(DoubleWord data, Registers reg) {
         case Registers::EMC:
             registers.MC = data;
             break;
-        case Registers::EFLAGS:
-            eflags.flagStates = std::bitset<EFLAGS::TOTAL_SIZE>(data.doubleWord);
+        case Registers::FLAGS:
+            eState.flagStates = std::bitset<10>(data.doubleWord);
             break;
         case Registers::AL:
             registers.A.word.lowWord.byte.lowByte = data.word.lowWord.byte.lowByte;
@@ -557,7 +640,7 @@ RegisterSizes ElectroCraft_CPU::registerToSize(Registers reg) {
         case Registers::EIP:
         case Registers::ESP:
         case Registers::EMC:
-        case Registers::EFLAGS:
+        case Registers::FLAGS:
             return RegisterSizes::FOUR;
             
         case Registers::AX:
@@ -601,7 +684,7 @@ RegisterType ElectroCraft_CPU::getRegisterType(Registers reg) {
         case Registers::EIP:
         case Registers::ESP:
         case Registers::EMC:
-        case Registers::EFLAGS:
+        case Registers::FLAGS:
         case Registers::AX:
         case Registers::BX:
         case Registers::CX:
@@ -637,397 +720,126 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     Byte* instructionData;
     OPCode instruction;
     bool hasJumped = false;
+    
+    // Instruction data
     instructionData = memory->readData(registers.IP, OPERATION_SZIE);
     instruction.opCodeFromByte(instructionData[0]);
     instruction.readInfoByte(instructionData[1]);
     instruction.readExtendedInfoByte(instructionData[2]);
     instruction.args[0] = Utils::General::readDoubleWord(&instructionData[3]);
     instruction.args[1] = Utils::General::readDoubleWord(&instructionData[7]);
+    instruction.modifier[0] = Utils::General::readDoubleWord(&instructionData[11]);
+    instruction.modifier[1] = Utils::General::readDoubleWord(&instructionData[15]);
+    
+    // Parameters
+    Registers reg = Registers::UNKNOWN;
+    Registers reg1 = Registers::UNKNOWN;
+    RegisterSizes regSize = RegisterSizes::ZERO;
+    RegisterSizes regSize1 = RegisterSizes::ZERO;
+    
+    // Final data types
+    Address address;
+    Address address1;
+    DoubleWord data;
+    DoubleWord data1;
+    
+    // Modifier data
+    Modifier modifierType;
+    DoubleWord modifier;
+    Modifier modifierType1;
+    DoubleWord modifier1;
+    
+    // Default values for data
+    data = instruction.args[0];
+    data1 = instruction.args[1];
+    
+    // Addresses
+    if (instruction.isAddressInPosition(0)) {
+        address = instruction.args[0];
+    }
+    if (instruction.isAddressInPosition(1)) {
+        address1 = instruction.args[1];
+    }
+    
+    // Registers
+    if (instruction.isRegisterInPosition(0)) {
+        if (instruction.shouldUseRegisterAsAddress(0)) {
+            address = getRegisterData(Registers(instruction.args[0].doubleWord));
+            data = Utils::General::readDoubleWord(memory->readData(address, 4));
+        } else {
+            reg = Registers(instruction.args[0].doubleWord);
+            regSize = registerToSize(reg);
+            data = getRegisterData(reg);
+        }
+    }
+    if (instruction.isRegisterInPosition(1)) {
+        if (instruction.shouldUseRegisterAsAddress(1)) {
+            address1 = getRegisterData(Registers(instruction.args[1].doubleWord));
+            data1 = Utils::General::readDoubleWord(memory->readData(address1, 4));
+        } else {
+            reg1 = Registers(instruction.args[1].doubleWord);
+            regSize1 = registerToSize(reg1);
+            data1 = getRegisterData(reg1);
+        }
+    }
+    
+    // Modifiers
+    if (instruction.getModifierForPosition(0) != Modifier::NOM) {
+        modifierType = instruction.getModifierForPosition(0);
+        modifier = instruction.modifier[0];
+        
+        if (modifierType == Modifier::ADDM) {
+            data.doubleWord += modifier.doubleWord;
+            address.doubleWord += modifier.doubleWord;
+        } else if (modifierType == Modifier::SUBM) {
+            data.doubleWord -= modifier.doubleWord;
+            address.doubleWord -= modifier.doubleWord;
+        }
+    }
+    if (instruction.getModifierForPosition(1) != Modifier::NOM) {
+        modifierType1 = instruction.getModifierForPosition(1);
+        modifier1 = instruction.modifier[1];
+        
+        if (modifierType1 == Modifier::ADDM) {
+            data1.doubleWord += modifier1.doubleWord;
+            address1.doubleWord += modifier1.doubleWord;
+        } else if (modifierType1 == Modifier::SUBM) {
+            data1.doubleWord -= modifier1.doubleWord;
+            address1.doubleWord -= modifier1.doubleWord;
+        }
+    }
+    
     switch (instruction.opCode) {
         case InstructionSet::ADD:
-            if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
-                Registers reg = Registers::UNKNOWN;
-                Registers reg1 = Registers::UNKNOWN;
-                RegisterSizes regSize = RegisterSizes::ZERO;
-                RegisterSizes regSize1 = RegisterSizes::ZERO;
-                Byte* data = nullptr;
-                Byte* data1 = nullptr;
-                
-                if (instruction.isRegisterInPosition(0)) {
-                    reg = Registers(instruction.args[0].doubleWord);
-                    regSize = registerToSize(reg);
-                } else {
-                    data = Utils::General::doubleWordToBytes(instruction.args[0]);
-                }
-                
-                if (instruction.isRegisterInPosition(1)) {
-                    reg1 = Registers(instruction.args[1].doubleWord);
-                    regSize1 = registerToSize(reg1);
-                } else {
-                    data1 = Utils::General::doubleWordToBytes(instruction.args[1]);
-                }
-                
-                if (reg != Registers::UNKNOWN) {
-                    switch (regSize) {
-                        case RegisterSizes::FOUR:
-                            data = memory->readData(getRegisterData(reg), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data = memory->readData(getRegisterData(reg), 2);
-                        case RegisterSizes::ONE:
-                            data = memory->readData(getRegisterData(reg), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                if (reg1 != Registers::UNKNOWN) {
-                    switch (regSize1) {
-                        case RegisterSizes::FOUR:
-                            data1 = memory->readData(getRegisterData(reg1), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data1 = memory->readData(getRegisterData(reg1), 2);
-                        case RegisterSizes::ONE:
-                            data1 = memory->readData(getRegisterData(reg1), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                // <REG>, <REG>
-                if (regSize != RegisterSizes::ZERO && regSize1 != RegisterSizes::ZERO) {
-                    if (regSize == RegisterSizes::FOUR || regSize1 == RegisterSizes::FOUR) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (regSize1 == RegisterSizes::TWO) {
-                                result.doubleWord = getRegisterData(reg).doubleWord + getRegisterData(reg1).word.lowWord.word;
-                            } else {
-                                if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord + getRegisterData(reg1).word.lowWord.byte.hiByte;
-                                } else {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord + getRegisterData(reg1).word.lowWord.byte.lowByte;
-                                }
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).doubleWord + getRegisterData(reg1).doubleWord;
-                            setRegisterData(result, reg);
-                        }
-                    } else if (regSize == RegisterSizes::TWO || regSize1 == RegisterSizes::TWO) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word + getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word + getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).word.lowWord.word + getRegisterData(reg1).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        }
-                    } else {
-                        DoubleWord result;
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte + getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte + getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        } else {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte + getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte + getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        }
-                        setRegisterData(result, reg);
-                    }
-                    // [Address], <Register, Const>
-                }  else if (instruction.isAddressInPosition(0)) {
-                    if (regSize1 != RegisterSizes::ZERO) {
-                        if (regSize1 == RegisterSizes::FOUR) {
-                            DoubleWord result;
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).doubleWord + getRegisterData(reg1).doubleWord;
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else if (regSize1 == RegisterSizes::TWO) {
-                            DoubleWord result;
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).word.lowWord.word + getRegisterData(reg1).word.lowWord.word;
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else {
-                            DoubleWord *result = new DoubleWord;
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result->word.lowWord.byte.hiByte = *memory->readData(Utils::General::readDoubleWord(data), 1) + getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result->word.lowWord.byte.lowByte = *memory->readData(Utils::General::readDoubleWord(data), 1) + getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data1), 4, Utils::General::doubleWordToBytes(*result));
-                            delete result;
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD [Address], <Register, Const>"<<std::endl;
-                    }
-                    // <Register>, [Address]
-                } else if (instruction.isAddressInPosition(1)) {
-                    if (regSize != RegisterSizes::ZERO) {
-                        if (regSize == RegisterSizes::FOUR) {
-                            DoubleWord result;
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).doubleWord + getRegisterData(reg).doubleWord;
-                            setRegisterData(result, reg);
-                        } else if (regSize == RegisterSizes::TWO) {
-                            DoubleWord result;
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).word.lowWord.word + getRegisterData(reg).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        } else {
-                            DoubleWord result;
-                            if (getRegisterType(reg) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte + *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            } else {
-                                result.word.lowWord.byte.lowByte = getRegisterData(reg).word.lowWord.byte.lowByte + *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            }
-                            setRegisterData(result, reg);
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD <Register>, [Address]!"<<std::endl;
-                    }
-                } else if (regSize != RegisterSizes::ZERO && data1 != nullptr) {
-                    // <REG>, <CONST>
-                    DoubleWord result;
-                    if (regSize == RegisterSizes::FOUR) {
-                        result.doubleWord = getRegisterData(reg).doubleWord + Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::TWO) {
-                        result.word.lowWord.word = getRegisterData(reg).word.lowWord.word + Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::ONE) {
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord + Utils::General::readDoubleWord(data1).doubleWord;
-                        } else {
-                            result.word.lowWord.byte.lowByte = getRegisterData(reg).doubleWord + Utils::General::readDoubleWord(data1).doubleWord;
-                        }
-                        setRegisterData(result, reg);
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
-                    }
-                } else {
-                    std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
-                }
-                if (data != nullptr) {
-                    delete data;
-                }
-                if (data1 != nullptr) {
-                    delete data1;
-                }
+            // <Register>, <Register>
+            if (reg != Registers::UNKNOWN && reg1 != Registers::UNKNOWN) {
+                setRegisterData(data + data1, reg);
+                // [Address], <Register, Const>
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                memory->writeData(address, 4, Utils::General::doubleWordToBytes(Utils::General::readDoubleWord(memory->readData(address, 4)) + data1));
+                // <Register>, [Address]
+            } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
+                setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)) + data, reg);
+                // <Register>, <Const>
+            } else if (regSize != RegisterSizes::ZERO) {
+                setRegisterData(data + data1, reg);
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
             }
             break;
         case InstructionSet::AND:
-            if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
-                Registers reg = Registers::UNKNOWN;
-                Registers reg1 = Registers::UNKNOWN;
-                RegisterSizes regSize = RegisterSizes::ZERO;
-                RegisterSizes regSize1 = RegisterSizes::ZERO;
-                Byte* data = nullptr;
-                Byte* data1 = nullptr;
-                
-                if (instruction.isRegisterInPosition(0)) {
-                    reg = Registers(instruction.args[0].doubleWord);
-                    regSize = registerToSize(reg);
-                } else {
-                    data = Utils::General::doubleWordToBytes(instruction.args[0]);
-                }
-                
-                if (instruction.isRegisterInPosition(1)) {
-                    reg1 = Registers(instruction.args[1].doubleWord);
-                    regSize1 = registerToSize(reg1);
-                } else {
-                    data1 = Utils::General::doubleWordToBytes(instruction.args[1]);
-                }
-                
-                if (reg != Registers::UNKNOWN) {
-                    switch (regSize) {
-                        case RegisterSizes::FOUR:
-                            data = memory->readData(getRegisterData(reg), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data = memory->readData(getRegisterData(reg), 2);
-                        case RegisterSizes::ONE:
-                            data = memory->readData(getRegisterData(reg), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                if (reg1 != Registers::UNKNOWN) {
-                    switch (regSize1) {
-                        case RegisterSizes::FOUR:
-                            data1 = memory->readData(getRegisterData(reg1), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data1 = memory->readData(getRegisterData(reg1), 2);
-                        case RegisterSizes::ONE:
-                            data1 = memory->readData(getRegisterData(reg1), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                // <REG>, <REG>
-                if (regSize != RegisterSizes::ZERO && regSize1 != RegisterSizes::ZERO) {
-                    if (regSize == RegisterSizes::FOUR || regSize1 == RegisterSizes::FOUR) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for AND: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (regSize1 == RegisterSizes::TWO) {
-                                result.doubleWord = getRegisterData(reg).doubleWord - getRegisterData(reg1).word.lowWord.word;
-                            } else {
-                                if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord & getRegisterData(reg1).word.lowWord.byte.hiByte;
-                                } else {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord & getRegisterData(reg1).word.lowWord.byte.lowByte;
-                                }
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).doubleWord & getRegisterData(reg1).doubleWord;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else if (regSize == RegisterSizes::TWO || regSize1 == RegisterSizes::TWO) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for AND: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word & getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word & getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).word.lowWord.word & getRegisterData(reg1).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        DoubleWord result;
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte & getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte & getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        } else {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte & getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte & getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                        setRegisterData(result, reg);
-                    }
-                    // [Address], <Register, Const>
-                } else if (instruction.isAddressInPosition(0)) {
-                    if (regSize1 != RegisterSizes::ZERO) {
-                        if (regSize1 == RegisterSizes::FOUR) {
-                            DoubleWord result;
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).doubleWord & getRegisterData(reg1).doubleWord;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else if (regSize1 == RegisterSizes::TWO) {
-                            DoubleWord result;
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).word.lowWord.word & getRegisterData(reg1).word.lowWord.word;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else {
-                            DoubleWord *result = new DoubleWord;
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result->word.lowWord.byte.hiByte = *memory->readData(Utils::General::readDoubleWord(data), 1) & getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result->word.lowWord.byte.lowByte = *memory->readData(Utils::General::readDoubleWord(data), 1) & getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            if (result->doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data1), 4, Utils::General::doubleWordToBytes(*result));
-                            delete result;
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for AND [Address], <Register, Const>"<<std::endl;
-                    }
-                    // <Register>, [Address]
-                } else if (instruction.isAddressInPosition(1)) {
-                    if (regSize != RegisterSizes::ZERO) {
-                        DoubleWord result;
-                        if (regSize == RegisterSizes::FOUR) {
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).doubleWord & getRegisterData(reg).doubleWord;
-                            setRegisterData(result, reg);
-                        } else if (regSize == RegisterSizes::TWO) {
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).word.lowWord.word & getRegisterData(reg).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        } else {
-                            if (getRegisterType(reg) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte & *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            } else {
-                                result.word.lowWord.byte.lowByte = getRegisterData(reg).word.lowWord.byte.lowByte & *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            }
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for AND <Register>, [Address]!"<<std::endl;
-                    }
-                } else if (regSize != RegisterSizes::ZERO && data1 != nullptr) {
-                    // <REG>, <CONST>
-                    DoubleWord result;
-                    if (regSize == RegisterSizes::FOUR) {
-                        result.doubleWord = getRegisterData(reg).doubleWord & Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::TWO) {
-                        result.word.lowWord.word = getRegisterData(reg).word.lowWord.word & Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::ONE) {
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord & Utils::General::readDoubleWord(data1).doubleWord;
-                        } else {
-                            result.word.lowWord.byte.lowByte = getRegisterData(reg).doubleWord & Utils::General::readDoubleWord(data1).doubleWord;
-                        }
-                        setRegisterData(result, reg);
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for AND!"<<std::endl;
-                    }
-                    if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
-                    }
-                } else {
-                    std::cerr<<"ElectroCraft CPU: Invaid arguments for AND!"<<std::endl;
-                }
-                if (data != nullptr) {
-                    delete data;
-                }
-                if (data1 != nullptr) {
-                    delete data1;
-                }
+            // <Register>, <Register>
+            if (reg != Registers::UNKNOWN && reg1 != Registers::UNKNOWN) {
+                setRegisterData(data.doubleWord & data1.doubleWord, reg);
+                // [Address], <Register, Const>
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                memory->writeData(address, 4, Utils::General::doubleWordToBytes(Utils::General::readDoubleWord(memory->readData(address, 4)).doubleWord & data1.doubleWord));
+                // <Register>, [Address]
+            } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
+                setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)).doubleWord & data.doubleWord, reg);
+                // <Register>, <Const>
+            } else if (regSize != RegisterSizes::ZERO) {
+                setRegisterData(data.doubleWord & data1.doubleWord, reg);
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for AND!"<<std::endl;
             }
@@ -1048,34 +860,34 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             }
             break;
         case InstructionSet::CMP:
-            if (instruction.isAddressInPosition(0)) {
+            if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 if (instruction.isRegisterInPosition(1)) {
                     if ((Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord  - getRegisterData(Registers(instruction.args[1].doubleWord)).doubleWord) == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     } else {
-                        eflags.resetFlag(EFLAGS::ZF);
+                        eState.resetFlag(EFLAGS::ZF);
                     }
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invaid arguments for CMP [address], <register>!"<<std::endl;
                 }
             } else if (instruction.isRegisterInPosition(0)) {
-                if (instruction.isAddressInPosition(1)) {
+                if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     if ((Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4)).doubleWord  - getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord) == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     } else {
-                        eflags.resetFlag(EFLAGS::ZF);
+                        eState.resetFlag(EFLAGS::ZF);
                     }
                 } else if (instruction.isRegisterInPosition(1)) {
                     if ((getRegisterData(Registers(instruction.args[1].doubleWord)).doubleWord - getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord) == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     } else {
-                        eflags.resetFlag(EFLAGS::ZF);
+                        eState.resetFlag(EFLAGS::ZF);
                     }
                 } else {
                     if ((instruction.args[1].doubleWord - getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord) == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     } else {
-                        eflags.resetFlag(EFLAGS::ZF);
+                        eState.resetFlag(EFLAGS::ZF);
                     }
                 }
             } else {
@@ -1090,7 +902,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     DoubleWord result;
                     result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord / getRegisterData(Registers(instruction.args[1].doubleWord)).doubleWord;
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
-                } else if (instruction.isAddressInPosition(1)) {
+                } else if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     DoubleWord result;
                     result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord / Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4)).doubleWord;
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
@@ -1104,11 +916,102 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         case InstructionSet::HLT:
             this->stop();
             return;
+        case InstructionSet::INP:
+            if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
+                    IOPort::IOPortInterrupt interrupt;
+                    interrupt.read = true;
+                    interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4));
+                    IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                    memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result->returnData));
+                } else if (instruction.isRegisterInPosition(1)) {
+                    if (instruction.shouldUseRegisterAsAddress(1)) {
+                        IOPort::IOPortInterrupt interrupt;
+                        interrupt.read = true;
+                        interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(getRegisterData(Registers(instruction.args[1].doubleWord)), 4));
+                        IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                        memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result->returnData));
+                    } else {
+                        IOPort::IOPortInterrupt interrupt;
+                        interrupt.read = true;
+                        interrupt.ioPort = getRegisterData(Registers(instruction.args[1].doubleWord));
+                        IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                        memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result->returnData));
+                    }
+                } else {
+                    IOPort::IOPortInterrupt interrupt;
+                    interrupt.read = true;
+                    interrupt.ioPort = instruction.args[1];
+                    IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                    memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result->returnData));
+                }
+            } else if (instruction.isRegisterInPosition(0)) {
+                if (instruction.shouldUseRegisterAsAddress(0)) {
+                    if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
+                        IOPort::IOPortInterrupt interrupt;
+                        interrupt.read = true;
+                        interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4));
+                        IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                        memory->writeData(getRegisterData(Registers(instruction.args[0].doubleWord)), 4, Utils::General::doubleWordToBytes(result->returnData));
+                    } else if (instruction.isRegisterInPosition(1)) {
+                        if (instruction.shouldUseRegisterAsAddress(1)) {
+                            IOPort::IOPortInterrupt interrupt;
+                            interrupt.read = true;
+                            interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(getRegisterData(Registers(instruction.args[1].doubleWord)), 4));
+                            IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                            memory->writeData(getRegisterData(Registers(instruction.args[0].doubleWord)), 4, Utils::General::doubleWordToBytes(result->returnData));
+                        } else {
+                            IOPort::IOPortInterrupt interrupt;
+                            interrupt.read = true;
+                            interrupt.ioPort = getRegisterData(Registers(instruction.args[1].doubleWord));
+                            IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                            memory->writeData(getRegisterData(Registers(instruction.args[0].doubleWord)), 4, Utils::General::doubleWordToBytes(result->returnData));
+                        }
+                    } else {
+                        IOPort::IOPortInterrupt interrupt;
+                        interrupt.read = true;
+                        interrupt.ioPort = instruction.args[1];
+                        IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                        memory->writeData(getRegisterData(Registers(instruction.args[0].doubleWord)), 4, Utils::General::doubleWordToBytes(result->returnData));
+                    }
+                } else {
+                    if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
+                        IOPort::IOPortInterrupt interrupt;
+                        interrupt.read = true;
+                        interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4));
+                        IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                        setRegisterData(result->returnData, Registers(instruction.args[0].doubleWord));
+                    } else if (instruction.isRegisterInPosition(1)) {
+                        if (instruction.shouldUseRegisterAsAddress(1)) {
+                            IOPort::IOPortInterrupt interrupt;
+                            interrupt.read = true;
+                            interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(getRegisterData(Registers(instruction.args[1].doubleWord)), 4));
+                            IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                            setRegisterData(result->returnData, Registers(instruction.args[0].doubleWord));
+                        } else {
+                            IOPort::IOPortInterrupt interrupt;
+                            interrupt.read = true;
+                            interrupt.ioPort = getRegisterData(Registers(instruction.args[1].doubleWord));
+                            IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                            setRegisterData(result->returnData, Registers(instruction.args[0].doubleWord));
+                        }
+                    } else {
+                        IOPort::IOPortInterrupt interrupt;
+                        interrupt.read = true;
+                        interrupt.ioPort = instruction.args[1];
+                        IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
+                        setRegisterData(result->returnData, Registers(instruction.args[0].doubleWord));
+                    }
+                }
+            } else {
+                std::cerr<<"ElectroCraft CPU: Invalid arguments for INP!"<<std::endl;
+            }
+            break;
         case InstructionSet::INT:
             break;
         case InstructionSet::JE:
             if (instruction.isOffsetInPosition(0)) {
-                if (eflags.getFlagState(EFLAGS::ZF)) {
+                if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1138,7 +1041,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::JNE:
             if (instruction.isOffsetInPosition(0)) {
-                if (!eflags.getFlagState(EFLAGS::ZF)) {
+                if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1154,7 +1057,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::JNZ:
             if (instruction.isOffsetInPosition(0)) {
-                if (!eflags.getFlagState(EFLAGS::ZF)) {
+                if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1170,7 +1073,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::JZ:
             if (instruction.isOffsetInPosition(0)) {
-                if (eflags.getFlagState(EFLAGS::ZF)) {
+                if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1205,7 +1108,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::LOOPE:
             if (instruction.isOffsetInPosition(0)) {
-                if (eflags.getFlagState(EFLAGS::ZF)) {
+                if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1221,7 +1124,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::LOOPNE:
             if (instruction.isOffsetInPosition(0)) {
-                if (!eflags.getFlagState(EFLAGS::ZF)) {
+                if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1237,7 +1140,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::LOOPNZ:
             if (instruction.isOffsetInPosition(0)) {
-                if (!eflags.getFlagState(EFLAGS::ZF)) {
+                if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1253,7 +1156,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::LOOPWE:
             if (instruction.isOffsetInPosition(0)) {
-                if (eflags.getFlagState(EFLAGS::ZF)) {
+                if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1269,7 +1172,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::LOOPWNE:
             if (instruction.isOffsetInPosition(0)) {
-                if (!eflags.getFlagState(EFLAGS::ZF)) {
+                if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1285,7 +1188,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::LOOPZ:
             if (instruction.isOffsetInPosition(0)) {
-                if (eflags.getFlagState(EFLAGS::ZF)) {
+                if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
                     if (instruction.isOffsetNegitive(0)) {
                         addressToCall.doubleWord = registers.IP.doubleWord - instruction.args[0].doubleWord;
@@ -1300,68 +1203,29 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             }
             break;
         case InstructionSet::MOV:
-            if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
-                Registers reg = Registers::UNKNOWN;
-                Registers reg1 = Registers::UNKNOWN;
-                RegisterSizes regSize = RegisterSizes::ZERO;
-                RegisterSizes regSize1 = RegisterSizes::ZERO;
-                Address address;
-                Address address1;
-                DoubleWord optionalConstant;
-                
-                if (instruction.isRegisterInPosition(0)) {
-                    if (instruction.shouldUseRegisterAsAddress(0)) {
-                        address = getRegisterData(Registers(instruction.args[0].doubleWord));
-                    } else {
-                        reg = Registers(instruction.args[0].doubleWord);
-                        regSize = registerToSize(reg);
-                    }
-                } else if (instruction.isAddressInPosition(0)) {
-                    address = instruction.args[0];
-                } else {
-                    std::cerr<<"ElectroCraft CPU: Invaid arguments for MOV: Has to be a register or address for the first argument"<<std::endl;
-                    break;
-                }
-                
-                if (instruction.isRegisterInPosition(1)) {
-                    if (instruction.shouldUseRegisterAsAddress(1)) {
-                        address1 = getRegisterData(Registers(instruction.args[1].doubleWord));
-                    } else {
-                        reg1 = Registers(instruction.args[1].doubleWord);
-                        regSize1 = registerToSize(reg1);
-                    }
-                } else if (instruction.isAddressInPosition(1)) {
-                    address1 = instruction.args[1];
-                } else {
-                    optionalConstant = instruction.args[1];
-                }
-                
-                if (reg != Registers::UNKNOWN) {
-                    if (reg1 != Registers::UNKNOWN) {
-                        setRegisterData(getRegisterData(reg1), reg);
-                    } else if (instruction.isAddressInPosition(1)) {
-                        setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)), reg);
-                    } else {
-                        setRegisterData(optionalConstant, reg);
-                    }
-                } else {
-                    if (reg1 != Registers::UNKNOWN) {
-                        memory->writeData(address, 4, Utils::General::doubleWordToBytes(getRegisterData(reg1)));
-                    } else if (instruction.isAddressInPosition(1)) {
-                        memory->writeData(address, 4, memory->readData(address1, 4));
-                    } else {
-                        memory->writeData(address, 4, Utils::General::doubleWordToBytes(optionalConstant));
-                    }
-                }
+            // <Register>, <Register>
+            if (reg != Registers::UNKNOWN && reg1 != Registers::UNKNOWN) {
+                setRegisterData(data1, reg);
+                // [Address], <Register, Const>
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                memory->writeData(address, 4, Utils::General::doubleWordToBytes(data1.doubleWord));
+                // <Register>, [Address]
+            } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
+                setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)).doubleWord, reg);
+                // <Register>, <Const>
+            } else if (regSize != RegisterSizes::ZERO) {
+                setRegisterData(data1.doubleWord, reg);
+            } else {
+                std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
             }
             break;
         case InstructionSet::MUL:
             if (instruction.isRegisterInPosition(0)) {
                 if (instruction.isRegisterInPosition(1)) {
                     DoubleWord result;
-                    result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord * getRegisterData(Registers(instruction.args[1].doubleWord)).doubleWord;
+                    result.doubleWord = data.doubleWord * data1.doubleWord;
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
-                } else if (instruction.isAddressInPosition(1)) {
+                } else if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     DoubleWord result;
                     result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord * Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4)).doubleWord;
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
@@ -1373,7 +1237,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             }
             break;
         case InstructionSet::NEG:
-            if (instruction.isAddressInPosition(0)) {
+            if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 DoubleWord result;
                 result.doubleWord = -Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord;
                 memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result));
@@ -1381,14 +1245,14 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                 DoubleWord result;
                 result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord;
                 if (getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord > 0) {
-                    eflags.setFlagState(EFLAGS::SF);
+                    eState.setFlagState(EFLAGS::SF);
                     if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     }
                 } else {
-                    eflags.resetFlag(EFLAGS::SF);
+                    eState.resetFlag(EFLAGS::SF);
                     if (result.doubleWord == 0) {
-                        eflags.resetFlag(EFLAGS::ZF);
+                        eState.resetFlag(EFLAGS::ZF);
                     }
                 }
                 setRegisterData(result, Registers(instruction.args[0].doubleWord));
@@ -1399,7 +1263,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         case InstructionSet::NOP:
             break;
         case InstructionSet::NOT:
-            if (instruction.isAddressInPosition(0)) {
+            if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 DoubleWord result;
                 result.doubleWord = ~Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord;
                 memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result));
@@ -1412,209 +1276,47 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             }
             break;
         case InstructionSet::OR:
-            if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
-                Registers reg = Registers::UNKNOWN;
-                Registers reg1 = Registers::UNKNOWN;
-                RegisterSizes regSize = RegisterSizes::ZERO;
-                RegisterSizes regSize1 = RegisterSizes::ZERO;
-                Byte* data = nullptr;
-                Byte* data1 = nullptr;
-                
-                if (instruction.isRegisterInPosition(0)) {
-                    reg = Registers(instruction.args[0].doubleWord);
-                    regSize = registerToSize(reg);
-                } else {
-                    data = Utils::General::doubleWordToBytes(instruction.args[0]);
-                }
-                
-                if (instruction.isRegisterInPosition(1)) {
-                    reg1 = Registers(instruction.args[1].doubleWord);
-                    regSize1 = registerToSize(reg1);
-                } else {
-                    data1 = Utils::General::doubleWordToBytes(instruction.args[1]);
-                }
-                
-                if (reg != Registers::UNKNOWN) {
-                    switch (regSize) {
-                        case RegisterSizes::FOUR:
-                            data = memory->readData(getRegisterData(reg), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data = memory->readData(getRegisterData(reg), 2);
-                        case RegisterSizes::ONE:
-                            data = memory->readData(getRegisterData(reg), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                if (reg1 != Registers::UNKNOWN) {
-                    switch (regSize1) {
-                        case RegisterSizes::FOUR:
-                            data1 = memory->readData(getRegisterData(reg1), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data1 = memory->readData(getRegisterData(reg1), 2);
-                        case RegisterSizes::ONE:
-                            data1 = memory->readData(getRegisterData(reg1), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                // <REG>, <REG>
-                if (regSize != RegisterSizes::ZERO && regSize1 != RegisterSizes::ZERO) {
-                    if (regSize == RegisterSizes::FOUR || regSize1 == RegisterSizes::FOUR) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for OR: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (regSize1 == RegisterSizes::TWO) {
-                                result.doubleWord = getRegisterData(reg).doubleWord - getRegisterData(reg1).word.lowWord.word;
-                            } else {
-                                if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord | getRegisterData(reg1).word.lowWord.byte.hiByte;
-                                } else {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord | getRegisterData(reg1).word.lowWord.byte.lowByte;
-                                }
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).doubleWord | getRegisterData(reg1).doubleWord;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else if (regSize == RegisterSizes::TWO || regSize1 == RegisterSizes::TWO) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for OR: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word | getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word | getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).word.lowWord.word | getRegisterData(reg1).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        DoubleWord result;
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte | getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte | getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        } else {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte | getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte | getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                        setRegisterData(result, reg);
-                    }
-                    // [Address], <Register, Const>
-                } else if (instruction.isAddressInPosition(0)) {
-                    if (regSize1 != RegisterSizes::ZERO) {
-                        if (regSize1 == RegisterSizes::FOUR) {
-                            DoubleWord result;
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).doubleWord | getRegisterData(reg1).doubleWord;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else if (regSize1 == RegisterSizes::TWO) {
-                            DoubleWord result;
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).word.lowWord.word | getRegisterData(reg1).word.lowWord.word;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else {
-                            DoubleWord *result = new DoubleWord;
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result->word.lowWord.byte.hiByte = *memory->readData(Utils::General::readDoubleWord(data), 1) | getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result->word.lowWord.byte.lowByte = *memory->readData(Utils::General::readDoubleWord(data), 1) | getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            if (result->doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data1), 4, Utils::General::doubleWordToBytes(*result));
-                            delete result;
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for OR [Address], <Register, Const>"<<std::endl;
-                    }
-                    // <Register>, [Address]
-                } else if (instruction.isAddressInPosition(1)) {
-                    if (regSize != RegisterSizes::ZERO) {
-                        DoubleWord result;
-                        if (regSize == RegisterSizes::FOUR) {
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).doubleWord | getRegisterData(reg).doubleWord;
-                            setRegisterData(result, reg);
-                        } else if (regSize == RegisterSizes::TWO) {
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).word.lowWord.word | getRegisterData(reg).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        } else {
-                            if (getRegisterType(reg) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte | *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            } else {
-                                result.word.lowWord.byte.lowByte = getRegisterData(reg).word.lowWord.byte.lowByte | *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            }
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for OR <Register>, [Address]!"<<std::endl;
-                    }
-                } else if (regSize != RegisterSizes::ZERO && data1 != nullptr) {
-                    // <REG>, <CONST>
-                    DoubleWord result;
-                    if (regSize == RegisterSizes::FOUR) {
-                        result.doubleWord = getRegisterData(reg).doubleWord | Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::TWO) {
-                        result.word.lowWord.word = getRegisterData(reg).word.lowWord.word | Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::ONE) {
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord | Utils::General::readDoubleWord(data1).doubleWord;
-                        } else {
-                            result.word.lowWord.byte.lowByte = getRegisterData(reg).doubleWord | Utils::General::readDoubleWord(data1).doubleWord;
-                        }
-                        setRegisterData(result, reg);
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
-                    }
-                    if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
-                    }
-                } else {
-                    std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
-                }
-                if (data != nullptr) {
-                    delete data;
-                }
-                if (data1 != nullptr) {
-                    delete data1;
-                }
+            // <Register>, <Register>
+            if (reg != Registers::UNKNOWN && reg1 != Registers::UNKNOWN) {
+                setRegisterData(data.doubleWord | data1.doubleWord, reg);
+                // [Address], <Register, Const>
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                memory->writeData(address, 4, Utils::General::doubleWordToBytes(Utils::General::readDoubleWord(memory->readData(address, 4)).doubleWord | data1.doubleWord));
+                // <Register>, [Address]
+            } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
+                setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)).doubleWord | data.doubleWord, reg);
+                // <Register>, <Const>
+            } else if (regSize != RegisterSizes::ZERO) {
+                setRegisterData(data.doubleWord | data1.doubleWord, reg);
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
             }
+            break;
+        case InstructionSet::OUT:
+        {
+            IOPort::IOPortInterrupt interrupt;
+            interrupt.read = false;
+            if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4));
+            } else if (instruction.isRegisterInPosition(0)) {
+                interrupt.ioPort = Utils::General::readDoubleWord(memory->readData(getRegisterData(Registers(instruction.args[0].doubleWord)), 4));
+            } else {
+                interrupt.ioPort = instruction.args[0];
+            }
+            
+            if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
+                interrupt.data = Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4));
+            } else if (instruction.isRegisterInPosition(1)) {
+                if (instruction.shouldUseRegisterAsAddress(1)) {
+                    interrupt.data = Utils::General::readDoubleWord(memory->readData(getRegisterData(Registers(instruction.args[1].doubleWord)), 4));
+                } else {
+                    interrupt.data = getRegisterData(Registers(instruction.args[1].doubleWord));
+                }
+            } else {
+                interrupt.data = instruction.args[1];
+            }
+            ioPortHandler->callIOPort(interrupt);
+        }
             break;
         case InstructionSet::POP:
             if (instruction.isRegisterInPosition(0)) {
@@ -1640,12 +1342,11 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             if (instruction.isRegisterInPosition(0)) {
                 Registers reg = Registers(instruction.args[0].doubleWord);
                 if (reg != Registers::UNKNOWN) {
-                    DoubleWord data = getRegisterData(reg);
                     stack->push(data);
                 } else {
                     std::cerr<<"ElectroCraft CPU: Unknown register in position 0 for PUSH"<<std::endl;
                 }
-            } else if (instruction.isAddressInPosition(0)) {
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 stack->push(Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)));
             } else {
                 std::cerr<<"ElectroCraft CPU: Incorrect arguments for PUSH"<<std::endl;
@@ -1658,8 +1359,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             }
             break;
         case InstructionSet::RANDI:
-            if (instruction.isAddressInPosition(0)) {
-                if (instruction.isAddressInPosition(1)) {
+            if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     DoubleWord upperBound = Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4));
                     DoubleWord result;
                     std::random_device rd;
@@ -1684,7 +1385,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     memory->writeData(instruction.args[0], 4, Utils::General::doubleWordToBytes(result));
                 }
             } else if (instruction.isRegisterInPosition(0)) {
-                if (instruction.isAddressInPosition(1)) {
+                if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     DoubleWord upperBound = Utils::General::readDoubleWord(memory->readData(instruction.args[1], 4));
                     DoubleWord result;
                     std::random_device rd;
@@ -1722,502 +1423,127 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             break;
         case InstructionSet::SHL:
             if (instruction.isRegisterInPosition(0)) {
-                if (instruction.isAddressInPosition(1)) {
+                if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     if (Registers(instruction.args[0].doubleWord) == Registers::CL) {
                         DoubleWord result;
                         result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord << getRegisterData(Registers::CL).word.lowWord.byte.lowByte;
                         if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
+                            eState.setFlagState(EFLAGS::ZF);
                         }
                         setRegisterData(result, Registers(instruction.args[0].doubleWord));
-                    } else if (!instruction.isAddressInPosition(1) && !instruction.isOffsetInPosition(1)) {
+                    } else if ((!instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && !instruction.isOffsetInPosition(1)) {
                         DoubleWord result;
                         result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord << instruction.args[1].word.lowWord.byte.lowByte;
                         if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
+                            eState.setFlagState(EFLAGS::ZF);
                         }
                         setRegisterData(result, Registers(instruction.args[0].doubleWord));
                     } else {
-                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
+                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL!"<<std::endl;
                     }
                 }
-            } else if (instruction.isAddressInPosition(0)) {
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 if (Registers(instruction.args[0].doubleWord) == Registers::CL) {
                     DoubleWord result;
                     result.doubleWord = Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord << getRegisterData(Registers::CL).word.lowWord.byte.lowByte;
                     if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     }
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
-                } else if (!instruction.isAddressInPosition(1) && !instruction.isOffsetInPosition(1)) {
+                } else if ((!instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && !instruction.isOffsetInPosition(1)) {
                     DoubleWord result;
                     result.doubleWord = Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord << instruction.args[1].word.lowWord.byte.lowByte;
                     if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     }
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
                 } else {
-                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
+                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL!"<<std::endl;
                 }
             } else {
-                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
+                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL!"<<std::endl;
             }
             break;
         case InstructionSet::SHR:
             if (instruction.isRegisterInPosition(0)) {
-                if (instruction.isAddressInPosition(1)) {
+                if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     if (Registers(instruction.args[0].doubleWord) == Registers::CL) {
                         DoubleWord result;
                         result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord >> getRegisterData(Registers::CL).word.lowWord.byte.lowByte;
                         if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
+                            eState.setFlagState(EFLAGS::ZF);
                         }
                         setRegisterData(result, Registers(instruction.args[0].doubleWord));
-                    } else if (!instruction.isAddressInPosition(1) && !instruction.isOffsetInPosition(1)) {
+                    } else if ((!instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && !instruction.isOffsetInPosition(1)) {
                         DoubleWord result;
                         result.doubleWord = getRegisterData(Registers(instruction.args[0].doubleWord)).doubleWord >> instruction.args[1].word.lowWord.byte.lowByte;
                         if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
+                            eState.setFlagState(EFLAGS::ZF);
                         }
                         setRegisterData(result, Registers(instruction.args[0].doubleWord));
                     } else {
-                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
+                        std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHR!"<<std::endl;
                     }
                 }
-            } else if (instruction.isAddressInPosition(0)) {
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 if (Registers(instruction.args[0].doubleWord) == Registers::CL) {
                     DoubleWord result;
                     result.doubleWord = Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord >> getRegisterData(Registers::CL).word.lowWord.byte.lowByte;
                     if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     }
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
-                } else if (!instruction.isAddressInPosition(1) && !instruction.isOffsetInPosition(1)) {
+                } else if ((!instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && !instruction.isOffsetInPosition(1)) {
                     DoubleWord result;
                     result.doubleWord = Utils::General::readDoubleWord(memory->readData(instruction.args[0], 4)).doubleWord >> instruction.args[1].word.lowWord.byte.lowByte;
                     if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
+                        eState.setFlagState(EFLAGS::ZF);
                     }
                     setRegisterData(result, Registers(instruction.args[0].doubleWord));
                 } else {
-                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
+                    std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHR!"<<std::endl;
                 }
             } else {
-                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SH"<<std::endl;
+                std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHR!"<<std::endl;
             }
             break;
         case InstructionSet::SUB:
-            if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
-                Registers reg = Registers::UNKNOWN;
-                Registers reg1 = Registers::UNKNOWN;
-                RegisterSizes regSize = RegisterSizes::ZERO;
-                RegisterSizes regSize1 = RegisterSizes::ZERO;
-                Byte* data = nullptr;
-                Byte* data1 = nullptr;
-                
-                if (instruction.isRegisterInPosition(0)) {
-                    reg = Registers(instruction.args[0].doubleWord);
-                    regSize = registerToSize(reg);
-                } else {
-                    data = Utils::General::doubleWordToBytes(instruction.args[0]);
-                }
-                
-                if (instruction.isRegisterInPosition(1)) {
-                    reg1 = Registers(instruction.args[1].doubleWord);
-                    regSize1 = registerToSize(reg1);
-                } else {
-                    data1 = Utils::General::doubleWordToBytes(instruction.args[1]);
-                }
-                
-                if (reg != Registers::UNKNOWN) {
-                    switch (regSize) {
-                        case RegisterSizes::FOUR:
-                            data = memory->readData(getRegisterData(reg), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data = memory->readData(getRegisterData(reg), 2);
-                        case RegisterSizes::ONE:
-                            data = memory->readData(getRegisterData(reg), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                if (reg1 != Registers::UNKNOWN) {
-                    switch (regSize1) {
-                        case RegisterSizes::FOUR:
-                            data1 = memory->readData(getRegisterData(reg1), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data1 = memory->readData(getRegisterData(reg1), 2);
-                        case RegisterSizes::ONE:
-                            data1 = memory->readData(getRegisterData(reg1), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                // <REG>, <REG>
-                if (regSize != RegisterSizes::ZERO && regSize1 != RegisterSizes::ZERO) {
-                    if (regSize == RegisterSizes::FOUR || regSize1 == RegisterSizes::FOUR) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (regSize1 == RegisterSizes::TWO) {
-                                result.doubleWord = getRegisterData(reg).doubleWord - getRegisterData(reg1).word.lowWord.word;
-                            } else {
-                                if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord - getRegisterData(reg1).word.lowWord.byte.hiByte;
-                                } else {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord - getRegisterData(reg1).word.lowWord.byte.lowByte;
-                                }
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).doubleWord - getRegisterData(reg1).doubleWord;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else if (regSize == RegisterSizes::TWO || regSize1 == RegisterSizes::TWO) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word - getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word - getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).word.lowWord.word - getRegisterData(reg1).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        DoubleWord result;
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte - getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte - getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        } else {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte - getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte - getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                        setRegisterData(result, reg);
-                    }
-                    // [Address], <Register, Const>
-                } else if (instruction.isAddressInPosition(0)) {
-                    if (regSize1 != RegisterSizes::ZERO) {
-                        if (regSize1 == RegisterSizes::FOUR) {
-                            DoubleWord result;
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).doubleWord - getRegisterData(reg1).doubleWord;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else if (regSize1 == RegisterSizes::TWO) {
-                            DoubleWord result;
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).word.lowWord.word - getRegisterData(reg1).word.lowWord.word;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else {
-                            DoubleWord *result = new DoubleWord;
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result->word.lowWord.byte.hiByte = *memory->readData(Utils::General::readDoubleWord(data), 1) - getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result->word.lowWord.byte.lowByte = *memory->readData(Utils::General::readDoubleWord(data), 1) - getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            if (result->doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data1), 4, Utils::General::doubleWordToBytes(*result));
-                            delete result;
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB [Address], <Register, Const>"<<std::endl;
-                    }
-                    // <Register>, [Address]
-                } else if (instruction.isAddressInPosition(1)) {
-                    DoubleWord result;
-                    if (regSize != RegisterSizes::ZERO) {
-                        if (regSize == RegisterSizes::FOUR) {
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).doubleWord - getRegisterData(reg).doubleWord;
-                            setRegisterData(result, reg);
-                        } else if (regSize == RegisterSizes::TWO) {
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).word.lowWord.word - getRegisterData(reg).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        } else {
-                            if (getRegisterType(reg) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte - *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            } else {
-                                result.word.lowWord.byte.lowByte = getRegisterData(reg).word.lowWord.byte.lowByte - *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            }
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB <Register>, [Address]!"<<std::endl;
-                    }
-                } else if (regSize != RegisterSizes::ZERO && data1 != nullptr) {
-                    // <REG>, <CONST>
-                    DoubleWord result;
-                    if (regSize == RegisterSizes::FOUR) {
-                        result.doubleWord = getRegisterData(reg).doubleWord - Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::TWO) {
-                        result.word.lowWord.word = getRegisterData(reg).word.lowWord.word - Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::ONE) {
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord - Utils::General::readDoubleWord(data1).doubleWord;
-                        } else {
-                            result.word.lowWord.byte.lowByte = getRegisterData(reg).doubleWord - Utils::General::readDoubleWord(data1).doubleWord;
-                        }
-                        setRegisterData(result, reg);
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB!"<<std::endl;
-                    }
-                    if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
-                    }
-                } else {
-                    std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB!"<<std::endl;
-                }
-                if (data != nullptr) {
-                    delete data;
-                }
-                if (data1 != nullptr) {
-                    delete data1;
-                }
+            // <Register>, <Register>
+            if (reg != Registers::UNKNOWN && reg1 != Registers::UNKNOWN) {
+                setRegisterData(data.doubleWord - data1.doubleWord, reg);
+                // [Address], <Register, Const>
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                memory->writeData(address, 4, Utils::General::doubleWordToBytes(Utils::General::readDoubleWord(memory->readData(address, 4)).doubleWord - data1.doubleWord));
+                // <Register>, [Address]
+            } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
+                setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)).doubleWord - data.doubleWord, reg);
+                // <Register>, <Const>
+            } else if (regSize != RegisterSizes::ZERO) {
+                setRegisterData(data.doubleWord - data1.doubleWord, reg);
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB!"<<std::endl;
             }
             break;
         case InstructionSet::XOR:
-            if ((instruction.isRegisterInPosition(0) || instruction.isRegisterInPosition(1) || instruction.isAddressInPosition(0) || instruction.isAddressInPosition(1)) && (instruction.numOprands > 1)) {
-                Registers reg = Registers::UNKNOWN;
-                Registers reg1 = Registers::UNKNOWN;
-                RegisterSizes regSize = RegisterSizes::ZERO;
-                RegisterSizes regSize1 = RegisterSizes::ZERO;
-                Byte* data = nullptr;
-                Byte* data1 = nullptr;
-                
-                if (instruction.isRegisterInPosition(0)) {
-                    reg = Registers(instruction.args[0].doubleWord);
-                    regSize = registerToSize(reg);
-                } else {
-                    data = Utils::General::doubleWordToBytes(instruction.args[0]);
-                }
-                
-                if (instruction.isRegisterInPosition(1)) {
-                    reg1 = Registers(instruction.args[1].doubleWord);
-                    regSize1 = registerToSize(reg1);
-                } else {
-                    data1 = Utils::General::doubleWordToBytes(instruction.args[1]);
-                }
-                
-                if (reg != Registers::UNKNOWN) {
-                    switch (regSize) {
-                        case RegisterSizes::FOUR:
-                            data = memory->readData(getRegisterData(reg), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data = memory->readData(getRegisterData(reg), 2);
-                        case RegisterSizes::ONE:
-                            data = memory->readData(getRegisterData(reg), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                if (reg1 != Registers::UNKNOWN) {
-                    switch (regSize1) {
-                        case RegisterSizes::FOUR:
-                            data1 = memory->readData(getRegisterData(reg1), 4);
-                            break;
-                        case RegisterSizes::TWO:
-                            data1 = memory->readData(getRegisterData(reg1), 2);
-                        case RegisterSizes::ONE:
-                            data1 = memory->readData(getRegisterData(reg1), 1);
-                        default:
-                            break;
-                    }
-                }
-                
-                // <REG>, <REG>
-                if (regSize != RegisterSizes::ZERO && regSize1 != RegisterSizes::ZERO) {
-                    if (regSize == RegisterSizes::FOUR || regSize1 == RegisterSizes::FOUR) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (regSize1 == RegisterSizes::TWO) {
-                                result.doubleWord = getRegisterData(reg).doubleWord - getRegisterData(reg1).word.lowWord.word;
-                            } else {
-                                if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord ^ getRegisterData(reg1).word.lowWord.byte.hiByte;
-                                } else {
-                                    result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord ^ getRegisterData(reg1).word.lowWord.byte.lowByte;
-                                }
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).doubleWord ^ getRegisterData(reg1).doubleWord;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else if (regSize == RegisterSizes::TWO || regSize1 == RegisterSizes::TWO) {
-                        DoubleWord result;
-                        if (regSize < regSize1) {
-                            std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR: First register too small for storage!"<<std::endl;
-                        } else if(regSize > regSize1) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word ^ getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.word = getRegisterData(reg).word.lowWord.word ^ getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            setRegisterData(result, reg);
-                        } else {
-                            result.doubleWord = getRegisterData(reg).word.lowWord.word ^ getRegisterData(reg1).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        DoubleWord result;
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte ^ getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte ^ getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        } else {
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte ^ getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.lowByte ^ getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                        setRegisterData(result, reg);
-                    }
-                    // [Address], <Register, Const>
-                } else if (instruction.isAddressInPosition(0)) {
-                    if (regSize1 != RegisterSizes::ZERO) {
-                        if (regSize1 == RegisterSizes::FOUR) {
-                            DoubleWord result;
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).doubleWord ^ getRegisterData(reg1).doubleWord;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else if (regSize1 == RegisterSizes::TWO) {
-                            DoubleWord result;
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data), 4)).word.lowWord.word ^ getRegisterData(reg1).word.lowWord.word;
-                            if (result.doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data), 4, Utils::General::doubleWordToBytes(result));
-                        } else {
-                            DoubleWord *result = new DoubleWord;
-                            if (getRegisterType(reg1) == RegisterType::HIGH) {
-                                result->word.lowWord.byte.hiByte = *memory->readData(Utils::General::readDoubleWord(data), 1) ^ getRegisterData(reg1).word.lowWord.byte.hiByte;
-                            } else {
-                                result->word.lowWord.byte.lowByte = *memory->readData(Utils::General::readDoubleWord(data), 1) ^ getRegisterData(reg1).word.lowWord.byte.lowByte;
-                            }
-                            if (result->doubleWord == 0) {
-                                eflags.setFlagState(EFLAGS::ZF);
-                            }
-                            memory->writeData(Utils::General::readDoubleWord(data1), 4, Utils::General::doubleWordToBytes(*result));
-                            delete result;
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR [Address], <Register, Const>"<<std::endl;
-                    }
-                    // <Register>, [Address]
-                } else if (instruction.isAddressInPosition(1)) {
-                    if (regSize != RegisterSizes::ZERO) {
-                        DoubleWord result;
-                        if (regSize == RegisterSizes::FOUR) {
-                            result.doubleWord = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).doubleWord ^ getRegisterData(reg).doubleWord;
-                            setRegisterData(result, reg);
-                        } else if (regSize == RegisterSizes::TWO) {
-                            result.word.lowWord.word = Utils::General::readDoubleWord(memory->readData(Utils::General::readDoubleWord(data1), 4)).word.lowWord.word ^ getRegisterData(reg).word.lowWord.word;
-                            setRegisterData(result, reg);
-                        } else {
-                            if (getRegisterType(reg) == RegisterType::HIGH) {
-                                result.word.lowWord.byte.hiByte = getRegisterData(reg).word.lowWord.byte.hiByte ^ *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            } else {
-                                result.word.lowWord.byte.lowByte = getRegisterData(reg).word.lowWord.byte.lowByte ^ *memory->readData(Utils::General::readDoubleWord(data1), 1);
-                            }
-                            setRegisterData(result, reg);
-                        }
-                        if (result.doubleWord == 0) {
-                            eflags.setFlagState(EFLAGS::ZF);
-                        }
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR <Register>, [Address]!"<<std::endl;
-                    }
-                } else if (regSize != RegisterSizes::ZERO && data1 != nullptr) {
-                    // <REG>, <CONST>
-                    DoubleWord result;
-                    if (regSize == RegisterSizes::FOUR) {
-                        result.doubleWord = getRegisterData(reg).doubleWord ^ Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::TWO) {
-                        result.word.lowWord.word = getRegisterData(reg).word.lowWord.word ^ Utils::General::readDoubleWord(data1).doubleWord;
-                        setRegisterData(result, reg);
-                    } else if (regSize == RegisterSizes::ONE) {
-                        if (getRegisterType(reg) == RegisterType::HIGH) {
-                            result.word.lowWord.byte.hiByte = getRegisterData(reg).doubleWord ^ Utils::General::readDoubleWord(data1).doubleWord;
-                        } else {
-                            result.word.lowWord.byte.lowByte = getRegisterData(reg).doubleWord ^ Utils::General::readDoubleWord(data1).doubleWord;
-                        }
-                        setRegisterData(result, reg);
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR!"<<std::endl;
-                    }
-                    if (result.doubleWord == 0) {
-                        eflags.setFlagState(EFLAGS::ZF);
-                    }
-                } else {
-                    std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR!"<<std::endl;
-                }
-                if (data != nullptr) {
-                    delete data;
-                }
-                if (data1 != nullptr) {
-                    delete data1;
-                }
+            // <Register>, <Register>
+            if (reg != Registers::UNKNOWN && reg1 != Registers::UNKNOWN) {
+                setRegisterData(data.doubleWord ^ data1.doubleWord, reg);
+                // [Address], <Register, Const>
+            } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+                memory->writeData(address, 4, Utils::General::doubleWordToBytes(Utils::General::readDoubleWord(memory->readData(address, 4)).doubleWord ^ data1.doubleWord));
+                // <Register>, [Address]
+            } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
+                setRegisterData(Utils::General::readDoubleWord(memory->readData(address1, 4)).doubleWord ^ data.doubleWord, reg);
+                // <Register>, <Const>
+            } else if (regSize != RegisterSizes::ZERO) {
+                setRegisterData(data.doubleWord ^ data1.doubleWord, reg);
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR!"<<std::endl;
             }
             break;
         default:
-            break;
+            std::cerr<<"Unknown Instruction! Halting CPU to prevent damage!"<<std::endl;
+            stop();
     }
     if (!hasJumped)
         registers.IP.doubleWord += OPERATION_SZIE;
@@ -2230,6 +1556,10 @@ ElectroCraftVGA* ElectroCraft_CPU::getVideoCard() {
 
 ElectroCraftTerminal* ElectroCraft_CPU::getTerminal() {
     return terminal;
+}
+
+ElectroCraftKeyboard* ElectroCraft_CPU::getKeyboard() {
+    return keyboard;
 }
 
 bool ElectroCraft_CPU::isRunning() {

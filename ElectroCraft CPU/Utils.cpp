@@ -6,6 +6,7 @@
 //  Copyright (c) 2012 Cerios Software. All rights reserved.
 //
 
+#include <memory>
 #include "Utils.h"
 
 std::vector<std::string> &Utils::General::split(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -25,24 +26,24 @@ std::vector<std::string> Utils::General::split(const std::string &s, char delim)
 
 DoubleWord Utils::General::readDoubleWord(Byte *data) {
     DoubleWord doubleWord ;
-    memcpy(&doubleWord.doubleWord, data, 4);
+    std::memcpy(&doubleWord.doubleWord, data, 4);
     return doubleWord;
 }
 
 DoubleWord::Word Utils::General::readWord(Byte *data) {
     DoubleWord::Word word;
-    memcpy(&word.lowWord.word, data, 2);
+    std::memcpy(&word.lowWord.word, data, 2);
     return word;
 }
 
 Byte* Utils::General::doubleWordToBytes(DoubleWord word) {
     Byte* data = new Byte[4];
-    memcpy(data, &word.doubleWord, 4);
+    std::memcpy(data, &word.doubleWord, 4);
     return data;
 }
 
 Byte* Utils::General::wordToBytes(DoubleWord::Word word) {
     Byte* data = new Byte[2];
-    memcpy(data, &word.lowWord.word, 2);
+    std::memcpy(data, &word.lowWord.word, 2);
     return data;
 }

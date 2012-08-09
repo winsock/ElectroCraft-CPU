@@ -13,13 +13,15 @@
 
 struct MemoryInfo;
 class ElectroCraftMemory;
+struct RegisterState;
 
 class ElectroCraftStack {
     MemoryInfo* memoryBlock;
+    RegisterState *registers;
     ElectroCraftMemory * memory;
     Address currentAddress;
 public:
-    ElectroCraftStack(ElectroCraftMemory *memory, unsigned int size);
+    ElectroCraftStack(ElectroCraftMemory *memory, RegisterState * registers, unsigned int size);
     ~ElectroCraftStack();
     void push(DoubleWord data);
     DoubleWord pop();

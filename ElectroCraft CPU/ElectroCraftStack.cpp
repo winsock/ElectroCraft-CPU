@@ -9,11 +9,14 @@
 #include <iostream>
 #include "ElectroCraftStack.h"
 #include "ElectroCraftMemory.h"
+#include "ElectroCraft_CPU.h"
 
-ElectroCraftStack::ElectroCraftStack(ElectroCraftMemory *memory, unsigned int size) {
+ElectroCraftStack::ElectroCraftStack(ElectroCraftMemory *memory, RegisterState *registers, unsigned int size) {
     this->memory = memory;
     this->memoryBlock = memory->allocate(size);
     this->currentAddress = memoryBlock->startOffset;
+    registers->SP = memoryBlock->startOffset;
+    this->registers = registers;
     if (memoryBlock == nullptr) {
         std::cerr<<"ElectroCraft CPU: Error allocating the stack with the size: "<<size<<std::endl;
     }
@@ -28,6 +31,7 @@ void ElectroCraftStack::push(DoubleWord data) {
         (memoryBlock->front + currentAddress.doubleWord + 3)->data = data.word.lowWord.byte.hiByte;
         (memoryBlock->front + currentAddress.doubleWord + 4)->data = data.word.lowWord.byte.lowByte;
         currentAddress.doubleWord += 4;
+        registers->BP = currentAddress;
     }
 }
 
@@ -39,6 +43,7 @@ DoubleWord ElectroCraftStack::pop() {
         data.word.highWord.byte.lowByte = (memoryBlock->front + currentAddress.doubleWord + 2)->data;
         data.word.lowWord.byte.hiByte = (memoryBlock->front + currentAddress.doubleWord + 3)->data;
         data.word.lowWord.byte.lowByte = (memoryBlock->front + currentAddress.doubleWord + 4)->data;
+        registers->BP = currentAddress;
     } else {
         std::cerr<<"ElectroCraft CPU: Error! Tried to pop off an empty stack!"<<std::endl;
         data = memoryBlock->startOffset;

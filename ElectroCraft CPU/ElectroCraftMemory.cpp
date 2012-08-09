@@ -8,6 +8,7 @@
 
 #include "ElectroCraftMemory.h"
 #include <iostream>
+#include <algorithm>
 
 ElectroCraftMemory::~ElectroCraftMemory() {
     // Free up our allocated memory

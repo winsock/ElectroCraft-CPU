@@ -19,7 +19,7 @@ ElectroCraftVGA::ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width,
     }
     
     // 3 Bytes per pixel (RGB)
-    displayBufferSize.doubleWord = width * height * 3;
+    displayBufferSize.doubleWord = width * height;
     // Right after the VGA Info section
     displayBuffer = vgaIOMemory->front + 8;
     

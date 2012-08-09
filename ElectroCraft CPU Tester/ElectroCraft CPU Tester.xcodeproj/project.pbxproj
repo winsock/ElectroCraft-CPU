@@ -29,15 +29,17 @@
 		762D851815CCD65D00FAF876 /* ElectroCraft CPU Tester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "ElectroCraft CPU Tester"; sourceTree = BUILT_PRODUCTS_DIR; };
 		762D851C15CCD65D00FAF876 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		762D851E15CCD65D00FAF876 /* ElectroCraft_CPU_Tester.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = ElectroCraft_CPU_Tester.1; sourceTree = "<group>"; };
-		7632B1A715D17C0200F3A3A7 /* ElectroCraft_CPU.h */ = {isa = PBXFileReference; lastKnownFileType = file; name = ElectroCraft_CPU.h; path = "../ElectroCraft CPU/ElectroCraft_CPU.h"; sourceTree = "<group>"; };
-		7632B1A815D17C0200F3A3A7 /* ElectroCraftMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftMemory.h; path = "../ElectroCraft CPU/ElectroCraftMemory.h"; sourceTree = "<group>"; };
-		7632B1A915D17C0200F3A3A7 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = Utils.h; path = "../ElectroCraft CPU/Utils.h"; sourceTree = "<group>"; };
-		7632B1AA15D17C0200F3A3A7 /* ElectroCraftStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftStack.h; path = "../ElectroCraft CPU/ElectroCraftStack.h"; sourceTree = "<group>"; };
-		7632B1AB15D17C0200F3A3A7 /* ElectroCraftVGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftVGA.h; path = "../ElectroCraft CPU/ElectroCraftVGA.h"; sourceTree = "<group>"; };
-		7632B1AC15D17C0200F3A3A7 /* MemoryMappedIODevice.h */ = {isa = PBXFileReference; lastKnownFileType = file; name = MemoryMappedIODevice.h; path = "../ElectroCraft CPU/MemoryMappedIODevice.h"; sourceTree = "<group>"; };
-		7632B1AD15D17C0200F3A3A7 /* ElectroCraftClock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftClock.h; path = "../ElectroCraft CPU/ElectroCraftClock.h"; sourceTree = "<group>"; };
-		7632B1AE15D17C0200F3A3A7 /* ElectroCraftTickable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftTickable.h; path = "../ElectroCraft CPU/ElectroCraftTickable.h"; sourceTree = "<group>"; };
-		7632B1AF15D17C0200F3A3A7 /* ElectroCraftTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftTerminal.h; path = "../ElectroCraft CPU/ElectroCraftTerminal.h"; sourceTree = "<group>"; };
+		7632B1A715D17C0200F3A3A7 /* ElectroCraft_CPU.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ElectroCraft_CPU.h; path = "../ElectroCraft CPU/ElectroCraft_CPU.h"; sourceTree = "<group>"; };
+		7632B1A815D17C0200F3A3A7 /* ElectroCraftMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ElectroCraftMemory.h; path = "../ElectroCraft CPU/ElectroCraftMemory.h"; sourceTree = "<group>"; };
+		7632B1A915D17C0200F3A3A7 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Utils.h; path = "../ElectroCraft CPU/Utils.h"; sourceTree = "<group>"; };
+		7632B1AA15D17C0200F3A3A7 /* ElectroCraftStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ElectroCraftStack.h; path = "../ElectroCraft CPU/ElectroCraftStack.h"; sourceTree = "<group>"; };
+		7632B1AB15D17C0200F3A3A7 /* ElectroCraftVGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ElectroCraftVGA.h; path = "../ElectroCraft CPU/ElectroCraftVGA.h"; sourceTree = "<group>"; };
+		7632B1AC15D17C0200F3A3A7 /* MemoryMappedIODevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MemoryMappedIODevice.h; path = "../ElectroCraft CPU/MemoryMappedIODevice.h"; sourceTree = "<group>"; };
+		7632B1AD15D17C0200F3A3A7 /* ElectroCraftClock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ElectroCraftClock.h; path = "../ElectroCraft CPU/ElectroCraftClock.h"; sourceTree = "<group>"; };
+		7632B1AE15D17C0200F3A3A7 /* ElectroCraftTickable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ElectroCraftTickable.h; path = "../ElectroCraft CPU/ElectroCraftTickable.h"; sourceTree = "<group>"; };
+		7632B1AF15D17C0200F3A3A7 /* ElectroCraftTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ElectroCraftTerminal.h; path = "../ElectroCraft CPU/ElectroCraftTerminal.h"; sourceTree = "<group>"; };
+		766CAF8F15D2E42900EF08A4 /* ElectroCraftKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = ElectroCraftKeyboard.h; path = "../ElectroCraft CPU/ElectroCraftKeyboard.h"; sourceTree = "<group>"; };
+		766CAF9115D2E46B00EF08A4 /* IOPortDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file; name = IOPortDevice.h; path = "../ElectroCraft CPU/IOPortDevice.h"; sourceTree = "<group>"; };
 		76D9EA1F15CD9159007D64D2 /* libElectroCraftCPU.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; name = libElectroCraftCPU.dylib; path = "/Users/andrewquerol/Library/Developer/Xcode/DerivedData/ElectroCraft-guaylzedwvqakeawhhiueqkiaznb/Build/Products/Debug/libElectroCraftCPU.dylib"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -56,6 +58,8 @@
 		762D850D15CCD65D00FAF876 = {
 			isa = PBXGroup;
 			children = (
+				766CAF9115D2E46B00EF08A4 /* IOPortDevice.h */,
+				766CAF8F15D2E42900EF08A4 /* ElectroCraftKeyboard.h */,
 				7632B1A715D17C0200F3A3A7 /* ElectroCraft_CPU.h */,
 				7632B1A815D17C0200F3A3A7 /* ElectroCraftMemory.h */,
 				7632B1A915D17C0200F3A3A7 /* Utils.h */,

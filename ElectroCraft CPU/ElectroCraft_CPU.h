@@ -21,46 +21,48 @@
 #pragma GCC visibility push(default)
 
 // The size of an operation in bytes
-#define OPERATION_SZIE 11
+#define OPERATION_SZIE 19
 
 enum InstructionSet {
-    PUSH = 0,
-    POP = 1,
-    HLT = 2,
-    JE = 3,
-    JNE = 4,
-    MOV = 5,
-    CMP = 6,
-    NOP = 7,
-    LOOPE = 8,
-    LOOPNE = 9,
-    NOT = 10,
-    AND = 11,
-    OR = 12,
-    XOR = 13,
-    MUL = 14,
-    ADD = 15,
-    DIV = 16,
-    SUB = 17,
-    RET = 18,
-    POPA = 19,
-    PUSHA = 20,
-    SHL = 21,
-    SHR = 22,
-    LOOPWE = 23,
-    LOOPWNE = 24,
-    JNZ = 25,
-    JZ = 26,
-    CPUID = 27,
-    ROUND = 28,
-    LOOPZ = 29,
-    LOOPNZ = 30,
-    CALL = 31,
-    JMP = 32,
-    NEG = 33,
-    LOOP = 34,
-    RANDI = 35,
-    INT = 36,
+    PUSH = 1,
+    POP = 2,
+    HLT = 3,
+    JE = 4,
+    JNE = 5,
+    MOV = 6,
+    CMP = 7,
+    NOP = 8,
+    LOOPE = 9,
+    LOOPNE = 10,
+    NOT = 11,
+    AND = 12,
+    OR = 13,
+    XOR = 14,
+    MUL = 15,
+    ADD = 16,
+    DIV = 17,
+    SUB = 18,
+    RET = 19,
+    POPA = 20,
+    PUSHA = 21,
+    SHL = 22,
+    SHR = 23,
+    LOOPWE = 24,
+    LOOPWNE = 25,
+    JNZ = 26,
+    JZ = 27,
+    CPUID = 28,
+    ROUND = 29,
+    LOOPZ = 30,
+    LOOPNZ = 31,
+    CALL = 32,
+    JMP = 33,
+    NEG = 34,
+    LOOP = 35,
+    RANDI = 36,
+    INT = 37,
+    INP = 38,
+    OUT = 39,
     UNKOWN = 63
     };
 
@@ -101,7 +103,7 @@ enum Registers {
     DH = 26,
     DL = 27,
     
-    EFLAGS = 28,
+    FLAGS = 28,
     TOAL_SIZE,
     UNKNOWN = 63
     };
@@ -145,6 +147,12 @@ struct TokenData {
     DoubleWord offset;
 };
 
+enum Modifier {
+    NOM = 0,
+    ADDM = 1,
+    SUBM = 2
+    };
+
 struct OPCode {
     InstructionSet opCode = InstructionSet::UNKOWN; // 6 Bits max size of 63
     uint8_t numOprands; // Only uses the first two bits MAX number of 3
@@ -163,6 +171,7 @@ struct OPCode {
         infoBits = copy.infoBits;
         extendedInfoBits = copy.extendedInfoBits;
         args = copy.args;
+        modifier = copy.modifier;
     }
     
     Byte getOpCodeByte() {
@@ -226,7 +235,45 @@ struct OPCode {
         extendedInfoBits.set(postition);
     }
     
+    Modifier getModifierForPosition(int position) {
+        if (position == 0) {
+            if (extendedInfoBits.test(2)) {
+                return Modifier::ADDM;
+            } else if (extendedInfoBits.test(3)) {
+                return Modifier::SUBM;
+            } else {
+                return Modifier::NOM;
+            }
+        } else {
+            if (extendedInfoBits.test(4)) {
+                return Modifier::ADDM;
+            } else if (extendedInfoBits.test(5)) {
+                return Modifier::SUBM;
+            } else {
+                return Modifier::NOM;
+            }
+        }
+    }
+    
+    void setModifierForPosition(int position, Modifier mod, DoubleWord value) {
+        if (mod == Modifier::ADDM) {
+            if (position == 0) {
+                extendedInfoBits.set(2);
+            } else {
+                extendedInfoBits.set(4);
+            }
+        } else if (mod == Modifier::SUBM) {
+            if (position == 0) {
+                extendedInfoBits.set(3);
+            } else {
+                extendedInfoBits.set(5);
+            }
+        }
+        modifier[position] = value;
+    }
+    
     DoubleWord* args = new DoubleWord[2];
+    DoubleWord* modifier = new DoubleWord[2];
 };
 
 struct FirstPassData {
@@ -258,12 +305,11 @@ enum EFLAGS {
     DF = 7,
     OF = 8,
     RF = 9,
-    ID = 10,
-    TOTAL_SIZE
+    ID = 10
 };
 
 struct EFLAGSState {
-    std::bitset<EFLAGS::TOTAL_SIZE> flagStates;
+    std::bitset<10> flagStates;
     
     bool getFlagState(enum EFLAGS flag) {
         return flagStates.test(flag);
@@ -283,16 +329,24 @@ class ElectroCraftStack;
 class ElectroCraftClock;
 class ElectroCraftVGA;
 class ElectroCraftTerminal;
+class ElectroCraftStorage;
+class ElectroCraftKeyboard;
+
+namespace IOPort {
+    class IOPortHandler;
+}
 
 class ElectroCraft_CPU : ElectroCraftTickable {
     RegisterState registers;
-    EFLAGSState eflags;
+    EFLAGSState eState;
     ElectroCraftMemory* memory;
     ElectroCraftStack* stack;
     ElectroCraftClock* clock;
     ElectroCraftVGA* videoCard;
     ElectroCraftTerminal* terminal;
-    
+    IOPort::IOPortHandler *ioPortHandler;
+    ElectroCraftStorage *storage;
+    ElectroCraftKeyboard *keyboard;
     Section currentSection = Section::CODE;
 public:
     ElectroCraft_CPU();
@@ -304,6 +358,7 @@ public:
     void reset(Address baseAddress);
     ElectroCraftVGA* getVideoCard();
     ElectroCraftTerminal* getTerminal();
+    ElectroCraftKeyboard* getKeyboard();
     bool isRunning();
     virtual void operator()(long tickTime);
 private:
