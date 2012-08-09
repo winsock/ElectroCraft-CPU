@@ -143,9 +143,20 @@ struct StackData {
     unsigned int length;
 };
 
+enum VarType {
+    DB = 0,
+    DW = 1,
+    DD = 2
+};
+
 struct TokenData {
     std::string name;
     DoubleWord offset;
+    int position = 0;
+    
+    bool isTokenVar = false;
+    VarType varType;
+    std::vector<Byte> varData;
 };
 
 enum Modifier {
@@ -273,6 +284,14 @@ struct OPCode {
         modifier[position] = value;
     }
     
+    void setVarForPosition(int position) {
+        extendedInfoBits.set(position + 6);
+    }
+    
+    bool isVarInPosition(int position) {
+        return extendedInfoBits.test(position + 6);
+    }
+    
     DoubleWord* args = new DoubleWord[2];
     DoubleWord* modifier = new DoubleWord[2];
 };
@@ -281,18 +300,18 @@ struct FirstPassData {
     OPCode* opcode;
     DoubleWord beginOffset;
     TokenData token;
-    TokenData* unresolvedTokens = new TokenData[2];
+    std::vector<TokenData> unresolvedTokens;
     
     FirstPassData() {}
     ~FirstPassData() {
-        delete [] unresolvedTokens;
         delete opcode;
     }
 };
 
 struct AssembledData {
     Byte* data;
-    int length;
+    unsigned int length;
+    unsigned int codeOffset;
 };
 
 enum EFLAGS {
@@ -353,7 +372,7 @@ public:
     ElectroCraft_CPU();
     ~ElectroCraft_CPU();
     AssembledData assemble(std::vector<std::string>);
-    Address loadIntoMemory(Byte* data, int length);
+    Address loadIntoMemory(Byte* data, unsigned int length, unsigned int codeOffset);
     void start(Address baseAddress);
     void stop();
     void reset(Address baseAddress);

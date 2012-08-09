@@ -8,11 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366225120.396376"
+         timestampString = "366245256.227341"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "717"
-         endingLineNumber = "717"
+         startingLineNumber = "821"
+         endingLineNumber = "821"
          landmarkName = "ElectroCraft_CPU::getRegisterType(Registers reg)"
          landmarkType = "5">
       </FileBreakpoint>
@@ -21,11 +21,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366225133.665831"
+         timestampString = "366245256.227341"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "673"
-         endingLineNumber = "673"
+         startingLineNumber = "777"
+         endingLineNumber = "777"
          landmarkName = "ElectroCraft_CPU::registerToSize(Registers reg)"
          landmarkType = "5">
       </FileBreakpoint>
@@ -34,11 +34,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366225136.568105"
+         timestampString = "366245256.227341"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "629"
-         endingLineNumber = "629"
+         startingLineNumber = "733"
+         endingLineNumber = "733"
          landmarkName = "ElectroCraft_CPU::setRegisterData(DoubleWord data, Registers reg)"
          landmarkType = "5">
       </FileBreakpoint>
@@ -47,12 +47,51 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366225140.141235"
+         timestampString = "366245256.227341"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "552"
-         endingLineNumber = "552"
+         startingLineNumber = "656"
+         endingLineNumber = "656"
          landmarkName = "ElectroCraft_CPU::getRegisterData(Registers reg)"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
+         timestampString = "366245256.227341"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "915"
+         endingLineNumber = "915"
+         landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
+         timestampString = "366245256.227341"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "142"
+         endingLineNumber = "142"
+         landmarkName = "ElectroCraft_CPU::assemble(std::vector&lt;std::string&gt; data)"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
+         timestampString = "366245256.227341"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "870"
+         endingLineNumber = "870"
+         landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
          landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>

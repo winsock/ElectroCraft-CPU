@@ -57,10 +57,12 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
         AssembledData cppAssembledData = cpu->assemble(instructions);
         jfieldID dataField = env->GetFieldID(assembledDataClass, "data", "[B");
         jfieldID lenthField = env->GetFieldID(assembledDataClass, "length", "I");
+        jfieldID codeOffsetField = env->GetFieldID(assembledDataClass, "codeStart", "I");
         jbyteArray byteData = env->NewByteArray(cppAssembledData.length);
         env->SetByteArrayRegion(byteData, 0, cppAssembledData.length, reinterpret_cast<jbyte*>(cppAssembledData.data));
         env->SetObjectField(assembedData, dataField, byteData);
         env->SetIntField(assembedData, lenthField, env->GetArrayLength(byteData));
+        env->SetIntField(assembedData, codeOffsetField, cppAssembledData.codeOffset);
         
         // Release the data
         env->ReleaseStringChars(data, chars);
@@ -157,9 +159,9 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
     }
 }
 
-JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory (JNIEnv *env, jobject, jbyteArray data, jint length){
+JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory (JNIEnv *env, jobject, jbyteArray data, jint length, jint codeOffset){
     jbyteArray byteData = reinterpret_cast<jbyteArray>(data);
-    return cpu->loadIntoMemory(reinterpret_cast<Byte*>(env->GetByteArrayElements(byteData, false)), length).doubleWord;
+    return cpu->loadIntoMemory(reinterpret_cast<Byte*>(env->GetByteArrayElements(byteData, false)), length, codeOffset).doubleWord;
 }
 
 JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_stop (JNIEnv *env, jobject) {

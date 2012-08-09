@@ -153,9 +153,17 @@ int main(int argc, const char * argv[])
         "ret"
     };
     
+    std::vector<std::string> dbTest {
+        ".data",
+        "string db \"hello world how is it going today?\", 0, 1, 0",
+        ".code",
+        "mov eax, [0x1010008]",
+        "mov [eax], string"
+    };
+    
     ElectroCraft_CPU *cpu = new ElectroCraft_CPU;
-    AssembledData data = cpu->assemble(simpleCallTest);
-    cpu->start(cpu->loadIntoMemory(data.data, data.length));
+    AssembledData data = cpu->assemble(dbTest);
+    cpu->start(cpu->loadIntoMemory(data.data, data.length, data.codeOffset));
     while (cpu->isRunning()) {
         cpu->getKeyboard()->onKeyPress(77);
         std::this_thread::sleep_for(std::chrono::milliseconds(5));

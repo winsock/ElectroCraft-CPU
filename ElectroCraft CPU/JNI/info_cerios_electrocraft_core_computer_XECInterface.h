@@ -50,10 +50,10 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
  * Method:    loadIntoMemory
- * Signature: ([BI)J
+ * Signature: ([BII)J
  */
 JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory
-  (JNIEnv *, jobject, jbyteArray, jint);
+  (JNIEnv *, jobject, jbyteArray, jint, jint);
 
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface

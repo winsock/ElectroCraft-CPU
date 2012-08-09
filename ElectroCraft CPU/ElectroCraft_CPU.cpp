@@ -56,14 +56,19 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     // The first pass
     std::vector<FirstPassData*> firstPassData;
     std::map<std::string, TokenData> tokens;
-    DoubleWord currentOffset;
-    currentOffset.doubleWord = 0;
+    
+    DoubleWord currentOffset = 0;
+    DoubleWord totalDataSize = 0;
+
     for (unsigned int line = 0; line < data.size(); line++) {
         FirstPassData *readData = firstPass(data[line], currentOffset);
         if (readData != nullptr) {
             if (!readData->token.name.empty()) {
                 // Only way this can happen if there was a token returned
                 tokens[readData->token.name] = readData->token;
+                if (readData->token.isTokenVar) {
+                    totalDataSize.doubleWord += readData->token.varData.size();
+                }
             } else if (readData->opcode->opCode != InstructionSet::UNKOWN) {
                 firstPassData.push_back(readData);
                 currentOffset.doubleWord += OPERATION_SZIE;
@@ -72,22 +77,43 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     }
     
     AssembledData assembledData;
+    Byte* rawData = new Byte[currentOffset.doubleWord + totalDataSize.doubleWord];
     currentOffset.doubleWord = 0;
+
+    // Finally pack the program into a byte array
+    unsigned int currentDataOffset = 0;
+    
+    // Pack the data
+    for (auto &tokenPair : tokens) {
+        if (tokenPair.second.isTokenVar) {
+            tokenPair.second.offset = currentOffset;
+            for (auto &varData : tokenPair.second.varData) {
+                rawData[currentDataOffset] = varData;
+                currentDataOffset++;
+            }
+        }
+    }
     
     // The second pass try to resolve unknown tokens
     for (FirstPassData *firstPass : firstPassData) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < firstPass->unresolvedTokens.size(); i++) {
             if (!firstPass->unresolvedTokens[i].name.empty()) {
                 if (tokens.find(firstPass->unresolvedTokens[i].name) != tokens.end()) {
-                    firstPass->opcode->setOffsetInPosition(i);
-                    long realOffset = (long)tokens[firstPass->unresolvedTokens[i].name].offset.doubleWord - (long)currentOffset.doubleWord;
+                    long realOffset;
+                    if (tokens[firstPass->unresolvedTokens[i].name].isTokenVar) {
+                        firstPass->opcode->setVarForPosition(firstPass->unresolvedTokens[i].position);
+                        realOffset = (long)tokens[firstPass->unresolvedTokens[i].name].offset.doubleWord - (long)currentDataOffset - (long)currentOffset.doubleWord;
+                    } else {
+                        realOffset = (long)tokens[firstPass->unresolvedTokens[i].name].offset.doubleWord - (long)currentOffset.doubleWord;
+                    }
+                    firstPass->opcode->setOffsetInPosition(firstPass->unresolvedTokens[i].position);
                     if (realOffset < 0) {
-                        firstPass->opcode->setOffsetNegitiveInPosition(i);
+                        firstPass->opcode->setOffsetNegitiveInPosition(firstPass->unresolvedTokens[i].position);
                         realOffset = -realOffset;
                     }
                     DoubleWord offset;
                     offset.doubleWord = static_cast<uint32_t>(realOffset);
-                    firstPass->opcode->args[i] = offset;
+                    firstPass->opcode->args[firstPass->unresolvedTokens[i].position] = offset;
                 } else {
                     std::cerr<<"Unkown token: "<<firstPass->unresolvedTokens[i].name<<std::endl;
                     assembledData.data = nullptr;
@@ -98,19 +124,20 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
         currentOffset.doubleWord += OPERATION_SZIE;
     }
     
-    // Finally pack the program into a byte array
-    Byte* rawData = new Byte[currentOffset.doubleWord];
+    assembledData.codeOffset = currentDataOffset;
+    
     for (int i = 0; i < firstPassData.size(); i++) {
-        rawData[firstPassData[i]->beginOffset.doubleWord] = firstPassData[i]->opcode->getOpCodeByte();
-        rawData[firstPassData[i]->beginOffset.doubleWord + 1] = firstPassData[i]->opcode->getInfoByte();
-        rawData[firstPassData[i]->beginOffset.doubleWord + 2] = firstPassData[i]->opcode->getExtendedInfoByte();
-        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3], &firstPassData[i]->opcode->args[0].doubleWord, sizeof(uint32_t));
-        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + sizeof(uint32_t)], &firstPassData[i]->opcode->args[1].doubleWord, sizeof(uint32_t));
-        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + (sizeof(uint32_t) * 2)], &firstPassData[i]->opcode->modifier[0].doubleWord, sizeof(uint32_t));
-        std::memcpy(&rawData[firstPassData[i]->beginOffset.doubleWord + 3 + (sizeof(uint32_t) * 3)], &firstPassData[i]->opcode->modifier[1].doubleWord, sizeof(uint32_t));
+        rawData[currentDataOffset] = firstPassData[i]->opcode->getOpCodeByte();
+        rawData[currentDataOffset + 1] = firstPassData[i]->opcode->getInfoByte();
+        rawData[currentDataOffset + 2] = firstPassData[i]->opcode->getExtendedInfoByte();
+        std::memcpy(&rawData[currentDataOffset + 3], &firstPassData[i]->opcode->args[0].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[currentDataOffset + 3 + sizeof(uint32_t)], &firstPassData[i]->opcode->args[1].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[currentDataOffset + 3 + (sizeof(uint32_t) * 2)], &firstPassData[i]->opcode->modifier[0].doubleWord, sizeof(uint32_t));
+        std::memcpy(&rawData[currentDataOffset + 3 + (sizeof(uint32_t) * 3)], &firstPassData[i]->opcode->modifier[1].doubleWord, sizeof(uint32_t));
+        currentDataOffset += OPERATION_SZIE;
     }
     assembledData.data = rawData;
-    assembledData.length = currentOffset.doubleWord;
+    assembledData.length = currentDataOffset;
     
     return assembledData;
 }
@@ -124,23 +151,24 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
         return nullptr;
     }
     
-    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
     FirstPassData *data = new FirstPassData;
     data->beginOffset = beginOffset;
     
     std::stringstream tokenBuffer;
     bool insideBrackets = false;
+    bool insideOfQuotes = false;
+    bool wasInsideQuotes = false;
+    TokenData var;
     int tokenNumber = 0;
     for (int i = 0; i < line.size(); i++) {
-        // We only allow max of 1 Op Code and 2 arguments
-        if (tokenNumber > 3) {
-            break;
-        }
-        
         if (line[i] == '[')
             insideBrackets = true;
         else if(line[i] == ']')
             insideBrackets = false;
+        if (line[i] == '"') {
+            wasInsideQuotes = insideOfQuotes;
+            insideOfQuotes = !insideOfQuotes;
+        }
         
         // Ignore comments
         if (line[i] == ';') {
@@ -148,7 +176,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                 return data;
             else
                 return nullptr;
-        } if ((line[i] == ' ' || line[i] == ',' || &line[i] == &line.back()) && !insideBrackets) {
+        } if ((line[i] == ' ' || line[i] == ',' || &line[i] == &line.back()) && !(insideBrackets || insideOfQuotes)) {
             // If this is the last char make sure it gets put into the buffer
             if (&line[i] == &line.back()) {
                 tokenBuffer<<line[i];
@@ -156,7 +184,69 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
             
             std::string token = tokenBuffer.str();
             tokenBuffer.str(std::string());
-            if (token.size() > 0 && tokenNumber == 0) {
+            if (data->token.isTokenVar && currentSection == Section::DATA) {
+                if (wasInsideQuotes) {
+                    if (data->token.varType == VarType::DB) {
+                        for (int c = 0; c < token.size(); c++) {
+                            if (token[c] != '"')
+                                data->token.varData.push_back(token[c]);
+                        }
+                    } else {
+                        std::cerr<<"ElectroCraft Assembler: Error! String Literials can only be put into a byte type!"<<std::endl;
+                    }
+                    wasInsideQuotes =!wasInsideQuotes;
+                } else {
+                    bool isHexNumber = (token.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
+                    bool isDecimalNumber = (token.find_first_not_of("0123456789") == std::string::npos);
+                    if (isDecimalNumber) {
+                        // Lets see if it is a decimal number
+                        std::stringstream ss;
+                        ss << std::dec << token;
+                        if (ss.good()) {
+                            DoubleWord number;
+                            ss >> number.doubleWord;
+                            if (data->token.varType == VarType::DB) {
+                                data->token.varData.push_back(number.word.lowWord.byte.lowByte);
+                            } else if (data->token.varType == VarType::DW) {
+                                Byte* nData = Utils::General::wordToBytes(number.word);
+                                for (int d = 0; d < 2; d++) {
+                                    data->token.varData.push_back(nData[d]);
+                                }
+                            } else {
+                                Byte* nData = Utils::General::doubleWordToBytes(number);
+                                for (int d = 0; d < 4; d++) {
+                                    data->token.varData.push_back(nData[d]);
+                                }
+                            }
+                        }
+                    } else if (isHexNumber) {
+                        // Lets see if it is a hex number
+                        std::stringstream ss;
+                        ss<< std::hex << token;
+                        if (ss) {
+                            DoubleWord number;
+                            ss >> number.doubleWord;
+                            if (data->token.varType == VarType::DB) {
+                                data->token.varData.push_back(number.word.lowWord.byte.lowByte);
+                            } else if (data->token.varType == VarType::DW) {
+                                Byte* nData = Utils::General::wordToBytes(number.word);
+                                for (int d = 0; d < 2; d++) {
+                                    data->token.varData.push_back(nData[d]);
+                                }
+                            } else {
+                                Byte* nData = Utils::General::doubleWordToBytes(number);
+                                for (int d = 0; d < 4; d++) {
+                                    data->token.varData.push_back(nData[d]);
+                                }
+                            }
+                        }
+                    } else {
+                        std::cerr<<"ElectroCraft Assembler: Error! Cannot chain varible decerlations!"<<std::endl;
+                    }
+                }
+                tokenNumber++;
+            } else if (token.size() > 0 && tokenNumber == 0) {
+                std::transform(token.begin(), token.end(), token.begin(), ::toupper);
                 if(token.back() == ':') {
                     TokenData tokenData;
                     tokenData.name = token.substr(0, token.size() - 1);
@@ -167,23 +257,35 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                     OPCode* opcode = readOPCode(token);
                     if (opcode->opCode != InstructionSet::UNKOWN) {
                         data->opcode = opcode;
-                    } else {
-                        std::cerr<<"ElectroCraft CPU: Unknown operation: "<<token<<std::endl;
-                        continue;
+                    } else if (currentSection == Section::DATA) {
+                        var.name = token;
+                        var.offset = beginOffset;
                     }
                 }
                 tokenNumber++;
             } else if (token.size() > 0 && tokenNumber > 0) {
+                std::transform(token.begin(), token.end(), token.begin(), ::toupper);
                 // Lets see if it is a register!
                 Registers reg = getRegister(token);
                 if (reg != Registers::UNKNOWN) {
                     data->opcode->infoBits.set(tokenNumber - 1);
                     data->opcode->args[tokenNumber - 1].doubleWord = reg;
                     tokenNumber++;
+                } else if (((token == "DB" || token == "DW" || token == "DD") && var.name.size() > 0) && currentSection == Section::DATA) {
+                    var.isTokenVar = true;
+                    data->token = var;
+                    if (token == "DB") {
+                        data->token.varType = VarType::DB;
+                    } else if (token == "DW") {
+                        data->token.varType = VarType::DW;
+                    } else {
+                        data->token.varType = VarType::DD;
+                    }
+                    tokenNumber++;
                 } else {
                     // Lets see if is a address
                     if (token.front() == '[' && token.back() == ']') {
-                        bool isHexNumber = (token.substr(1, token.size() - 2).find_first_not_of("X0123456789ABCDEF") == std::string::npos);
+                        bool isHexNumber = (token.substr(1, token.size() - 2).find_first_not_of("zX0123456789ABCDEFabcdef") == std::string::npos);
                         bool hasAddModifier = (token.substr(1, token.size() - 2).find_first_of("+") != std::string::npos);
                         bool hasSubtractModifier = (token.substr(1, token.size() - 2).find_first_of("-") != std::string::npos);
                         
@@ -209,7 +311,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                                     std::string subToken = modifierBuff.str();
                                     modifierBuff.str(std::string());
                                     
-                                    bool isHexNumber = (subToken.find_first_not_of("X0123456789ABCDEF") == std::string::npos);
+                                    bool isHexNumber = (subToken.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
                                     bool isDecimalNumber = (subToken.find_first_not_of("0123456789") == std::string::npos);
                                     
                                     Registers reg = getRegister(subToken);
@@ -256,7 +358,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             }
                         }
                     } else {
-                        bool isHexNumber = (token.find_first_not_of("X0123456789ABCDEF") == std::string::npos);
+                        bool isHexNumber = (token.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
                         bool isDecimalNumber = (token.find_first_not_of("0123456789") == std::string::npos);
                         if (isDecimalNumber) {
                             // Lets see if it is a decimal number
@@ -280,7 +382,9 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             // Must be some token we haven't solved yet
                             TokenData unresolved;
                             unresolved.name = token;
-                            data->unresolvedTokens[tokenNumber - 1] = unresolved;
+                            unresolved.position = tokenNumber - 1;
+                            unresolved.offset = beginOffset;
+                            data->unresolvedTokens.push_back(unresolved);
                         }
                         tokenNumber++;
                     }
@@ -291,7 +395,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
         }
     }
     
-    if (tokenNumber == 0 || data->opcode->opCode == InstructionSet::UNKOWN) {
+    if (tokenNumber == 0) {
         return nullptr;
     }
     
@@ -753,6 +857,22 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     // Default values for data
     data = instruction.args[0];
     data1 = instruction.args[1];
+    
+    // Defined Variables
+    if (instruction.isVarInPosition(0)) {
+        if (instruction.isOffsetNegitive(0)) {
+            data = Utils::General::readDoubleWord(memory->readData(registers.IP.doubleWord - instruction.args[0].doubleWord, 4));
+        } else {
+            data = Utils::General::readDoubleWord(memory->readData(registers.IP.doubleWord + instruction.args[0].doubleWord, 4));
+        }
+    }
+    if (instruction.isVarInPosition(1)) {
+        if (instruction.isOffsetNegitive(1)) {
+            data1 = Utils::General::readDoubleWord(memory->readData(registers.IP.doubleWord - instruction.args[1].doubleWord, 4));
+        } else {
+            data1 = Utils::General::readDoubleWord(memory->readData(registers.IP.doubleWord + instruction.args[1].doubleWord, 4));
+        }
+    }
     
     // Registers
     if (instruction.isRegisterInPosition(0)) {
@@ -1538,10 +1658,10 @@ bool ElectroCraft_CPU::isRunning() {
     return clock->isRunning();
 }
 
-Address ElectroCraft_CPU::loadIntoMemory(Byte *data, int length) {
+Address ElectroCraft_CPU::loadIntoMemory(Byte *data, unsigned int length, unsigned int codeOffset) {
     MemoryInfo* memoryBlock = memory->allocate(length);
     memoryBlock->setData(data, length);
-    return memoryBlock->startOffset;
+    return memoryBlock->startOffset.doubleWord + codeOffset;
 }
 
 void ElectroCraft_CPU::start(Address baseAddress) {
