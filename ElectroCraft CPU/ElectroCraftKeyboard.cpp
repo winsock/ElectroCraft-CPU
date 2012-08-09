@@ -26,7 +26,7 @@ IOPort::IOPortResult *ElectroCraftKeyboard::onIOPortInterrupt(IOPort::IOPortInte
         }
     } else if (interrupt.ioPort.doubleWord == 0x122) {
         if (interrupt.read) {
-            result->returnData.doubleWord = pressedKeys.back();
+            result->returnData.word.lowWord.byte.lowByte = pressedKeys.back();
             pressedKeys.pop_back();
         }
     } else if (interrupt.ioPort.doubleWord == 0x123) {

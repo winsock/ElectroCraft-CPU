@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECKeyboard
  * Method:    onKeyPress
- * Signature: (I)V
+ * Signature: (C)V
  */
 JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECKeyboard_onKeyPress
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jbyte);
 
 #ifdef __cplusplus
 }

@@ -385,10 +385,10 @@ ElectroCraftKeyboard* getKeyboardFromJKeyboard(JNIEnv *env, jobject jTerminal) {
     }
 }
 
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECKeyboard_onKeyPress(JNIEnv *env, jobject caller, jint keycode) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECKeyboard_onKeyPress(JNIEnv *env, jobject caller, jbyte key) {
     ElectroCraftKeyboard *keyboard = getKeyboardFromJKeyboard(env, caller);
     if (keyboard != nullptr) {
-        keyboard->onKeyPress(keycode);
+        keyboard->onKeyPress(key);
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)

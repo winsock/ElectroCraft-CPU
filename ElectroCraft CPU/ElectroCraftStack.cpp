@@ -14,8 +14,7 @@
 ElectroCraftStack::ElectroCraftStack(ElectroCraftMemory *memory, RegisterState *registers, unsigned int size) {
     this->memory = memory;
     this->memoryBlock = memory->allocate(size);
-    this->currentAddress = memoryBlock->startOffset;
-    registers->SP = memoryBlock->startOffset;
+    registers->SP = memoryBlock->startOffset + size;
     this->registers = registers;
     if (memoryBlock == nullptr) {
         std::cerr<<"ElectroCraft CPU: Error allocating the stack with the size: "<<size<<std::endl;
@@ -23,30 +22,22 @@ ElectroCraftStack::ElectroCraftStack(ElectroCraftMemory *memory, RegisterState *
 }
 
 void ElectroCraftStack::push(DoubleWord data) {
-    if ((currentAddress.doubleWord - memoryBlock->startOffset.doubleWord) + 4 > memoryBlock->memoryLength.doubleWord) {
-        std::cerr<<"ElectroCraft CPU: Error! Ran out of stack space!"<<std::endl;
+    if ((registers->SP.doubleWord - memoryBlock->startOffset.doubleWord) >= 4) {
+        registers->SP.doubleWord -= 4;
+        memory->writeData(registers->SP.doubleWord + memoryBlock->startOffset.doubleWord, 4, Utils::General::doubleWordToBytes(data));
     } else {
-        (memoryBlock->front + currentAddress.doubleWord + 1)->data = data.word.highWord.byte.hiByte;
-        (memoryBlock->front + currentAddress.doubleWord + 2)->data = data.word.highWord.byte.lowByte;
-        (memoryBlock->front + currentAddress.doubleWord + 3)->data = data.word.lowWord.byte.hiByte;
-        (memoryBlock->front + currentAddress.doubleWord + 4)->data = data.word.lowWord.byte.lowByte;
-        currentAddress.doubleWord += 4;
-        registers->BP = currentAddress;
+        std::cerr<<"ElectroCraft CPU: Error! Ran out of stack space!"<<std::endl;
     }
 }
 
 DoubleWord ElectroCraftStack::pop() {
     DoubleWord data;
-    if ((currentAddress.doubleWord - memoryBlock->startOffset.doubleWord) >= 4) {
-        currentAddress.doubleWord -= 4;
-        data.word.highWord.byte.hiByte = (memoryBlock->front + currentAddress.doubleWord + 1)->data;
-        data.word.highWord.byte.lowByte = (memoryBlock->front + currentAddress.doubleWord + 2)->data;
-        data.word.lowWord.byte.hiByte = (memoryBlock->front + currentAddress.doubleWord + 3)->data;
-        data.word.lowWord.byte.lowByte = (memoryBlock->front + currentAddress.doubleWord + 4)->data;
-        registers->BP = currentAddress;
+    if ((registers->SP.doubleWord + 4) <= memoryBlock->memoryLength.doubleWord) {
+        data = Utils::General::readDoubleWord(&(memoryBlock->front + registers->SP.doubleWord)->data);
+        registers->SP.doubleWord += 4;
     } else {
         std::cerr<<"ElectroCraft CPU: Error! Tried to pop off an empty stack!"<<std::endl;
-        data = memoryBlock->startOffset;
+        data = Utils::General::readDoubleWord(&memoryBlock->front->data);
     }
     return data;
 }

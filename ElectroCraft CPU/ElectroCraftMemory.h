@@ -19,8 +19,9 @@
 enum MemoryState {
     FREE = 0,
     SYSTEM = 1,
-    ALLOCATED = 2,
-    UNKNOWN_STATE = 3
+    STACK = 2,
+    ALLOCATED = 3,
+    UNKNOWN_STATE = 4
     };
 
 struct Memory {
