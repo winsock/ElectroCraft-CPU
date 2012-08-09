@@ -12,7 +12,7 @@
 #include <sstream>
 #include <algorithm>
 #include <random>
-#include <memory>
+#include <cstring>
 
 // ElectroCraft Headers
 #include "ElectroCraft_CPU.h"

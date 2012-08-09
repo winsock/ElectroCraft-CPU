@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Cerios Software. All rights reserved.
 //
 
-#include <memory>
+#include <cstring>
 #include "Utils.h"
 
 std::vector<std::string> &Utils::General::split(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -17,7 +17,6 @@ std::vector<std::string> &Utils::General::split(const std::string &s, char delim
     }
     return elems;
 }
-
 
 std::vector<std::string> Utils::General::split(const std::string &s, char delim) {
     std::vector<std::string> elems;
