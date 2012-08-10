@@ -4,6 +4,7 @@
 
 #ifndef _Included_info_cerios_electrocraft_core_computer_XECKeyboard
 #define _Included_info_cerios_electrocraft_core_computer_XECKeyboard
+#pragma GCC visibility push(default)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,4 +19,5 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECKeyboard_o
 #ifdef __cplusplus
 }
 #endif
+#pragma GCC visibility pop
 #endif

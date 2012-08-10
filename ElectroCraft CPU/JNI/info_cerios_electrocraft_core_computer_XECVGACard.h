@@ -4,6 +4,7 @@
 
 #ifndef _Included_info_cerios_electrocraft_core_computer_XECVGACard
 #define _Included_info_cerios_electrocraft_core_computer_XECVGACard
+#pragma GCC visibility push(default)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,4 +59,5 @@ JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_ge
 #ifdef __cplusplus
 }
 #endif
+#pragma GCC visibility pop
 #endif

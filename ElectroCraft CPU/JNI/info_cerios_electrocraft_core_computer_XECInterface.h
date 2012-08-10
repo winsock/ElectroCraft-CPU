@@ -4,6 +4,7 @@
 
 #ifndef _Included_info_cerios_electrocraft_core_computer_XECInterface
 #define _Included_info_cerios_electrocraft_core_computer_XECInterface
+#pragma GCC visibility push(default)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,4 +91,5 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
 #ifdef __cplusplus
 }
 #endif
+#pragma GCC visibility pop
 #endif

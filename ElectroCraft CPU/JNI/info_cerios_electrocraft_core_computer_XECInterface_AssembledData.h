@@ -4,10 +4,12 @@
 
 #ifndef _Included_info_cerios_electrocraft_core_computer_XECInterface_AssembledData
 #define _Included_info_cerios_electrocraft_core_computer_XECInterface_AssembledData
+#pragma GCC visibility push(default)
 #ifdef __cplusplus
 extern "C" {
 #endif
 #ifdef __cplusplus
 }
 #endif
+#pragma GCC visibility pop
 #endif
