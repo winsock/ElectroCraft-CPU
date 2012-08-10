@@ -85,6 +85,7 @@ namespace Utils {
         static DoubleWord::Word readWord(Byte* data);
         static Byte* doubleWordToBytes(DoubleWord word);
         static Byte* wordToBytes(DoubleWord::Word word);
+        static Byte* numberToBytes(DoubleWord data, unsigned int size);
     };
 }
 

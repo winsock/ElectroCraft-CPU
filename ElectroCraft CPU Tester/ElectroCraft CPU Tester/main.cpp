@@ -162,7 +162,7 @@ int main(int argc, const char * argv[])
     };
     
     ElectroCraft_CPU *cpu = new ElectroCraft_CPU;
-    AssembledData data = cpu->assemble(dbTest);
+    AssembledData data = cpu->assemble(ecAsm3);
     cpu->start(cpu->loadIntoMemory(data.data, data.length, data.codeOffset));
     while (cpu->isRunning()) {
         cpu->getKeyboard()->onKeyPress(77);

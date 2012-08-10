@@ -46,3 +46,15 @@ Byte* Utils::General::wordToBytes(DoubleWord::Word word) {
     std::memcpy(data, &word.lowWord.word, 2);
     return data;
 }
+
+Byte* Utils::General::numberToBytes(DoubleWord data, unsigned int size) {
+    Byte *returnData = new Byte[size];
+    if (size == 1) {
+        returnData[0] = data.word.lowWord.byte.lowByte;
+    } else if (size == 2) {
+        returnData = wordToBytes(data.word);
+    } else {
+        returnData = doubleWordToBytes(data);
+    }
+    return returnData;
+}

@@ -21,7 +21,7 @@
 #pragma GCC visibility push(default)
 
 // The size of an operation in bytes
-#define OPERATION_SZIE 19
+#define OPERATION_SZIE 20
 
 enum InstructionSet {
     PUSH = 1,
@@ -170,6 +170,7 @@ struct OPCode {
     uint8_t numOprands; // Only uses the first two bits MAX number of 3
     std::bitset<8> infoBits;
     std::bitset<8> extendedInfoBits;
+    std::bitset<8> extraInfoBits;
     
     OPCode() {};
     
@@ -182,6 +183,7 @@ struct OPCode {
         numOprands = copy.numOprands;
         infoBits = copy.infoBits;
         extendedInfoBits = copy.extendedInfoBits;
+        extraInfoBits = copy.extraInfoBits;
         args = copy.args;
         modifier = copy.modifier;
     }
@@ -203,12 +205,20 @@ struct OPCode {
         return extendedInfoBits.to_ulong();
     }
     
+    Byte getExtraInfoByte() {
+        return extendedInfoBits.to_ulong();
+    }
+    
     void readInfoByte(Byte info) {
         infoBits = std::bitset<8>(info);
     }
     
     void readExtendedInfoByte(Byte extendedInfo) {
         extendedInfoBits = std::bitset<8>(extendedInfo);
+    }
+    
+    void readExtraInfoByte(Byte extraInfo) {
+        extraInfoBits = std::bitset<8>(extraInfo);
     }
     
     bool isRegisterInPosition(int position) {
@@ -290,6 +300,30 @@ struct OPCode {
     
     bool isVarInPosition(int position) {
         return extendedInfoBits.test(position + 6);
+    }
+    
+    bool isByteInPosition(int position) {
+        return extraInfoBits.test(position);
+    }
+    
+    void setByteInPosition(int position) {
+        extraInfoBits.set(position);
+    }
+    
+    bool isWordInPosition(int position) {
+        return extraInfoBits.test(position + 2);
+    }
+    
+    void setWordInPosition(int position) {
+        extraInfoBits.set(position + 2);
+    }
+    
+    bool isDoubleWordInPosition(int position) {
+        return extraInfoBits.test(position + 4);
+    }
+    
+    void setDoubleWordInPosition(int position) {
+        extraInfoBits.set(position + 4);
     }
     
     DoubleWord* args = new DoubleWord[2];
