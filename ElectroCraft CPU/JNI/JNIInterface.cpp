@@ -46,12 +46,16 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
         std::vector<std::string> instructions;
         std::stringstream buffer;
         for (int i = 0; i < env->GetStringLength(data); i++) {
-            if (chars[i] == L'\n') {
+            if (chars[i] == '\n') {
                 instructions.push_back(buffer.str());
                 buffer.str(std::string());
             } else {
                 buffer<<static_cast<char>(chars[i]);
             }
+        }
+        if (buffer.str().size() > 0) {
+            instructions.push_back(buffer.str());
+            buffer.str(std::string());
         }
         
         AssembledData cppAssembledData = cpu->assemble(instructions);

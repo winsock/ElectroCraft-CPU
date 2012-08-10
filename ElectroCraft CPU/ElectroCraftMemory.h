@@ -89,7 +89,7 @@ class ElectroCraftMemory {
     std::vector<MemoryInfo*> memoryStates;
     std::map<MemoryMappedIODevice*, MemoryInfo*> memoryMappedIO;
     Address virtualBaseAddress;
-    unsigned int sizeOfMemory = 128 * 1024 * 1024; // 128MB
+    unsigned int sizeOfMemory = 16 * 1024 * 1024; // 128MB
 public:
     ElectroCraftMemory(unsigned int size, Address baseAddress);
     ~ElectroCraftMemory();

@@ -946,12 +946,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         }
     }
     if (instruction.isAddressInPosition(1)) {
-        if (dataSize == 1) {
-            data = *memory->readData(data1, 1);
+        if (data1Size == 1) {
+            data1 = *memory->readData(data1, 1);
         } else if (dataSize == 2) {
-            data.word = Utils::General::readWord(memory->readData(data1, 2));
+            data1.word = Utils::General::readWord(memory->readData(data1, 2));
         } else {
-            data = Utils::General::readDoubleWord(memory->readData(data1, 4));
+            data1 = Utils::General::readDoubleWord(memory->readData(data1, 4));
         }
     }
     
@@ -1402,7 +1402,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                 setRegisterData(data1, reg);
                 // [Address], <Register, Const>
             } else if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
-                memory->writeData(data, dataSize, Utils::General::doubleWordToBytes(data1));
+                memory->writeData(data, dataSize, Utils::General::numberToBytes(data1, data1Size));
                 // <Register>, [Address]
             } else if ((instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) && reg != Registers::UNKNOWN) {
                 setRegisterData(data1, reg);
@@ -1421,7 +1421,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     setRegisterData(result, reg);
                 } else if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     DoubleWord result;
-                    result.doubleWord = data.doubleWord * Utils::General::readDoubleWord(memory->readData(data1, 4)).doubleWord;
+                    result.doubleWord = data.doubleWord * data1.doubleWord;
                     setRegisterData(result, reg);
                 } else {
                     std::cerr<<"ElectroCraft CPU: Invalid arguments for MUL!"<<std::endl;
