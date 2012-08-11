@@ -14,11 +14,11 @@
 ElectroCraftVGA::ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width, unsigned int height) {
     vgaIOMemory = memory->assignIOMemory(this);
     // Three bytes per pixel(RGB)
-    if ((width * height * 3) > vgaIOMemory->memoryLength.doubleWord) {
+    if ((width * height) > vgaIOMemory->memoryLength.doubleWord) {
         std::cerr<<"ElectroCraft VGA: Error! Not enough memory for the requested screen size!"<<std::endl;
     }
     
-    // 3 Bytes per pixel (RGB)
+    // 1 Byte per pixel (255 Color)
     displayBufferSize.doubleWord = width * height;
     // Right after the VGA Info section
     displayBuffer = vgaIOMemory->front + 8;
@@ -35,8 +35,8 @@ ElectroCraftVGA::ElectroCraftVGA(ElectroCraftMemory *memory, unsigned int width,
 MemoryMappedIOSection ElectroCraftVGA::getMappedIO() {
     // 16MB of addressable space
     MemoryMappedIOSection section;
-    section.beginAddress.doubleWord = 0x8000;
-    section.endAddress.doubleWord = 0x1008000;
+    section.beginAddress.doubleWord = 0x0;
+    section.endAddress.doubleWord = 0x12C11;
     return section;
 }
 
@@ -56,10 +56,10 @@ DoubleWord ElectroCraftVGA::getDisplayBufferSize() {
 }
 
 void ElectroCraftVGA::setScreenSize(unsigned int width, unsigned int height) {
-    if ((width * height * 3) > vgaIOMemory->memoryLength.doubleWord) {
+    if ((width * height) > vgaIOMemory->memoryLength.doubleWord) {
         std::cerr<<"ElectroCraft VGA: Error! Not enough memory for the requested screen size!"<<std::endl;
     }
-    displayBufferSize.doubleWord = width * height * 3;
+    displayBufferSize.doubleWord = width * height;
     vgaIOMemory->setData(Utils::General::doubleWordToBytes(displayBufferSize), 0, 4);
     this->width = width;
     this->height = height;

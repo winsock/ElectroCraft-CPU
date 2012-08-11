@@ -24,7 +24,7 @@ ElectroCraftStack::ElectroCraftStack(ElectroCraftMemory *memory, RegisterState *
 void ElectroCraftStack::push(DoubleWord data) {
     if ((registers->SP.doubleWord - memoryBlock->startOffset.doubleWord) >= 4) {
         registers->SP.doubleWord -= 4;
-        memory->writeData(registers->SP.doubleWord + memoryBlock->startOffset.doubleWord, 4, Utils::General::doubleWordToBytes(data));
+        memory->writeData(registers->SP.doubleWord, 4, Utils::General::doubleWordToBytes(data));
     } else {
         std::cerr<<"ElectroCraft CPU: Error! Ran out of stack space!"<<std::endl;
     }
@@ -32,8 +32,8 @@ void ElectroCraftStack::push(DoubleWord data) {
 
 DoubleWord ElectroCraftStack::pop() {
     DoubleWord data;
-    if ((registers->SP.doubleWord + 4) <= memoryBlock->memoryLength.doubleWord) {
-        data = Utils::General::readDoubleWord(&(memoryBlock->front + registers->SP.doubleWord)->data);
+    if ((registers->SP.doubleWord + 4) <= (memoryBlock->startOffset.doubleWord + memoryBlock->memoryLength.doubleWord)) {
+        data = Utils::General::readDoubleWord(memory->readData(registers->SP, 4));
         registers->SP.doubleWord += 4;
     } else {
         std::cerr<<"ElectroCraft CPU: Error! Tried to pop off an empty stack!"<<std::endl;

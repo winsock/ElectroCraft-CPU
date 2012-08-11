@@ -19,7 +19,6 @@ class ElectroCraftStack {
     MemoryInfo* memoryBlock;
     RegisterState *registers;
     ElectroCraftMemory * memory;
-    Address currentAddress;
 public:
     ElectroCraftStack(ElectroCraftMemory *memory, RegisterState * registers, unsigned int size);
     ~ElectroCraftStack();

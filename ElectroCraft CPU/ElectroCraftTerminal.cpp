@@ -52,10 +52,9 @@ std::string ElectroCraftTerminal::getLine(int row) {
 }
 
 MemoryMappedIOSection ElectroCraftTerminal::getMappedIO() {
-    // 2MB of addressable space
     MemoryMappedIOSection section;
-    section.beginAddress.doubleWord = 0x1010000;
-    section.endAddress.doubleWord = 0x1210000;
+    section.beginAddress.doubleWord = 0x12C11;
+    section.endAddress.doubleWord = 0x15310;
     return section;
 }
 

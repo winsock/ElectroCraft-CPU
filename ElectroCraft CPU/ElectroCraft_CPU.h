@@ -64,6 +64,8 @@ enum InstructionSet {
     INP = 38,
     OUT = 39,
     BKP = 40,
+    JL = 41,
+    JG = 42,
     UNKOWN = 63
     };
 

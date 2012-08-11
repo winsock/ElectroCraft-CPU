@@ -47,15 +47,15 @@ MemoryInfo* ElectroCraftMemory::allocate(unsigned int size) {
                 newState->memoryLength.doubleWord = size;
                 newState->next = memoryStates[i];
                 newState->previous = memoryStates[i]->previous;
-                newState->startOffset = memoryStates[i]->startOffset;
+                newState->startOffset = memoryStates[i]->startOffset.doubleWord;
                 newState->stateOfMemory = MemoryState::ALLOCATED;
                 memoryStates.push_back(newState);
                 
                 // Reconfigure the old free space
-                memoryStates[i]->front = memoryStates[i]->front + size + 1;
+                memoryStates[i]->front = newState->back;
                 memoryStates[i]->memoryLength.doubleWord = memoryStates[i]->memoryLength.doubleWord - size;
                 memoryStates[i]->previous = newState;
-                memoryStates[i]->startOffset.doubleWord = memoryStates[i]->startOffset.doubleWord + size + 1;
+                memoryStates[i]->startOffset.doubleWord = newState->startOffset.doubleWord + newState->memoryLength.doubleWord;
                 memoryStates[i]->stateOfMemory = MemoryState::FREE;
                 
                 return newState;
@@ -85,14 +85,37 @@ MemoryInfo* ElectroCraftMemory::assignIOMemory(MemoryMappedIODevice* device) {
     MemoryInfo *info = new MemoryInfo;
     MemoryInfo *next = nullptr;
     MemoryInfo *previous = nullptr;
-    for (uint32_t i = 0; i < this->memoryStates.size(); i++) {
-        if (memoryStates[i]->stateOfMemory != MemoryState::FREE){
-            if (section.beginAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord <= (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) {
+    long oldSize = this->memoryStates.size();
+    for (uint32_t i = 0; i < oldSize; i++) {
+        DoubleWord oldStartOffset = memoryStates[i]->startOffset.doubleWord;
+        if ((section.beginAddress.doubleWord > memoryStates[i]->startOffset.doubleWord && section.beginAddress.doubleWord < (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) || (section.endAddress.doubleWord > memoryStates[i]->startOffset.doubleWord && section.endAddress.doubleWord < (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord))) {
+            if (memoryStates[i]->stateOfMemory != MemoryState::FREE){
                 std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
                 return nullptr;
-            } else if (section.endAddress.doubleWord >= memoryStates[i]->startOffset.doubleWord && section.endAddress.doubleWord <= (memoryStates[i]->startOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord)) {
-                std::cerr<<"ElectroCraft Memory: Error requested range is ocupied!"<<std::endl;
-                return nullptr;
+            } else {
+                if ((section.beginAddress.doubleWord - oldStartOffset.doubleWord) > 0) {
+                    MemoryInfo *newFreeBlock = new MemoryInfo;
+                    newFreeBlock->memoryLength = section.beginAddress.doubleWord - oldStartOffset.doubleWord;
+                    newFreeBlock->back = memoryStates[i]->front + newFreeBlock->memoryLength.doubleWord;
+                    newFreeBlock->front = memoryStates[i]->front;
+                    newFreeBlock->next = info;
+                    newFreeBlock->previous = memoryStates[i]->previous;
+                    newFreeBlock->startOffset = memoryStates[i]->startOffset;
+                    newFreeBlock->stateOfMemory = MemoryState::FREE;
+                    memoryStates.push_back(newFreeBlock);
+                }
+                
+                // Reconfigure the old block
+                memoryStates[i]->startOffset = section.endAddress;
+                memoryStates[i]->memoryLength = (oldStartOffset.doubleWord + memoryStates[i]->memoryLength.doubleWord) - section.endAddress.doubleWord;
+                memoryStates[i]->previous = info;
+                memoryStates[i]->front = memoryStates[i]->back - memoryStates[i]->memoryLength.doubleWord;
+                memoryStates[i]->stateOfMemory = MemoryState::FREE;
+                
+                // If the old block is completly taken up delete it
+                if (memoryStates[i]->memoryLength.doubleWord <= 0) {
+                    memoryStates.erase(std::remove(memoryStates.begin(), memoryStates.end(), memoryStates[i]), memoryStates.end());
+                }
             }
         }
         
