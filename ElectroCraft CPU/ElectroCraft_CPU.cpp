@@ -1285,6 +1285,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         if (result != nullptr) {
                             memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
                             delete result;
+                        } else {
+                            memory->writeData(address, dataSize, 0);
                         }
                     } else if (instruction.isRegisterInPosition(1)) {
                         if (instruction.shouldUseRegisterAsAddress(1)) {
@@ -1295,6 +1297,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                             if (result != nullptr) {
                                 memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
                                 delete result;
+                            } else {
+                                memory->writeData(address, dataSize, 0);
                             }
                         } else {
                             IOPort::IOPortInterrupt interrupt;
@@ -1304,6 +1308,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                             if (result != nullptr) {
                                 memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
                                 delete result;
+                            } else {
+                                memory->writeData(address, dataSize, 0);
                             }
                         }
                     } else {
@@ -1314,6 +1320,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         if (result != nullptr) {
                             memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
                             delete result;
+                        } else {
+                            memory->writeData(address, dataSize, 0);
                         }
                     }
                 } else {
@@ -1325,6 +1333,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         if (result != nullptr) {
                             setRegisterData(result->returnData, reg);
                             delete result;
+                        } else {
+                            setRegisterData(0, reg);
                         }
                     } else if (instruction.isRegisterInPosition(1)) {
                         if (instruction.shouldUseRegisterAsAddress(1)) {
@@ -1335,6 +1345,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                             if (result != nullptr) {
                                 setRegisterData(result->returnData, reg);
                                 delete result;
+                            } else {
+                                setRegisterData(0, reg);
                             }
                         } else {
                             IOPort::IOPortInterrupt interrupt;
@@ -1344,6 +1356,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                             if (result != nullptr) {
                                 setRegisterData(result->returnData, reg);
                                 delete result;
+                            } else {
+                                setRegisterData(0, reg);
                             }
                         }
                     } else {
@@ -1354,6 +1368,8 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         if (result != nullptr) {
                             setRegisterData(result->returnData, reg);
                             delete result;
+                        } else {
+                            setRegisterData(0, reg);
                         }
                     }
                 }
