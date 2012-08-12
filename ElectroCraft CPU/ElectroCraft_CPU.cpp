@@ -248,8 +248,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                     }
                     wasInsideQuotes =!wasInsideQuotes;
                 } else {
-                    bool isHexNumber = (token.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
-                    bool isDecimalNumber = (token.find_first_not_of("0123456789") == std::string::npos);
+                    bool isHexNumber = ((token.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos) &&!token.empty());
+                    bool isDecimalNumber = ((token.find_first_not_of("0123456789") == std::string::npos) &&!token.empty());
                     if (isDecimalNumber) {
                         // Lets see if it is a decimal number
                         std::stringstream ss;
@@ -292,11 +292,10 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                                 }
                             }
                         }
-                    } else {
-                        std::cerr<<"ElectroCraft Assembler: Error! Cannot chain varible decerlations!"<<std::endl;
                     }
                 }
-                tokenNumber++;
+                if (!token.empty())
+                    tokenNumber++;
             } else if (token.size() > 0 && tokenNumber == 0) {
                 std::transform(token.begin(), token.end(), token.begin(), ::toupper);
                 if(token.back() == ':') {
@@ -314,7 +313,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                         var.offset = beginOffset;
                     }
                 }
-                tokenNumber++;
+                if (!token.empty())
+                    tokenNumber++;
             } else if (token.size() > 0 && tokenNumber > 0) {
                 std::transform(token.begin(), token.end(), token.begin(), ::toupper);
                 // Lets see if it is a register!
@@ -345,7 +345,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                 } else {
                     // Lets see if is a address
                     if (token.front() == '[' && token.back() == ']') {
-                        bool isHexNumber = (token.substr(1, token.size() - 2).find_first_not_of("zX0123456789ABCDEFabcdef") == std::string::npos);
+                        bool isHexNumber = ((token.substr(1, token.size() - 2).find_first_not_of("zX0123456789ABCDEFabcdef") == std::string::npos) && !token.empty());
                         bool hasAddModifier = (token.substr(1, token.size() - 2).find_first_of("+") != std::string::npos);
                         bool hasSubtractModifier = (token.substr(1, token.size() - 2).find_first_of("-") != std::string::npos);
                         
@@ -371,8 +371,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                                     std::string subToken = modifierBuff.str();
                                     modifierBuff.str(std::string());
                                     
-                                    bool isHexNumber = (subToken.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
-                                    bool isDecimalNumber = (subToken.find_first_not_of("0123456789") == std::string::npos);
+                                    bool isHexNumber = ((subToken.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos) &&!token.empty());
+                                    bool isDecimalNumber = ((subToken.find_first_not_of("0123456789") == std::string::npos) &&!token.empty());
                                     bool subTokenHasModifer = (subToken.find_first_of("-+") != std::string::npos);
                                     
                                     if (!subTokenHasModifer) {
@@ -438,8 +438,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             }
                         }
                     } else {
-                        bool isHexNumber = (token.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos);
-                        bool isDecimalNumber = (token.find_first_not_of("0123456789") == std::string::npos);
+                        bool isHexNumber = ((token.find_first_not_of("xX0123456789ABCDEFabcdef") == std::string::npos) &&!token.empty());
+                        bool isDecimalNumber = ((token.find_first_not_of("0123456789") == std::string::npos) &&!token.empty());
                         if (isDecimalNumber) {
                             // Lets see if it is a decimal number
                             std::stringstream ss;
@@ -466,7 +466,8 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                             unresolved.offset = beginOffset;
                             data->unresolvedTokens.push_back(unresolved);
                         }
-                        tokenNumber++;
+                        if (!token.empty())
+                            tokenNumber++;
                     }
                 }
             }
@@ -527,19 +528,19 @@ Registers ElectroCraft_CPU::getRegister(std::string token) {
         return Registers::MC;
     } else if (token == "AH") {
         return Registers::AH;
-    } else if (token == "A") {
+    } else if (token == "AL") {
         return Registers::AL;
     } else if (token == "BH") {
         return Registers::BH;
-    } else if (token == "B") {
+    } else if (token == "BL") {
         return Registers::BL;
     } else if (token == "CH") {
         return Registers::CH;
-    } else if (token == "C") {
+    } else if (token == "CL") {
         return Registers::CL;
     } else if (token == "DH") {
         return Registers::DH;
-    } else if (token == "D") {
+    } else if (token == "DL") {
         return Registers::DL;
     } else {
         return Registers::UNKNOWN;
@@ -1061,6 +1062,9 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     if (instruction.isAddressInPosition(0) || instruction.isVarInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
         if (dataSize == 1) {
             data = *memory->readData(address, dataSize);
+            if (data.doubleWord == 0xA) {
+                asm("nop");
+            }
         } else if (dataSize == 2) {
             data.word = Utils::General::readWord(memory->readData(address, dataSize));
         } else {
@@ -1080,6 +1084,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     // Lets match the opcode to the operation
     switch (instruction.opCode) {
         case InstructionSet::ADD:
+        {
             // [Address], <Register, Const>
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data + data1, dataSize));
@@ -1098,8 +1103,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::AND:
+        {
             // [Address], <Register, Const>
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data.doubleWord & data1.doubleWord, dataSize));
@@ -1118,8 +1125,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for ADD!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::BKP:
+        {
             char enterBuffer;
             printf("EAX = %d, EBX = %d, ECX = %d, EDX = %d, ESI = %d, EDI = %d\n", getRegisterData(Registers::EAX).doubleWord, getRegisterData(Registers::EBX).doubleWord, getRegisterData(Registers::ECX).doubleWord, getRegisterData(Registers::EDX).doubleWord ,getRegisterData(Registers::ESI).doubleWord, getRegisterData(Registers::EDI).doubleWord);
             printf("EBP = %d, EIP = %d, ESP = %d, EMC = %d, AX = %d, BX = %d\n", getRegisterData(Registers::EBP).doubleWord, getRegisterData(Registers::EIP).doubleWord, getRegisterData(Registers::ESP).doubleWord, getRegisterData(Registers::EMC).doubleWord ,getRegisterData(Registers::AX).doubleWord, getRegisterData(Registers::BX).doubleWord);
@@ -1128,8 +1137,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             printf("CH = %d, CL = %d, DH = %d, DL = %d\n", getRegisterData(Registers::CH).word.lowWord.byte.hiByte, getRegisterData(Registers::CL).word.lowWord.byte.lowByte, getRegisterData(Registers::DH).word.lowWord.byte.hiByte, getRegisterData(Registers::DL).word.lowWord.byte.lowByte);
             std::cout<<"Press Any Key To Continue!"<<std::endl;
             std::cin>>enterBuffer;
+        }
             break;
         case InstructionSet::CALL:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 Address addressToCall;
                 if (instruction.isOffsetNegitive(0)) {
@@ -1143,10 +1154,37 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for CALL <Label>!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::CMP:
+        {
+            long result = 0;
+            if (dataSize == 1) {
+                if (data1Size == 1) {
+                    result = (long)data.word.lowWord.byte.lowByte  - (long)data1.word.lowWord.byte.lowByte;
+                } else if (data1Size == 2) {
+                    result = (long)data.word.lowWord.byte.lowByte  - (long)data1.word.lowWord.word;
+                } else if (data1Size == 4) {
+                    result = (long)data.word.lowWord.byte.lowByte  - (long)data1.doubleWord;
+                }
+            } else if (dataSize == 2) {
+                if (data1Size == 1) {
+                    result = (long)data.word.lowWord.word  - (long)data1.word.lowWord.byte.lowByte;
+                } else if (data1Size == 2) {
+                    result = (long)data.word.lowWord.word  - (long)data1.word.lowWord.word;
+                } else if (data1Size == 4) {
+                    result = (long)data.word.lowWord.word  - (long)data1.doubleWord;
+                }
+            } else if (dataSize == 4) {
+                if (data1Size == 1) {
+                    result = (long)data.doubleWord  - (long)data1.word.lowWord.byte.lowByte;
+                } else if (data1Size == 2) {
+                    result = (long)data.doubleWord  - (long)data1.word.lowWord.word;
+                } else if (data1Size == 4) {
+                    result = (long)data.doubleWord  - (long)data1.doubleWord;
+                }
+            }
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
-                long result = (long)data.doubleWord  - (long)data1.doubleWord;
                 if (result == 0) {
                     eState.setFlagState(EFLAGS::ZF);
                     eState.resetFlag(EFLAGS::CF);
@@ -1162,7 +1200,6 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     eState.setFlagState(EFLAGS::CF);
                 }
             } else if (instruction.isRegisterInPosition(0)) {
-                long result = (long)data.doubleWord - (long)data1.doubleWord;
                 if (result == 0) {
                     eState.setFlagState(EFLAGS::ZF);
                     eState.resetFlag(EFLAGS::CF);
@@ -1180,10 +1217,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for CMP!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::CPUID:
             break;
         case InstructionSet::DIV:
+        {
             if (instruction.isRegisterInPosition(0)) {
                 if (instruction.isRegisterInPosition(1)) {
                     DoubleWord result;
@@ -1199,11 +1238,15 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invalid arguments for DIV!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::HLT:
+        {
             this->stop();
             return;
+        }
         case InstructionSet::INP:
+        {
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     IOPort::IOPortInterrupt interrupt;
@@ -1293,10 +1336,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invalid arguments for INP!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::INT:
             break;
         case InstructionSet::JG:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF) && !eState.getFlagState(EFLAGS::CF)) {
                     Address addressToCall;
@@ -1309,8 +1354,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     hasJumped = true;
                 }
             }
+        }
             break;
         case InstructionSet::JL:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF) && eState.getFlagState(EFLAGS::CF)) {
                     Address addressToCall;
@@ -1323,8 +1370,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     hasJumped = true;
                 }
             }
+        }
             break;
         case InstructionSet::JE:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1339,8 +1388,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for JE!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::JMP:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 Address addressToCall;
                 if (instruction.isOffsetNegitive(0)) {
@@ -1353,8 +1404,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for JMP!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::JNE:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1369,8 +1422,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for JNE!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::JNZ:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1385,8 +1440,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for JNZ!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::JZ:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1401,8 +1458,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for JZ!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOP:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 DoubleWord counter = getRegisterData(Registers::CX);
                 if (counter.word.lowWord.word > 0) {
@@ -1420,8 +1479,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOP!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOPE:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1436,8 +1497,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOPE!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOPNE:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1452,8 +1515,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOPNE!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOPNZ:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1468,8 +1533,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOPNZ!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOPWE:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1484,8 +1551,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOPE!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOPWNE:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (!eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1500,8 +1569,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOPNZ!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::LOOPZ:
+        {
             if (instruction.isOffsetInPosition(0)) {
                 if (eState.getFlagState(EFLAGS::ZF)) {
                     Address addressToCall;
@@ -1516,8 +1587,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for LOOPE!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::MOV:
+        {
             // [Address], <Register, Const>
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data1, data1Size));
@@ -1536,8 +1609,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for MOV!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::MUL:
+        {
             if (instruction.isRegisterInPosition(0)) {
                 DoubleWord result;
                 result.doubleWord = data.doubleWord * data1.doubleWord;
@@ -1549,8 +1624,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for MUL!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::NEG:
+        {
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 DoubleWord result;
                 result.doubleWord = -data.doubleWord;
@@ -1573,10 +1650,12 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invalid arguments for NEG!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::NOP:
             break;
         case InstructionSet::NOT:
+        {
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 DoubleWord result;
                 result.doubleWord = ~data.doubleWord;
@@ -1588,8 +1667,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invalid arguments for NOT!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::OR:
+        {
             // [Address], <Register, Const>
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data.doubleWord | data1.doubleWord, dataSize));
@@ -1608,6 +1689,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for OR!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::OUT:
         {
@@ -1636,6 +1718,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         }
             break;
         case InstructionSet::POP:
+        {
             if (instruction.isRegisterInPosition(0)) {
                 setRegisterData(stack->pop(), reg);
             } else if (instruction.isAddressInPosition(0)) {
@@ -1643,26 +1726,34 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: No register or address in position 0 for POP"<<std::endl;
             }
+        }
             break;
         case InstructionSet::POPA:
+        {
             for (int i = Registers::TOAL_SIZE; i > 0; i--) {
                 setRegisterData(stack->pop(), Registers(i));
             }
+        }
             break;
         case InstructionSet::PUSH:
+        {
             if (instruction.isVarInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 stack->push(address);
             } else {
                 stack->push(data);
             }
+        }
             break;
         case InstructionSet::PUSHA:
+        {
             for (int i = 0; i < Registers::TOAL_SIZE; i++) {
                 DoubleWord data = getRegisterData(Registers(i));
                 stack->push(data);
             }
+        }
             break;
         case InstructionSet::RANDI:
+        {
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     DoubleWord upperBound = data1;
@@ -1714,6 +1805,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Incorrect arguments for RANDI!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::RET:
         {
@@ -1724,6 +1816,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         case InstructionSet::ROUND:
             break;
         case InstructionSet::SHL:
+        {
             if (instruction.isRegisterInPosition(0)) {
                 if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
                     if (reg == Registers::CL) {
@@ -1765,8 +1858,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHL!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::SHR:
+        {
             if (instruction.isRegisterInPosition(0)) {
                 if (reg == Registers::CL) {
                     DoubleWord result;
@@ -1806,8 +1901,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Incorrect arguments for SHR!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::SUB:
+        {
             // [Address], <Register, Const>
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data.doubleWord - data1.doubleWord, dataSize));
@@ -1826,8 +1923,10 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for SUB!"<<std::endl;
             }
+        }
             break;
         case InstructionSet::XOR:
+        {
             // [Address], <Register, Const>
             if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data.doubleWord ^ data1.doubleWord, dataSize));
@@ -1846,6 +1945,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             } else {
                 std::cerr<<"ElectroCraft CPU: Invaid arguments for XOR!"<<std::endl;
             }
+        }
             break;
         default:
             std::cerr<<"Unknown Instruction! Halting CPU to prevent damage!"<<std::endl;

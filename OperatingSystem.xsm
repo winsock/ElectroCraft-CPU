@@ -7,7 +7,8 @@ welcomeMessage db "Welcome to Minex", 0xA, "A Minecraft operating system written
 ; Command buffer
 cmdBuffer db ? 255 ; Ask for a variable with 255 bytes
 cmdArgsBuffer db ? 255 ; A buffer to store the arguments seperated by null charaters
-terminalBufferPosition dd ? 1 ; Define one Double Word for storing the position of the display buffer
+terminalBufferRow dd ? 1 ; The current row we are in
+terminalBufferCol dd ? 1 ; The current column we are in
 terminalBufferSize dd ? 1 ; Make room for the display buffer size
 
 ; The command table follows the format as shown
@@ -31,7 +32,8 @@ cmdTime db, 12, "time", 0x255, "Displays the current Minecraft time", 0
 .code
 xor ecx, ecx ; Clear ecx
 xor ebx, ebx ; Clear ebx
-mov terminalBufferPosition, 0 ; Set the display buffer position to 0 on startup
+mov terminalBufferRow, 0 ; Set the display buffer row to 0 on startup
+mov terminalBufferCol, 0 ; Set the display buffer column to 0 on startup
 mov terminalBufferSize, [0x12C11] ; Move the number of coloumns into te Termainal Memory starts at 0x12C11
 mul [terminalBufferSize], [0x12C15] ; Multiply by the number of rows
 
@@ -60,20 +62,24 @@ add ecx, 1 ; Increment our key buffer counter
 cmp ecx, 255 ; Did we reach out max buffer size?
 je resetCharCounter ; If so clear it by jumping past the get command stuff
 
-add [terminalBufferPosition], 1
-cmp [terminalBufferPosition], [terminalBufferSize]
-je resetCharCounter
-mov ebx, [0x12C19]
-add ebx, [terminalBufferPosition]
-mov [ebx], eax
-
-cmp eax, 0xA ; Is it enter?
-jne mainLoop ; If it isn't enter continue getting keys until enter is pressed or we reach 255 chars
-
-add [terminalBufferPosition], [0x12C11] ; Add a line to the terminal buffer
-cmp [terminalBufferPosition], [terminalBufferSize] ; Check if it is the last line
+add [terminalBufferCol], 1 ; Increment the column we are in
+cmp [terminalBufferCol], [0x12C11] ; Comare it to the max number
+je resetCharCounter ; If we have reached the max number reset the counter
+mov ebx, [0x12C11] ; Move the number of columns into ebx
+mul ebx, [terminalBufferRow] ; Multiply it by the curent row
+add ebx, [terminalBufferCol] ; Add the curent columns to the result
+cmp ebx, [terminalBufferSize] ; Check if it is at the end of the buffer
 jg haltCpu ; For now just reset the char counter
 je haltCpu
+add ebx, [0x12C19] ; And finally add the base offset to the calculated offset
+mov [ebx], eax
+
+cmp byte eax, 0xA ; Is it enter?
+jne mainLoop ; If it isn't enter continue getting keys until enter is pressed or we reach 255 chars
+
+mov [ebx], 0 ; Remove the enter char
+add [terminalBufferRow], 1 ; Increment the rows
+mov terminalBufferCol, 0 ; Reset the position in the columns
 
 sub esp, 4 ; Allocate 4 bytes to get the command number
 call getCommand ; Call get command to get the command number
@@ -88,6 +94,7 @@ pop eax ; Get the command number that was pressed
 resetCharCounter:
 xor ecx, ecx ; Clear ecx(The counter) because enter was pressed
 jmp mainLoop ; And repeat
+
 
 ;
 ; Gets the next char from the keyboard
@@ -105,6 +112,7 @@ pop eax ; Pop the old value of eax
 mov esp, ebp ; Move the stack pointer to the curent base pointer
 pop ebp ; Restore the last base pointer
 ret ; return
+
 
 ;
 ; Gets the command
@@ -131,6 +139,7 @@ mov esp, ebp ; Move the stack pointer to the curent base pointer
 pop ebp ; Restore the last base pointer
 ret ; return
 
+
 ;
 ; Dispalys a null terminated string to the terminal
 ;
@@ -142,32 +151,51 @@ push ebx ; store the old value of ebx
 push ecx ; Store the old value of ecx
 xor ecx, ecx ; Clear ecx
 mov eax, [ebp + 8] ; Move the address of the string into eax
-mov ecx, [terminalBufferPosition] ; Move into ecx the position we are in the terminals buffer
 
+; The display loop
 displayLoop:
-cmp ecx, [terminalBufferSize] ; Check if were at the end of the display buffer
-jg haltCpu ; If so jump to the end
-je haltCpu ; If so jump to the end
+; Get the new offset
+mov ecx, [0x12C11] ; Move into ecx the number of columns
+mul ecx, [terminalBufferRow] ; Multiply into ecx the curent row we are in
+add ecx, [terminalBufferCol] ; Add the curent column we are in
+
+; Comparisons
+cmp byte [eax], 0xA ; Lets see if it is an enter
+je onEnterPress ; If its enter lets do special stuff for it
+cmp ecx, [terminalBufferSize] ; Lets check if its at the end of the display buffer
+jg haltCpu
+je haltCpu
+
+; Actual writing to the display buffer
 mov ebx, [0x12C19] ; The value at this location is the start address of the terminal buffer, usually just the next four bytes
 add ebx, ecx ; Add the curent offset to the base address
-mov [ebx], [eax] ; Move the char into the 
-add ecx, 1 ; Increment the display offset
-add eax, 1 ; Increment the offset in the string
-cmp [eax], 0xA ; Lets see if it is an enter
-jne dispayLoopEnd ; If it isn't an enter continue going
-add ecx, [0x12C11] ; Add the number of coloumns to the offset if it has enter in it
-dispayLoopEnd:
-cmp [eax], 0 ; Lets see if it's the null terminator
-jne displayLoop ; If it isn't continue displaying
+mov [ebx], [eax] ; Move the char into the terminal buffer
 
+; Incrementing
+add [terminalBufferCol], 1 ; Increment the display offset
+add eax, 1 ; Increment the offset in the string
+
+; End comparison 
+cmp byte [eax], 0 ; Lets see if it's the null terminator
+jne displayLoop ; If it isn't continue displaying
+je displayEnd ; Jump to the end of the sub routine
+
+; Enter handling
+onEnterPress:
+add eax, 1 ; Increment the offset in the string
+add [terminalBufferRow], 1
+mov terminalBufferCol, 0
+jmp displayLoop
+
+; The end of the display string function
 displayEnd:
-mov [terminalBufferPosition], ecx ; Store the new display buffer offset
 pop ecx ; Retreive the old value of ecx
 pop ebx ; Restore the old value of ebx
 pop eax ; Retreive the old value of eax
 mov esp, ebp ; Move the stack pointer to the curent base pointer
 pop ebp ; Restore the last base pointer
 ret ; return
+
 
 ;
 ; Stops the computer, currently only gets called on shutdown
