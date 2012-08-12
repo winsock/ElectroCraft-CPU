@@ -1282,27 +1282,39 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         interrupt.read = true;
                         interrupt.ioPort = data1;
                         IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                        memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                        if (result != nullptr) {
+                            memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                            delete result;
+                        }
                     } else if (instruction.isRegisterInPosition(1)) {
                         if (instruction.shouldUseRegisterAsAddress(1)) {
                             IOPort::IOPortInterrupt interrupt;
                             interrupt.read = true;
                             interrupt.ioPort = data1;
                             IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                            memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                            if (result != nullptr) {
+                                memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                                delete result;
+                            }
                         } else {
                             IOPort::IOPortInterrupt interrupt;
                             interrupt.read = true;
                             interrupt.ioPort = data1;
                             IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                            memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                            if (result != nullptr) {
+                                memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                                delete result;
+                            }
                         }
                     } else {
                         IOPort::IOPortInterrupt interrupt;
                         interrupt.read = true;
                         interrupt.ioPort = data1;
                         IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                        memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                        if (result != nullptr) {
+                            memory->writeData(address, dataSize, Utils::General::numberToBytes(result->returnData, dataSize));
+                            delete result;
+                        }
                     }
                 } else {
                     if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
@@ -1310,27 +1322,39 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                         interrupt.read = true;
                         interrupt.ioPort = data1;
                         IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                        setRegisterData(result->returnData, reg);
+                        if (result != nullptr) {
+                            setRegisterData(result->returnData, reg);
+                            delete result;
+                        }
                     } else if (instruction.isRegisterInPosition(1)) {
                         if (instruction.shouldUseRegisterAsAddress(1)) {
                             IOPort::IOPortInterrupt interrupt;
                             interrupt.read = true;
                             interrupt.ioPort = data1;
                             IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                            setRegisterData(result->returnData, reg);
+                            if (result != nullptr) {
+                                setRegisterData(result->returnData, reg);
+                                delete result;
+                            }
                         } else {
                             IOPort::IOPortInterrupt interrupt;
                             interrupt.read = true;
                             interrupt.ioPort = data1;
                             IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                            setRegisterData(result->returnData, reg);
+                            if (result != nullptr) {
+                                setRegisterData(result->returnData, reg);
+                                delete result;
+                            }
                         }
                     } else {
                         IOPort::IOPortInterrupt interrupt;
                         interrupt.read = true;
                         interrupt.ioPort = data1;
                         IOPort::IOPortResult *result = ioPortHandler->callIOPort(interrupt);
-                        setRegisterData(result->returnData, reg);
+                        if (result != nullptr) {
+                            setRegisterData(result->returnData, reg);
+                            delete result;
+                        }
                     }
                 }
             } else {

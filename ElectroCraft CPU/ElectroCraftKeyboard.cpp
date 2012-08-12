@@ -13,11 +13,10 @@ void ElectroCraftKeyboard::onKeyPress(int keycode) {
 }
 
 IOPort::IOPortResult *ElectroCraftKeyboard::onIOPortInterrupt(IOPort::IOPortInterrupt interrupt) {
-    IOPort::IOPortResult *result  = new IOPort::IOPortResult;
     if (pressedKeys.size() <= 0) {
-        return result;
+        return nullptr;
     }
-    
+
     if (interrupt.ioPort.doubleWord == 0x121) {
         if (!interrupt.read) {
             if (interrupt.data.doubleWord == 0) {
@@ -26,15 +25,18 @@ IOPort::IOPortResult *ElectroCraftKeyboard::onIOPortInterrupt(IOPort::IOPortInte
         }
     } else if (interrupt.ioPort.doubleWord == 0x122) {
         if (interrupt.read) {
+            IOPort::IOPortResult *result  = new IOPort::IOPortResult;
             result->returnData.word.lowWord.byte.lowByte = pressedKeys.back();
             pressedKeys.pop_back();
+            return result;
         }
     } else if (interrupt.ioPort.doubleWord == 0x123) {
         if (!interrupt.read) {
             
         }
     }
-    return result;
+    
+    return nullptr;
 }
 
 IOPort::IOPorts ElectroCraftKeyboard::getRequestedIOPorts() {

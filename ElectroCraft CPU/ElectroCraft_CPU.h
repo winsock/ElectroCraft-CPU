@@ -178,6 +178,7 @@ struct OPCode {
     
     ~OPCode() {
         delete[] args;
+        delete[] modifier;
     }
     
     OPCode(const OPCode &copy) {
@@ -348,6 +349,10 @@ struct AssembledData {
     Byte* data;
     unsigned int length;
     unsigned int codeOffset;
+    
+    ~AssembledData() {
+        delete data;
+    }
 };
 
 enum EFLAGS {

@@ -20,7 +20,6 @@ ElectroCraftStorage::~ElectroCraftStorage() {
 }
 
 IOPort::IOPortResult* ElectroCraftStorage::onIOPortInterrupt(IOPort::IOPortInterrupt interrupt) {
-    IOPort::IOPortResult *result  = new IOPort::IOPortResult;
     if (interrupt.ioPort.doubleWord == 0x101) {
         if (interrupt.data.doubleWord == 0) {
             curentMode = HDDMode::READ;
@@ -32,7 +31,9 @@ IOPort::IOPortResult* ElectroCraftStorage::onIOPortInterrupt(IOPort::IOPortInter
     } else if (interrupt.ioPort.doubleWord == 0x102) {
         if (interrupt.read) {
             if (curentMode == HDDMode::READ) {
+                IOPort::IOPortResult *result  = new IOPort::IOPortResult;
                 result->returnData.word.lowWord.byte.lowByte = read();
+                return result;
             }
         }
     } else if (interrupt.ioPort.doubleWord == 0x103) {
@@ -44,7 +45,7 @@ IOPort::IOPortResult* ElectroCraftStorage::onIOPortInterrupt(IOPort::IOPortInter
             }
         }
     }
-    return result;
+    return nullptr;
 }
 
 IOPort::IOPorts ElectroCraftStorage::getRequestedIOPorts() {
