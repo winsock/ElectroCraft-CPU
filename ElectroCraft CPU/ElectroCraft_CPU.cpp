@@ -1015,26 +1015,6 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         }
     }
     
-    // Addresses
-    if (instruction.isAddressInPosition(0)) {
-        if (dataSize == 1) {
-            data = *memory->readData(address, dataSize);
-        } else if (dataSize == 2) {
-            data.word = Utils::General::readWord(memory->readData(address, dataSize));
-        } else {
-            data = Utils::General::readDoubleWord(memory->readData(address, dataSize));
-        }
-    }
-    if (instruction.isAddressInPosition(1)) {
-        if (data1Size == 1) {
-            data1 = *memory->readData(address1, data1Size);
-        } else if (data1Size == 2) {
-            data1.word = Utils::General::readWord(memory->readData(address1, data1Size));
-        } else {
-            data1 = Utils::General::readDoubleWord(memory->readData(address1, data1Size));
-        }
-    }
-    
     // Registers
     if (instruction.isRegisterInPosition(0)) {
         if (instruction.shouldUseRegisterAsAddress(0)) {
@@ -1097,6 +1077,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
         }
     }
     
+    // Lets match the opcode to the operation
     switch (instruction.opCode) {
         case InstructionSet::ADD:
             // [Address], <Register, Const>
@@ -1181,7 +1162,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                     eState.setFlagState(EFLAGS::CF);
                 }
             } else if (instruction.isRegisterInPosition(0)) {
-                long result = (long)data1.doubleWord - (long)data.doubleWord;
+                long result = (long)data.doubleWord - (long)data1.doubleWord;
                 if (result == 0) {
                     eState.setFlagState(EFLAGS::ZF);
                     eState.resetFlag(EFLAGS::CF);

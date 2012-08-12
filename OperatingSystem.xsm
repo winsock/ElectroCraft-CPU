@@ -13,12 +13,12 @@ terminalBufferSize dd ? 1 ; Make room for the display buffer size
 ; The command table follows the format as shown
 ; Command Length, Command, Command Number
 ; The command number should corispond with the first byte in the actual command definition
-cmdTable 4, "help", 1, 2, "ls", 2, 4, "echo", 3, 8, "shutdown", 4, 4, "edit", 5, 2, "rm", 6, 5, "rmdir", 7, 2, "cp", 8, 2, "cd", 9, 5, "mkdir", 10, 5, "clear", 11, 4, "time", 12
+cmdTable db 4, "help", 1, 2, "ls", 2, 4, "echo", 3, 8, "shutdown", 4, 4, "edit", 5, 2, "rm", 6, 5, "rmdir", 7, 2, "cp", 8, 2, "cd", 9, 5, "mkdir", 10, 5, "clear", 11, 4, "time", 12
 ; Commands
 cmdHelp db 1, "help", 0x255, "Displays all of the commands", 0
 cmdList db 2, "ls", 0x255, "Lists all of the files and directories in the current path", 0
 cmdEcho db 3, "echo", 0x255, "Prints out the suppied arguments", 0
-cmdShutdown 4, "shutdown", 0x255, "Shuts down the computer", 0
+cmdShutdown db 4, "shutdown", 0x255, "Shuts down the computer", 0
 cmdEdit db 5, "edit", 0x255, "Edits or creates the file specified", 0
 cmdRemove db 6, "rm", 0x255, "Removes the file specified, Use rmdir for directories", 0
 cmdRemoveDir db 7, "rmdir", 0x255, "Removes the directory specified", 0
@@ -31,8 +31,8 @@ cmdTime db, 12, "time", 0x255, "Displays the current Minecraft time", 0
 .code
 xor ecx, ecx ; Clear ecx
 xor ebx, ebx ; Clear ebx
-mov byte [terminalBufferPosition], 0 ; Set the display buffer position to 0 on startup
-mov byte [terminalBufferSize], [0x12C11] ; Move the number of coloumns into te Termainal Memory starts at 0x12C11
+mov terminalBufferPosition, 0 ; Set the display buffer position to 0 on startup
+mov terminalBufferSize, [0x12C11] ; Move the number of coloumns into te Termainal Memory starts at 0x12C11
 mul [terminalBufferSize], [0x12C15] ; Multiply by the number of rows
 
 ; Display the boot message
@@ -70,9 +70,10 @@ mov [ebx], eax
 cmp eax, 0xA ; Is it enter?
 jne mainLoop ; If it isn't enter continue getting keys until enter is pressed or we reach 255 chars
 
-add [terminalBufferPosition], [0x12C11] ; Add a line to the termianl buffer
+add [terminalBufferPosition], [0x12C11] ; Add a line to the terminal buffer
 cmp [terminalBufferPosition], [terminalBufferSize] ; Check if it is the last line
-jg resetCharCounter ; For now just reset the char counter
+jg haltCpu ; For now just reset the char counter
+je haltCpu
 
 sub esp, 4 ; Allocate 4 bytes to get the command number
 call getCommand ; Call get command to get the command number
@@ -141,11 +142,12 @@ push ebx ; store the old value of ebx
 push ecx ; Store the old value of ecx
 xor ecx, ecx ; Clear ecx
 mov eax, [ebp + 8] ; Move the address of the string into eax
-mov ecx, dword [terminalBufferPosition] ; Move into ecx the position we are in the terminals buffer
+mov ecx, [terminalBufferPosition] ; Move into ecx the position we are in the terminals buffer
 
 displayLoop:
 cmp ecx, [terminalBufferSize] ; Check if were at the end of the display buffer
-jg displayEnd ; If so jump to the end
+jg haltCpu ; If so jump to the end
+je haltCpu ; If so jump to the end
 mov ebx, [0x12C19] ; The value at this location is the start address of the terminal buffer, usually just the next four bytes
 add ebx, ecx ; Add the curent offset to the base address
 mov [ebx], [eax] ; Move the char into the 

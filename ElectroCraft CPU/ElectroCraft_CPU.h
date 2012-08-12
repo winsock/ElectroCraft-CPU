@@ -208,7 +208,7 @@ struct OPCode {
     }
     
     Byte getExtraInfoByte() {
-        return extendedInfoBits.to_ulong();
+        return extraInfoBits.to_ulong();
     }
     
     void readInfoByte(Byte info) {

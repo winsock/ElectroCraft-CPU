@@ -33,8 +33,6 @@ int main(int argc, const char * argv[])
     AssembledData data = cpu->assemble(startup);
     cpu->start(cpu->loadIntoMemory(data.data, data.length, data.codeOffset));
     while (cpu->isRunning()) {
-        cpu->getKeyboard()->onKeyPress(77);
-        cpu->getKeyboard()->onKeyPress(0xA);
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     return 0;
