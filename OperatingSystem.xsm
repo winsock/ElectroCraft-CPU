@@ -49,6 +49,10 @@ call displayNullTerminatedString ; Display it
 add esp, 4 ; Dump the old argument
 loop startupLoop ; Loop until twenty is reached
 
+; Add a line after the boot screen
+add dword [terminalBufferRow], 1
+mov terminalBufferCol, 0
+
 push welcomeMessage ; Push the welcome message address
 call displayNullTerminatedString ; Display the welcome message
 add esp, 4 ; Dump the old contents of the argument
@@ -62,8 +66,8 @@ add ecx, 1 ; Increment our key buffer counter
 cmp ecx, 255 ; Did we reach out max buffer size?
 je resetCharCounter ; If so clear it by jumping past the get command stuff
 
-add [terminalBufferCol], 1 ; Increment the column we are in
-cmp [terminalBufferCol], [0x12C11] ; Comare it to the max number
+add dword [terminalBufferCol], 1 ; Increment the column we are in
+cmp dword [terminalBufferCol], [0x12C11] ; Comare it to the max number
 je resetCharCounter ; If we have reached the max number reset the counter
 mov ebx, [0x12C11] ; Move the number of columns into ebx
 mul ebx, [terminalBufferRow] ; Multiply it by the curent row
@@ -71,8 +75,8 @@ add ebx, [terminalBufferCol] ; Add the curent columns to the result
 cmp ebx, [terminalBufferSize] ; Check if it is at the end of the buffer
 jg haltCpu ; For now just reset the char counter
 je haltCpu
-add ebx, [0x12C19] ; And finally add the base offset to the calculated offset
-mov [ebx], eax
+add dword ebx, [0x12C19] ; And finally add the base offset to the calculated offset
+mov byte [ebx], eax ; Finally put the byte value of the character into the buffer
 
 cmp byte eax, 0xA ; Is it enter?
 jne mainLoop ; If it isn't enter continue getting keys until enter is pressed or we reach 255 chars
@@ -155,37 +159,35 @@ mov eax, [ebp + 8] ; Move the address of the string into eax
 ; The display loop
 displayLoop:
 ; Get the new offset
-mov ecx, [0x12C11] ; Move into ecx the number of columns
-mul ecx, [terminalBufferRow] ; Multiply into ecx the curent row we are in
-add ecx, [terminalBufferCol] ; Add the curent column we are in
+mov ecx, dword [0x12C11] ; Move into ecx the number of columns
+mul ecx, dword [terminalBufferRow] ; Multiply into ecx the curent row we are in
+add ecx, dword [terminalBufferCol] ; Add the curent column we are in
 
 ; Comparisons
-cmp byte [eax], 0xA ; Lets see if it is an enter
-je onEnterPress ; If its enter lets do special stuff for it
-cmp ecx, [terminalBufferSize] ; Lets check if its at the end of the display buffer
+cmp ecx, dword [terminalBufferSize] ; Lets check if its at the end of the display buffer
 jg haltCpu
 je haltCpu
+cmp byte [eax], 0xA ; Lets see if it is an enter
+je onEnterPress ; If its enter lets do special stuff for it
+cmp byte [eax], 0 ; Lets see if it's the null terminator
+je displayEnd ; Jump to the end of the sub routine
 
 ; Actual writing to the display buffer
-mov ebx, [0x12C19] ; The value at this location is the start address of the terminal buffer, usually just the next four bytes
+mov ebx, dword [0x12C19] ; The value at this location is the start address of the terminal buffer, usually just the next four bytes
 add ebx, ecx ; Add the curent offset to the base address
-mov [ebx], [eax] ; Move the char into the terminal buffer
+mov byte [ebx], [eax] ; Move the char into the terminal buffer
 
 ; Incrementing
 add [terminalBufferCol], 1 ; Increment the display offset
 add eax, 1 ; Increment the offset in the string
-
-; End comparison 
-cmp byte [eax], 0 ; Lets see if it's the null terminator
-jne displayLoop ; If it isn't continue displaying
-je displayEnd ; Jump to the end of the sub routine
+jmp displayLoop
 
 ; Enter handling
 onEnterPress:
-add eax, 1 ; Increment the offset in the string
-add [terminalBufferRow], 1
-mov terminalBufferCol, 0
-jmp displayLoop
+add eax, 1 ; Increment the string offset
+add [terminalBufferRow], 1 ; Add one to the row counter
+mov terminalBufferCol, 0 ; Rest the column counter
+jmp displayLoop ; Jump back to display more characters
 
 ; The end of the display string function
 displayEnd:
