@@ -4,92 +4,18 @@
 
 #ifndef _Included_info_cerios_electrocraft_core_computer_XECInterface
 #define _Included_info_cerios_electrocraft_core_computer_XECInterface
-#pragma GCC visibility push(default)
 #ifdef __cplusplus
 extern "C" {
 #endif
 /*
  * Class:     info_cerios_electrocraft_core_computer_XECInterface
  * Method:    createCPU
- * Signature: ()V
+ * Signature: (IIIIIIJ)Linfo/cerios/electrocraft/core/computer/XECCPU;
  */
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_createCPU
-  (JNIEnv *, jobject);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    getVideoCard
- * Signature: ()Linfo/cerios/electrocraft/core/computer/XECVGACard;
- */
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getVideoCard
-  (JNIEnv *, jobject);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    getTerminal
- * Signature: ()Linfo/cerios/electrocraft/core/computer/XECTerminal;
- */
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getTerminal
-  (JNIEnv *, jobject);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    getKeyboard
- * Signature: ()Linfo/cerios/electrocraft/core/computer/XECKeyboard;
- */
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getKeyboard
-  (JNIEnv *, jobject);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    assemble
- * Signature: (Ljava/lang/String;)Linfo/cerios/electrocraft/core/computer/XECInterface/AssembledData;
- */
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_assemble
-  (JNIEnv *, jobject, jstring);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    loadIntoMemory
- * Signature: ([BII)J
- */
-JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory
-  (JNIEnv *, jobject, jbyteArray, jint, jint);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    manualTick
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_manualTick
-  (JNIEnv *, jobject);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    start
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_start
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    stop
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_stop
-  (JNIEnv *, jobject);
-
-/*
- * Class:     info_cerios_electrocraft_core_computer_XECInterface
- * Method:    reset
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_reset
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_createCPU
+  (JNIEnv *, jobject, jint, jint, jint, jint, jint, jint, jlong);
 
 #ifdef __cplusplus
 }
 #endif
-#pragma GCC visibility pop
 #endif

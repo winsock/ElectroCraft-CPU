@@ -31,6 +31,10 @@ bool ElectroCraftClock::isRunning() {
     return running;
 }
 
+void ElectroCraftClock::changeIPS(unsigned long ips) {
+    this->IPS = ips;
+}
+
 void ElectroCraftClock::operator()() {
     unsigned long currentOperations = 0;
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTickTime = std::chrono::high_resolution_clock::now();

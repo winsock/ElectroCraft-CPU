@@ -29,10 +29,12 @@ int main(int argc, const char * argv[])
         }
     }
     
-    ElectroCraft_CPU *cpu = new ElectroCraft_CPU;
+    ElectroCraft_CPU *cpu = new ElectroCraft_CPU(320, 240, 24, 80, 16 * 1024 * 1024, 4096, 5000000);
     AssembledData data = cpu->assemble(startup);
     cpu->start(cpu->loadIntoMemory(data.data, data.length, data.codeOffset));
     while (cpu->isRunning()) {
+        cpu->getKeyboard()->onKeyPress(0x8);
+        cpu->getKeyboard()->onKeyPress(0x4C);
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     return 0;

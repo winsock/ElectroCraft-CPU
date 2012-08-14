@@ -73,6 +73,20 @@ unsigned int ElectroCraftVGA::getHeight() {
     return height;
 }
 
+IOPort::IOPortResult *ElectroCraftVGA::onIOPortInterrupt(IOPort::IOPortInterrupt interrupt) {
+    return nullptr; // TODO Fill this with somthing
+}
+
+IOPort::IOPorts ElectroCraftVGA::getRequestedIOPorts() {
+    IOPort::IOPorts ioPorts;
+    ioPorts.ioPorts = new DoubleWord[3];
+    ioPorts.ioPorts[0] = 0x111; // Control line
+    ioPorts.ioPorts[1] = 0x112; // Read line
+    ioPorts.ioPorts[2] = 0x113; // Write line
+    ioPorts.number = 3;
+    return ioPorts;
+}
+
 void ElectroCraftVGA::operator()(long tickTime) {
     
 }

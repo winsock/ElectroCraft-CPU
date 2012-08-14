@@ -10,6 +10,7 @@
 #include "info_cerios_electrocraft_core_computer_XECVGACard.h"
 #include "info_cerios_electrocraft_core_computer_XECTerminal.h"
 #include "info_cerios_electrocraft_core_computer_XECKeyboard.h"
+#include "info_cerios_electrocraft_core_computer_XECCPU.h"
 #include "../ElectroCraft_CPU.h"
 #include "../ElectroCraftVGA.h"
 #include "../ElectroCraftTerminal.h"
@@ -21,7 +22,8 @@
 #include <sstream>
 #include <iostream>
 
-ElectroCraft_CPU *cpu;
+// CPU's
+std::map<unsigned long, ElectroCraft_CPU*> idCPUMap;
 // VGA
 std::map<unsigned long, ElectroCraftVGA*> idVideoCardMap;
 // Terminal
@@ -31,11 +33,88 @@ std::map<unsigned long, ElectroCraftKeyboard*> idKeyboardMap;
 
 // ################################################################# //
 //                                                                   //
-//                          ElectroCraft CPU                         //
+//                    ElectroCraft CPU/Interface                     //
 //                                                                   //
 // ################################################################# //
 
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_assemble (JNIEnv *env, jobject, jstring data) {
+ElectroCraft_CPU* getCPUFromJCPU(JNIEnv *env, jobject jCPU) {
+    jclass cpuClass = env->FindClass("info/cerios/electrocraft/core/computer/XECCPU");
+    jfieldID idField = env->GetFieldID(cpuClass, "internalID", "J");
+    unsigned long id = env->GetLongField(jCPU, idField);
+    
+    if (idCPUMap.find(id) != idCPUMap.end()) {
+        ElectroCraft_CPU* cpu = idCPUMap[id];
+        return cpu;
+    } else {
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_createCPU (JNIEnv *env, jobject, jint width, jint height, jint rows, jint columns, jint memorySize, jint stackSize, jlong ips) {
+    unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+    jclass cpuClass = env->FindClass("info/cerios/electrocraft/core/computer/XECCPU");
+    jmethodID constructor = env->GetMethodID(cpuClass, "<init>", "(J)V");
+    jobject cpu = env->NewObject(cpuClass, constructor, id);
+    idCPUMap[id] = new ElectroCraft_CPU(width, height, rows, columns, memorySize, stackSize, ips);
+    return cpu;
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_getVideoCard (JNIEnv *env, jobject caller) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
+    if (cpu != nullptr) {
+        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
+        jmethodID constructor = env->GetMethodID(videoCardClass, "<init>", "(J)V");
+        jobject videoCard = env->NewObject(videoCardClass, constructor, id);
+        idVideoCardMap[id] = cpu->getVideoCard();
+        return videoCard;
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return nullptr;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_getTerminal (JNIEnv *env, jobject caller) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
+    if (cpu != nullptr) {
+        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECTerminal");
+        jmethodID constructor = env->GetMethodID(terminalClass, "<init>", "(J)V");
+        jobject terminal = env->NewObject(terminalClass, constructor, id);
+        idTerminalMap[id] = cpu->getTerminal();
+        return terminal;
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return nullptr;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_getKeyboard (JNIEnv *env, jobject caller) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
+    if (cpu != nullptr) {
+        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        jclass keyboardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECKeyboard");
+        jmethodID constructor = env->GetMethodID(keyboardClass, "<init>", "(J)V");
+        jobject keyboard = env->NewObject(keyboardClass, constructor, id);
+        idKeyboardMap[id] = cpu->getKeyboard();
+        return keyboard;
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return nullptr;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_assemble (JNIEnv *env, jobject caller, jstring data) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
         jclass assembledDataClass = env->FindClass("info/cerios/electrocraft/core/computer/XECInterface$AssembledData");
         jmethodID constructor = env->GetMethodID(assembledDataClass, "<init>", "()V");
@@ -76,68 +155,40 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
             return nullptr;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
         return nullptr;
     }
-    return nullptr;
 }
 
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_createCPU (JNIEnv *, jobject) {
-    cpu = new ElectroCraft_CPU;
-}
-
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getVideoCard (JNIEnv *env, jobject) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_manualTick (JNIEnv *env, jobject caller) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
-        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
-        jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
-        jmethodID constructor = env->GetMethodID(videoCardClass, "<init>", "(J)V");
-        jobject videoCard = env->NewObject(videoCardClass, constructor, id);
-        idVideoCardMap[id] = cpu->getVideoCard();
-        return videoCard;
+        (*cpu)(0l);
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
-            return nullptr;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
-        return nullptr;
+            return;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return;
     }
 }
 
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getTerminal (JNIEnv *env, jobject) {
+JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_loadIntoMemory (JNIEnv *env, jobject caller, jbyteArray data, jint length, jint codeOffset){
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
-        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
-        jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECTerminal");
-        jmethodID constructor = env->GetMethodID(terminalClass, "<init>", "(J)V");
-        jobject terminal = env->NewObject(terminalClass, constructor, id);
-        idTerminalMap[id] = cpu->getTerminal();
-        return terminal;
+        jbyteArray byteData = reinterpret_cast<jbyteArray>(data);
+        return cpu->loadIntoMemory(reinterpret_cast<Byte*>(env->GetByteArrayElements(byteData, false)), length, codeOffset).doubleWord;
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
-            return nullptr;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
-        return nullptr;
+            return 0;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return 0;
     }
 }
 
-JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_getKeyboard (JNIEnv *env, jobject) {
-    if (cpu != nullptr) {
-        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
-        jclass keyboardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECKeyboard");
-        jmethodID constructor = env->GetMethodID(keyboardClass, "<init>", "(J)V");
-        jobject keyboard = env->NewObject(keyboardClass, constructor, id);
-        idKeyboardMap[id] = cpu->getKeyboard();
-        return keyboard;
-    } else {
-        jclass cls = env->FindClass("java/lang/IllegalStateException");
-        if (cls == nullptr)
-            return nullptr;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
-        return nullptr;
-    }
-}
-
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_start (JNIEnv *env, jobject, jlong address) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_start (JNIEnv *env, jobject caller, jlong address) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
         Address cppAddress;
         cppAddress.doubleWord = static_cast<unsigned int>(address);
@@ -146,41 +197,26 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
             return;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
         return;
     }
 }
 
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_manualTick (JNIEnv *env, jobject) {
-    if (cpu != nullptr) {
-        (*cpu)(0l);
-    } else {
-        jclass cls = env->FindClass("java/lang/IllegalStateException");
-        if (cls == nullptr)
-            return;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
-        return;
-    }
-}
-
-JNIEXPORT jlong JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_loadIntoMemory (JNIEnv *env, jobject, jbyteArray data, jint length, jint codeOffset){
-    jbyteArray byteData = reinterpret_cast<jbyteArray>(data);
-    return cpu->loadIntoMemory(reinterpret_cast<Byte*>(env->GetByteArrayElements(byteData, false)), length, codeOffset).doubleWord;
-}
-
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_stop (JNIEnv *env, jobject) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_stop (JNIEnv *env, jobject caller) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
         cpu->stop();
     } else {
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
             return;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
         return;
     }
 }
 
-JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_reset (JNIEnv *env, jobject, jlong address) {
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_reset (JNIEnv *env, jobject caller, jlong address) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
         Address cppAddress;
         cppAddress.doubleWord = static_cast<unsigned int>(address);
@@ -189,10 +225,24 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_
         jclass cls = env->FindClass("java/lang/IllegalStateException");
         if (cls == nullptr)
             return;
-        env->ThrowNew(cls, "ElectroCraft JNI: CPU is uninitalized!\n Call info.cerios.electrocraft.core.computer.XECInterface.createCPU() First!");
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
         return;
     }
 }
+
+JNIEXPORT jboolean JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_isRunning (JNIEnv *env, jobject caller) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
+    if (cpu != nullptr) {
+        return cpu->isRunning();
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return false;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return false;
+    }
+}
+
 
 // ################################################################# //
 //                                                                   //

@@ -13,6 +13,7 @@
 		7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */; };
 		7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */; };
 		7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */; };
+		76679FD615D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h in Headers */ = {isa = PBXBuildFile; fileRef = 76679FD515D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h */; };
 		766CAF7E15D2A94E00EF08A4 /* ElectroCraftStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */; };
 		766CAF7F15D2A94E00EF08A4 /* ElectroCraftStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */; };
 		766CAF8315D2B40D00EF08A4 /* IOPortHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */; };
@@ -47,6 +48,7 @@
 		7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftTerminal.cpp; sourceTree = "<group>"; };
 		7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftTerminal.h; sourceTree = "<group>"; };
 		7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECTerminal.h; sourceTree = "<group>"; };
+		76679FD515D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECCPU.h; sourceTree = "<group>"; };
 		766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftStorage.cpp; sourceTree = "<group>"; };
 		766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftStorage.h; sourceTree = "<group>"; };
 		766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOPortHandler.cpp; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 		768BD4FE15CEF1CA00AD9E16 /* JNI */ = {
 			isa = PBXGroup;
 			children = (
+				76679FD515D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h */,
 				766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */,
 				7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */,
 				768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */,
@@ -156,6 +159,7 @@
 				766CAF8815D2B43F00EF08A4 /* IOPortDevice.h in Headers */,
 				766CAF8C15D2D72500EF08A4 /* ElectroCraftKeyboard.h in Headers */,
 				766CAF8E15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h in Headers */,
+				76679FD615D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +288,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/**";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -292,6 +298,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/**";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

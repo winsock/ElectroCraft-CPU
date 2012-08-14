@@ -25,6 +25,7 @@ public:
     void start();
     void stop();
     bool isRunning();
+    void changeIPS(unsigned long ips);
     void registerCallback(ElectroCraftTickable *device);
 };
 

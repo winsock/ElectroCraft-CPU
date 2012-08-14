@@ -66,6 +66,8 @@ enum InstructionSet {
     BKP = 40,
     JL = 41,
     JG = 42,
+    SLEEP = 43,
+    STRCMP = 44,
     UNKOWN = 63
     };
 
@@ -410,13 +412,14 @@ class ElectroCraft_CPU : ElectroCraftTickable {
     ElectroCraftKeyboard *keyboard;
     Section currentSection = Section::CODE;
 public:
-    ElectroCraft_CPU();
+    ElectroCraft_CPU(int width, int height, int rows, int columns, int memorySize, int stackSize, long IPS);
     ~ElectroCraft_CPU();
     AssembledData assemble(std::vector<std::string>);
     Address loadIntoMemory(Byte* data, unsigned int length, unsigned int codeOffset);
     void start(Address baseAddress);
     void stop();
     void reset(Address baseAddress);
+    void changeClockSpeed(unsigned long ips);
     ElectroCraftVGA* getVideoCard();
     ElectroCraftTerminal* getTerminal();
     ElectroCraftKeyboard* getKeyboard();

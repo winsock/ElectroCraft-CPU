@@ -10,13 +10,14 @@
 #define __ElectroCraft_CPU__ElectroCraftVGA__
 
 #include "MemoryMappedIODevice.h"
+#include "IOPortDevice.h"
 #include <string>
 
 class ElectroCraftMemory;
 struct MemoryInfo;
 struct Memory;
 
-class ElectroCraftVGA : public MemoryMappedIODevice {
+class ElectroCraftVGA : public MemoryMappedIODevice, public IOPort::IOPortDevice {
     MemoryInfo* vgaIOMemory;
     Memory* displayBuffer;
     DoubleWord displayBufferSize;
@@ -33,6 +34,8 @@ public:
     unsigned int getHeight();
     virtual MemoryMappedIOSection getMappedIO();
     virtual void operator()(long tickTime);
+    virtual IOPort::IOPortResult *onIOPortInterrupt(IOPort::IOPortInterrupt interrupt);
+    virtual IOPort::IOPorts getRequestedIOPorts();
 };
 
 #endif /* defined(__ElectroCraft_CPU__ElectroCraftVGA__) */

@@ -26,23 +26,33 @@
 #include "IOPortHandler.h"
 #include "Utils.h"
 
-ElectroCraft_CPU::ElectroCraft_CPU() {
+ElectroCraft_CPU::ElectroCraft_CPU(int width, int height, int rows, int columns, int memorySize, int stackSize, long IPS) {
     Address baseAddress;
     baseAddress.doubleWord = 0x0;
     
-    memory = new ElectroCraftMemory(16 * 1024 * 1024, baseAddress);
+    if (memorySize < 8 * 1024 * 1024) {
+        memorySize = 8 * 1024 * 1024;
+        std::cerr<<"ElectroCraft CPU: Error Requested memory size is too small!"<<std::endl;
+    }
+    
+    if (stackSize < 4096) {
+        stackSize = 4096;
+        std::cerr<<"ElectroCraft CPU: Error Requested stack size is too small!"<<std::endl;
+    }
+    
+    memory = new ElectroCraftMemory(memorySize, baseAddress);
     ioPortHandler = new IOPort::IOPortHandler();
-    videoCard = new ElectroCraftVGA(memory, 320, 240);
-    terminal = new ElectroCraftTerminal(memory, 80, 20);
-    stack = new ElectroCraftStack(memory, &registers, 4096);
-    
+    videoCard = new ElectroCraftVGA(memory, width, height);
+    terminal = new ElectroCraftTerminal(memory, columns, rows);
+    stack = new ElectroCraftStack(memory, &registers, stackSize);
     storage = new ElectroCraftStorage();
-    ioPortHandler->registerDevice(storage);
-    
     keyboard = new ElectroCraftKeyboard();
+    
+    ioPortHandler->registerDevice(videoCard);
+    ioPortHandler->registerDevice(storage);
     ioPortHandler->registerDevice(keyboard);
     
-    clock = new ElectroCraftClock(5000000);
+    clock = new ElectroCraftClock(IPS);
     clock->registerCallback(this);
     clock->registerCallback(videoCard);
     clock->registerCallback(terminal);
@@ -184,7 +194,7 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                 return nullptr;
         } if ((line[i] == ' ' || line[i] == ',' || &line[i] == &line.back()) && !(insideBrackets || insideOfQuotes)) {
             // If this is the last char make sure it gets put into the buffer
-            if (&line[i] == &line.back()) {
+            if (&line[i] == &line.back() && (line[i] != ' ' || line[i] == ',')) {
                 tokenBuffer<<line[i];
             }
             
@@ -325,11 +335,14 @@ FirstPassData* ElectroCraft_CPU::firstPass(std::string line, DoubleWord beginOff
                     tokenNumber++;
                 } else if (token == "BYTE" || token == "WORD" || token == "DWORD") {
                     if (token == "BYTE") {
-                        data->opcode->setByteInPosition(tokenNumber - 1);
+                        data->opcode->setByteInPosition(0);
+                        data->opcode->setByteInPosition(1);
                     } else if (token == "WORD") {
-                        data->opcode->setWordInPosition(tokenNumber - 1);
+                        data->opcode->setWordInPosition(0);
+                        data->opcode->setWordInPosition(1);
                     } else {
-                        data->opcode->setDoubleWordInPosition(tokenNumber - 1);
+                        data->opcode->setDoubleWordInPosition(0);
+                        data->opcode->setDoubleWordInPosition(1);
                     }
                 } else if (((token == "DB" || token == "DW" || token == "DD") && var.name.size() > 0) && currentSection == Section::DATA) {
                     var.isTokenVar = true;
@@ -676,6 +689,12 @@ OPCode* ElectroCraft_CPU::readOPCode(std::string token) {
     } else if (token == "JG") {
         opcode->opCode = InstructionSet::JG;
         opcode->numOprands = 1;
+    } else if (token == "SLEEP") {
+        opcode->opCode = InstructionSet::SLEEP;
+        opcode->numOprands = 1;
+    } else if (token == "STRCMP") {
+        opcode->opCode = InstructionSet::STRCMP;
+        opcode->numOprands = 2;
     } else {
         opcode->opCode = InstructionSet::UNKOWN;
         opcode->numOprands = 0;
@@ -974,45 +993,17 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     
     // Defined Variables
     if (instruction.isVarInPosition(0)) {
-        if (dataSize == 1) {
-            if (instruction.isOffsetNegitive(0)) {
-                address.word.lowWord.byte.lowByte = registers.IP.word.lowWord.byte.lowByte - instruction.args[0].word.lowWord.byte.lowByte;
-            } else {
-                address.word.lowWord.byte.lowByte = registers.IP.word.lowWord.byte.lowByte + instruction.args[0].word.lowWord.byte.lowByte;
-            }
-        } else if (dataSize == 2) {
-            if (instruction.isOffsetNegitive(0)) {
-                address.word.lowWord.word = registers.IP.word.lowWord.word - instruction.args[0].word.lowWord.word;
-            } else {
-                address.word.lowWord.word = registers.IP.word.lowWord.word + instruction.args[0].word.lowWord.word;
-            }
+        if (instruction.isOffsetNegitive(0)) {
+            data = address = registers.IP.doubleWord - instruction.args[0].doubleWord;
         } else {
-            if (instruction.isOffsetNegitive(0)) {
-                address = registers.IP.doubleWord - instruction.args[0].doubleWord;
-            } else {
-                address = registers.IP.doubleWord + instruction.args[0].doubleWord;
-            }
+            data = address = registers.IP.doubleWord + instruction.args[0].doubleWord;
         }
     }
     if (instruction.isVarInPosition(1)) {
-        if (dataSize == 1) {
-            if (instruction.isOffsetNegitive(1)) {
-                address1.word.lowWord.byte.lowByte = registers.IP.word.lowWord.byte.lowByte - instruction.args[1].word.lowWord.byte.lowByte;
-            } else {
-                address1.word.lowWord.byte.lowByte = registers.IP.word.lowWord.byte.lowByte + instruction.args[1].word.lowWord.byte.lowByte;
-            }
-        } else if (dataSize == 2) {
-            if (instruction.isOffsetNegitive(1)) {
-                address1.word.lowWord.word = registers.IP.word.lowWord.word - instruction.args[1].word.lowWord.word;
-            } else {
-                address1.word.lowWord.word = registers.IP.word.lowWord.word + instruction.args[1].word.lowWord.word;
-            }
+        if (instruction.isOffsetNegitive(1)) {
+            data1 = address1 = registers.IP.doubleWord - instruction.args[1].doubleWord;
         } else {
-            if (instruction.isOffsetNegitive(1)) {
-                address1 = registers.IP.doubleWord - instruction.args[1].doubleWord;
-            } else {
-                address1 = registers.IP.doubleWord + instruction.args[1].doubleWord;
-            }
+            data1 = address1 = registers.IP.doubleWord + instruction.args[1].doubleWord;
         }
     }
     
@@ -1059,19 +1050,16 @@ void ElectroCraft_CPU::operator()(long tickTime) {
     }
     
     // Read basic data if the type requires it
-    if (instruction.isAddressInPosition(0) || instruction.isVarInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
+    if (instruction.isAddressInPosition(0) || instruction.shouldUseRegisterAsAddress(0)) {
         if (dataSize == 1) {
             data = *memory->readData(address, dataSize);
-            if (data.doubleWord == 0xA) {
-                asm("nop");
-            }
         } else if (dataSize == 2) {
             data.word = Utils::General::readWord(memory->readData(address, dataSize));
         } else {
             data = Utils::General::readDoubleWord(memory->readData(address, dataSize));
         }
     }
-    if (instruction.isAddressInPosition(1) || instruction.isVarInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
+    if (instruction.isAddressInPosition(1) || instruction.shouldUseRegisterAsAddress(1)) {
         if (data1Size == 1) {
             data1 = *memory->readData(address1, data1Size);
         } else if (data1Size == 2) {
@@ -1135,7 +1123,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             printf("CX = %d, DX = %d, SI = %d, DI = %d, BP = %d, IP = %d\n", getRegisterData(Registers::CX).doubleWord, getRegisterData(Registers::DX).doubleWord, getRegisterData(Registers::SI).doubleWord, getRegisterData(Registers::DI).doubleWord ,getRegisterData(Registers::BP).doubleWord, getRegisterData(Registers::IP).doubleWord);
             printf("SP = %d, MC = %d, AH = %d, AL = %d, BH = %d, BL = %d\n", getRegisterData(Registers::SP).doubleWord, getRegisterData(Registers::MC).doubleWord, getRegisterData(Registers::AH).word.lowWord.byte.hiByte, getRegisterData(Registers::AL).word.lowWord.byte.lowByte, getRegisterData(Registers::BH).word.lowWord.byte.hiByte, getRegisterData(Registers::BL).word.lowWord.byte.lowByte);
             printf("CH = %d, CL = %d, DH = %d, DL = %d\n", getRegisterData(Registers::CH).word.lowWord.byte.hiByte, getRegisterData(Registers::CL).word.lowWord.byte.lowByte, getRegisterData(Registers::DH).word.lowWord.byte.hiByte, getRegisterData(Registers::DL).word.lowWord.byte.lowByte);
-            std::cout<<"Press Any Key To Continue!"<<std::endl;
+            std::cout<<"Enter Any Key To Continue!"<<std::endl;
             std::cin>>enterBuffer;
         }
             break;
@@ -1643,7 +1631,7 @@ void ElectroCraft_CPU::operator()(long tickTime) {
                 // <Register>, <Const>
             } else if (regSize != RegisterSizes::ZERO) {
                 setRegisterData(data1, reg);
-                // <Varaible>, <Reg, Const, Address>
+                // <Varaible>, <Reg, Const, Address, Varaible>
             } else if (instruction.isVarInPosition(0)) {
                 memory->writeData(address, dataSize, Utils::General::numberToBytes(data1, dataSize));
             } else {
@@ -1943,6 +1931,38 @@ void ElectroCraft_CPU::operator()(long tickTime) {
             }
         }
             break;
+        case InstructionSet::SLEEP:
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(data.doubleWord));
+        }
+            break;
+        case InstructionSet::STRCMP:
+        {
+            bool reachedEnd = false;
+            bool reachedEnd1 = false;
+            while (!reachedEnd && !reachedEnd1) {
+                Byte data = *memory->readData(address.doubleWord++, 1);
+                Byte data1 = *memory->readData(address1.doubleWord++, 1);
+                if (data == 0x0) {
+                    reachedEnd = true;
+                }
+                
+                if (data1 == 0x0) {
+                    reachedEnd1 = true;
+                }
+                
+                if (reachedEnd && reachedEnd1) {
+                    eState.setFlagState(EFLAGS::ZF);
+                } else if (reachedEnd || reachedEnd1) {
+                    eState.resetFlag(EFLAGS::ZF);
+                    break;
+                } else if (data != data1) {
+                    eState.resetFlag(EFLAGS::ZF);
+                    break;
+                }
+            }
+        }
+            break;
         case InstructionSet::SUB:
         {
             // [Address], <Register, Const>
@@ -2031,4 +2051,8 @@ void ElectroCraft_CPU::reset(Address baseAddress) {
     clock->stop();
     registers.IP = baseAddress;
     clock->start();
+}
+
+void ElectroCraft_CPU::changeClockSpeed(unsigned long ips) {
+    clock->changeIPS(ips);
 }
