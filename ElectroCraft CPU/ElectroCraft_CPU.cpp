@@ -70,6 +70,27 @@ AssembledData ElectroCraft_CPU::assemble(std::vector<std::string> data) {
     DoubleWord currentOffset = 0;
     DoubleWord totalDataSize = 0;
 
+    // Preprocessor pass
+    for (unsigned int line = 0; line < data.size(); line++) {
+        if (data[line].front() == '%') {
+            std::vector<std::string> split = Utils::General::split(data[line], ' ');
+            // Check for includes
+            if (split[0] == "%include") {
+                if (split[1].front() == '"' && split[1].back() == '"') {
+                    std::ifstream includedFile(split[1].substr(1, split[1].size() - 2));
+
+                    while (includedFile.good()) {
+                        std::string line;
+                        std::getline(includedFile, line);
+                        if (line[0] != '\n' || line[0] != '\0') {
+                            data.push_back(line);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     for (unsigned int line = 0; line < data.size(); line++) {
         FirstPassData *readData = firstPass(data[line], currentOffset);
         if (readData != nullptr) {
