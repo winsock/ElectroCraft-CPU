@@ -423,6 +423,7 @@ public:
     ElectroCraftVGA* getVideoCard();
     ElectroCraftTerminal* getTerminal();
     ElectroCraftKeyboard* getKeyboard();
+    IOPort::IOPortHandler* getIoPortHandler();
     bool isRunning();
     virtual void operator()(long tickTime);
 private:

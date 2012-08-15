@@ -87,6 +87,22 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_reset
 JNIEXPORT jboolean JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_isRunning
   (JNIEnv *, jobject);
 
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECCPU
+ * Method:    registerInterupt
+ * Signature: (ILinfo/cerios/electrocraft/core/computer/IComputerCallback;)V
+ */
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_registerInterupt
+  (JNIEnv *, jobject, jint, jobject);
+
+/*
+ * Class:     info_cerios_electrocraft_core_computer_XECCPU
+ * Method:    removeInterupt
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_removeInterupt
+  (JNIEnv *, jobject, jint);
+
 #ifdef __cplusplus
 }
 #endif

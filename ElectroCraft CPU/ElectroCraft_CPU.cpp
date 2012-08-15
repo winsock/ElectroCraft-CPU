@@ -2028,6 +2028,10 @@ ElectroCraftKeyboard* ElectroCraft_CPU::getKeyboard() {
     return keyboard;
 }
 
+IOPort::IOPortHandler* ElectroCraft_CPU::getIoPortHandler() {
+    return ioPortHandler;
+}
+
 bool ElectroCraft_CPU::isRunning() {
     return clock->isRunning();
 }

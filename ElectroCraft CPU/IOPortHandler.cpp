@@ -7,11 +7,17 @@
 //
 
 #include "IOPortHandler.h"
+#include <iostream>
 
 void IOPort::IOPortHandler::registerDevice(IOPort::IOPortDevice *device) {
     for (int i = 0; i < device->getRequestedIOPorts().number; i++) {
         ioPorts[device->getRequestedIOPorts().ioPorts[i].doubleWord] = device;
+        std::cout<<device->getRequestedIOPorts().ioPorts[i].doubleWord<<std::endl;
     }
+}
+
+void IOPort::IOPortHandler::unregisterPort(uint32_t port) {
+    ioPorts.erase(port);
 }
 
 IOPort::IOPortResult* IOPort::IOPortHandler::callIOPort(IOPort::IOPortInterrupt interrupt) {

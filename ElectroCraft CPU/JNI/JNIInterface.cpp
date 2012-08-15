@@ -15,6 +15,8 @@
 #include "../ElectroCraftVGA.h"
 #include "../ElectroCraftTerminal.h"
 #include "../ElectroCraftKeyboard.h"
+#include "../IOPortDevice.h"
+#include "../IOPortHandler.h"
 #include <vector>
 #include <chrono>
 #include <map>
@@ -22,14 +24,80 @@
 #include <sstream>
 #include <iostream>
 
+// ################################################################# //
+//                                                                   //
+//                       ElectroCraft IO Ports                       //
+//                                                                   //
+// ################################################################# //
+
+jint extractInt(JNIEnv *env, jobject arg) { 
+    jclass argClass = env->GetObjectClass(arg); 
+    jmethodID intValue = env->GetMethodID(argClass, "intValue", "()I");
+    return env->CallIntMethod(arg, intValue); 
+}
+
+class JNIIOPort : public IOPort::IOPortDevice {
+    uint32_t port;
+    jobject callback;
+    JNIEnv *env;
+public:
+    JNIIOPort(uint32_t ioport, jobject callbackObject, JNIEnv *env) {
+        this->port = ioport;
+        this->env = env;
+        this->callback = callbackObject;
+    }
+    
+    virtual IOPort::IOPortResult *onIOPortInterrupt(IOPort::IOPortInterrupt interrupt) {
+        if (interrupt.ioPort.doubleWord == port) {
+            // Get the callback class data
+            jclass callbackClass = env->FindClass("info/cerios/electrocraft/core/computer/IComputerCallback");
+            jmethodID callbackMethod = env->GetMethodID(callbackClass, "onTaskComplete", "([Ljava/lang/Object;)V");
+            
+            // Get all of the data class data
+            jclass callbackDataClass = env->FindClass("info/cerios/electrocraft/core/computer/XECCPU/InteruptData");
+            jmethodID constructor = env->GetMethodID(callbackDataClass, "<init>", "()V");
+            jfieldID callbackPort = env->GetFieldID(callbackDataClass, "interuptPort", "I");
+            jfieldID callbackInteruptData = env->GetFieldID(callbackDataClass, "data", "I");
+            jfieldID callbackRead = env->GetFieldID(callbackDataClass, "read", "Z");
+            
+            // Set data class data
+            jobject callbackDataObject = env->NewObject(callbackDataClass, constructor);
+            env->SetBooleanField(callbackDataObject, callbackRead, interrupt.read);
+            env->SetIntField(callbackDataObject, callbackInteruptData, interrupt.data.doubleWord);
+            env->SetIntField(callbackDataObject, callbackPort, interrupt.ioPort.doubleWord);
+            
+            // Call the callback
+            jobject resultData = env->CallObjectMethod(callback, callbackMethod, callbackDataObject);
+            
+            // Read the result
+            IOPort::IOPortResult *result = new IOPort::IOPortResult;
+            result->returnData.doubleWord = extractInt(env, resultData);
+            
+            // Finally return the result
+            return result;
+        }
+        return nullptr;
+    }
+    
+    virtual IOPort::IOPorts getRequestedIOPorts() {
+        IOPort::IOPorts ioPorts;
+        ioPorts.ioPorts = new DoubleWord;
+        ioPorts.ioPorts->doubleWord = port;
+        ioPorts.number = 1;
+        return ioPorts;
+    }
+};
+
 // CPU's
-std::map<unsigned long, ElectroCraft_CPU*> idCPUMap;
+std::map<unsigned long long, ElectroCraft_CPU*> idCPUMap;
 // VGA
-std::map<unsigned long, ElectroCraftVGA*> idVideoCardMap;
+std::map<unsigned long long, ElectroCraftVGA*> idVideoCardMap;
 // Terminal
-std::map<unsigned long, ElectroCraftTerminal*> idTerminalMap;
+std::map<unsigned long long, ElectroCraftTerminal*> idTerminalMap;
 // Keyboard
-std::map<unsigned long, ElectroCraftKeyboard*> idKeyboardMap;
+std::map<unsigned long long, ElectroCraftKeyboard*> idKeyboardMap;
+// IOPorts
+std::map<uint32_t, JNIIOPort*> ioPorts;
 
 // ################################################################# //
 //                                                                   //
@@ -40,7 +108,7 @@ std::map<unsigned long, ElectroCraftKeyboard*> idKeyboardMap;
 ElectroCraft_CPU* getCPUFromJCPU(JNIEnv *env, jobject jCPU) {
     jclass cpuClass = env->FindClass("info/cerios/electrocraft/core/computer/XECCPU");
     jfieldID idField = env->GetFieldID(cpuClass, "internalID", "J");
-    unsigned long id = env->GetLongField(jCPU, idField);
+    unsigned long long id = env->GetLongField(jCPU, idField);
     
     if (idCPUMap.find(id) != idCPUMap.end()) {
         ElectroCraft_CPU* cpu = idCPUMap[id];
@@ -51,7 +119,7 @@ ElectroCraft_CPU* getCPUFromJCPU(JNIEnv *env, jobject jCPU) {
 }
 
 JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterface_createCPU (JNIEnv *env, jobject, jint width, jint height, jint rows, jint columns, jint memorySize, jint stackSize, jlong ips) {
-    unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+    unsigned long long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
     jclass cpuClass = env->FindClass("info/cerios/electrocraft/core/computer/XECCPU");
     jmethodID constructor = env->GetMethodID(cpuClass, "<init>", "(J)V");
     jobject cpu = env->NewObject(cpuClass, constructor, id);
@@ -62,7 +130,7 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECInterfa
 JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_getVideoCard (JNIEnv *env, jobject caller) {
     ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
-        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        unsigned long long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
         jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
         jmethodID constructor = env->GetMethodID(videoCardClass, "<init>", "(J)V");
         jobject videoCard = env->NewObject(videoCardClass, constructor, id);
@@ -80,7 +148,7 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_get
 JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_getTerminal (JNIEnv *env, jobject caller) {
     ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
-        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        unsigned long long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
         jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECTerminal");
         jmethodID constructor = env->GetMethodID(terminalClass, "<init>", "(J)V");
         jobject terminal = env->NewObject(terminalClass, constructor, id);
@@ -98,7 +166,7 @@ JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_get
 JNIEXPORT jobject JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_getKeyboard (JNIEnv *env, jobject caller) {
     ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
     if (cpu != nullptr) {
-        unsigned long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
+        unsigned long long id = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch()).count();
         jclass keyboardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECKeyboard");
         jmethodID constructor = env->GetMethodID(keyboardClass, "<init>", "(J)V");
         jobject keyboard = env->NewObject(keyboardClass, constructor, id);
@@ -244,6 +312,34 @@ JNIEXPORT jboolean JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_is
 }
 
 
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_registerInterupt (JNIEnv *env, jobject caller, jint port, jobject callback) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
+    if (cpu != nullptr) {
+        JNIIOPort *ioPort = new JNIIOPort(port, callback, env);
+        cpu->getIoPortHandler()->registerDevice(ioPort);
+        ioPorts[port] = ioPort;
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return;
+    }
+}
+
+JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_removeInterupt (JNIEnv *env, jobject caller, jint port) {
+    ElectroCraft_CPU *cpu = getCPUFromJCPU(env, caller);
+    if (cpu != nullptr) {
+        cpu->getIoPortHandler()->unregisterPort(port);
+    } else {
+        jclass cls = env->FindClass("java/lang/IllegalStateException");
+        if (cls == nullptr)
+            return;
+        env->ThrowNew(cls, "ElectroCraft JNI: Unknown CPU ID!");
+        return;
+    }
+}
+
 // ################################################################# //
 //                                                                   //
 //                          ElectroCraft GPU                         //
@@ -253,7 +349,7 @@ JNIEXPORT jboolean JNICALL Java_info_cerios_electrocraft_core_computer_XECCPU_is
 ElectroCraftVGA* getVideoCardFromJVideoCard(JNIEnv *env, jobject jVideoCard) {
     jclass videoCardClass = env->FindClass("info/cerios/electrocraft/core/computer/XECVGACard");
     jfieldID idField = env->GetFieldID(videoCardClass, "internalID", "J");
-    unsigned long id = env->GetLongField(jVideoCard, idField);
+    unsigned long long id = env->GetLongField(jVideoCard, idField);
     
     if (idVideoCardMap.find(id) != idVideoCardMap.end()) {
         ElectroCraftVGA* videoCard = idVideoCardMap[id];
@@ -360,7 +456,7 @@ JNIEXPORT jint JNICALL Java_info_cerios_electrocraft_core_computer_XECVGACard_ge
 ElectroCraftTerminal* getTerminalFromJTerminal(JNIEnv *env, jobject jTerminal) {
     jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECTerminal");
     jfieldID idField = env->GetFieldID(terminalClass, "internalID", "J");
-    unsigned long id = env->GetLongField(jTerminal, idField);
+    unsigned long long id = env->GetLongField(jTerminal, idField);
     
     if (idTerminalMap.find(id) != idTerminalMap.end()) {
         ElectroCraftTerminal* terminal = idTerminalMap[id];
@@ -431,7 +527,7 @@ JNIEXPORT void JNICALL Java_info_cerios_electrocraft_core_computer_XECTerminal_c
 ElectroCraftKeyboard* getKeyboardFromJKeyboard(JNIEnv *env, jobject jTerminal) {
     jclass terminalClass = env->FindClass("info/cerios/electrocraft/core/computer/XECKeyboard");
     jfieldID idField = env->GetFieldID(terminalClass, "internalID", "J");
-    unsigned long id = env->GetLongField(jTerminal, idField);
+    unsigned long long id = env->GetLongField(jTerminal, idField);
     
     if (idKeyboardMap.find(id) != idKeyboardMap.end()) {
         ElectroCraftKeyboard* keyboard = idKeyboardMap[id];

@@ -20,14 +20,16 @@
  0x104 - 0x110 = Terminal
  0x111 - 0x120 = VGA
  0x121 - 0x123 = Keyboard
+ 0x1000 - 0xFFFFFF = Minecraft
  
 */
 
 namespace IOPort {
-        class IOPortHandler {
-        std::map<unsigned int, IOPortDevice*> ioPorts;
+    class IOPortHandler {
+        std::map<uint32_t, IOPortDevice*> ioPorts;
     public:
         void registerDevice(IOPortDevice *device);
+        void unregisterPort(uint32_t port);
         IOPortResult *callIOPort(IOPortInterrupt interrupt);
     };
 }
