@@ -1,5 +1,5 @@
 SHELL := C:\msys\1.0\bin\bash.exe
-CC = gcc
+CC = C:\mingw64\bin\gcc.exe
 JDK_INCLUDE = "C:/Program Files/Java/jdk1.6.0_34/include"
 JDK_PLATFORM_INCLUDE = "C:/Program Files/Java/jdk1.6.0_34/include/win32"
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
