@@ -8,11 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366653786.218985"
+         timestampString = "366873963.342712"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1401"
-         endingLineNumber = "1401"
+         startingLineNumber = "1412"
+         endingLineNumber = "1412"
          landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
          landmarkType = "5">
       </FileBreakpoint>
@@ -21,38 +21,51 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366653786.218985"
+         timestampString = "366873963.342712"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1077"
-         endingLineNumber = "1077"
-         landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366654771.044099"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1623"
-         endingLineNumber = "1623"
-         landmarkName = "ElectroCraft_CPU::operator()(long tickTime)"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "ElectroCraft CPU/ElectroCraft_CPU.cpp"
-         timestampString = "366655803.396401"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "130"
-         endingLineNumber = "130"
+         startingLineNumber = "141"
+         endingLineNumber = "141"
          landmarkName = "ElectroCraft_CPU::assemble(std::vector&lt;std::string&gt; data)"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/LuaTerminal.cpp"
+         timestampString = "366904131.139548"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "44"
+         endingLineNumber = "44"
+         landmarkName = "LuaTerminal::setCharacter(unsigned int x, unsigned int y, char chr)"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/SLB.cpp"
+         timestampString = "366909389.495722"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "1648"
+         endingLineNumber = "1648"
+         landmarkName = "Script::getState()"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/SLB.cpp"
+         timestampString = "366909400.817946"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "1649"
+         endingLineNumber = "1649"
+         landmarkName = "Script::getState()"
          landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>

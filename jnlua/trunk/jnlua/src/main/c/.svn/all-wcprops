@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/153/trunk/jnlua/src/main/c
+END
+javavm.c
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/130/trunk/jnlua/src/main/c/javavm.c
+END
+javavm.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/130/trunk/jnlua/src/main/c/javavm.h
+END
+jnlua.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/129/trunk/jnlua/src/main/c/jnlua.c
+END

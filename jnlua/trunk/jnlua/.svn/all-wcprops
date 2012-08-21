@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/svn/!svn/ver/154/trunk/jnlua
+END
+LICENSE.txt
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/38/trunk/jnlua/LICENSE.txt
+END
+.classpath
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/38/trunk/jnlua/.classpath
+END
+.project
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/38/trunk/jnlua/.project
+END
+pom.xml
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/117/trunk/jnlua/pom.xml
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/135/trunk/jnlua/README.txt
+END

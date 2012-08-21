@@ -7,68 +7,157 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		762D853A15CCD8AD00FAF876 /* ElectroCraft_CPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */; };
-		762D853B15CCD8AD00FAF876 /* ElectroCraftMemory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */; };
-		762D853C15CCD8AD00FAF876 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 762D84DA15CC2B5800FAF876 /* Utils.cpp */; };
-		7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */; };
-		7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */; };
-		7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */; };
-		76679FD615D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h in Headers */ = {isa = PBXBuildFile; fileRef = 76679FD515D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h */; };
-		766CAF7E15D2A94E00EF08A4 /* ElectroCraftStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */; };
-		766CAF7F15D2A94E00EF08A4 /* ElectroCraftStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */; };
-		766CAF8315D2B40D00EF08A4 /* IOPortHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */; };
-		766CAF8415D2B40D00EF08A4 /* IOPortHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8215D2B40D00EF08A4 /* IOPortHandler.h */; };
-		766CAF8815D2B43F00EF08A4 /* IOPortDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8615D2B43F00EF08A4 /* IOPortDevice.h */; };
-		766CAF8B15D2D72500EF08A4 /* ElectroCraftKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 766CAF8915D2D72500EF08A4 /* ElectroCraftKeyboard.cpp */; };
-		766CAF8C15D2D72500EF08A4 /* ElectroCraftKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8A15D2D72500EF08A4 /* ElectroCraftKeyboard.h */; };
-		766CAF8E15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */; };
-		768BD50215CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */; };
-		768BD50415CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */; };
-		768BD50815CEF1F500AD9E16 /* JNIInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */; };
-		768BD50C15CF19F000AD9E16 /* ElectroCraftVGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 768BD50A15CF19F000AD9E16 /* ElectroCraftVGA.cpp */; };
-		768BD50D15CF19F000AD9E16 /* ElectroCraftVGA.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD50B15CF19F000AD9E16 /* ElectroCraftVGA.h */; };
-		768BD51115CF20F900AD9E16 /* ElectroCraftClock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 768BD50F15CF20F900AD9E16 /* ElectroCraftClock.cpp */; };
-		768BD51215CF20F900AD9E16 /* ElectroCraftClock.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD51015CF20F900AD9E16 /* ElectroCraftClock.h */; };
-		768BD51615CF212A00AD9E16 /* ElectroCraftTickable.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */; };
-		768BD51815CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h in Headers */ = {isa = PBXBuildFile; fileRef = 768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */; };
-		76D9EA1515CD7EDA007D64D2 /* ElectroCraftStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */; };
-		76D9EA1615CD7EDA007D64D2 /* ElectroCraftStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */; };
+		768B23A015E30C5F0077873F /* jnlua.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B239D15E30C5F0077873F /* jnlua.c */; };
+		768B23DE15E30CA70077873F /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23A215E30CA70077873F /* lapi.c */; };
+		768B23DF15E30CA70077873F /* lapi.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23A315E30CA70077873F /* lapi.h */; };
+		768B23E015E30CA70077873F /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23A415E30CA70077873F /* lauxlib.c */; };
+		768B23E115E30CA70077873F /* lauxlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23A515E30CA70077873F /* lauxlib.h */; };
+		768B23E215E30CA70077873F /* lbaselib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23A615E30CA70077873F /* lbaselib.c */; };
+		768B23E415E30CA70077873F /* lcode.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23A815E30CA70077873F /* lcode.c */; };
+		768B23E515E30CA70077873F /* lcode.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23A915E30CA70077873F /* lcode.h */; };
+		768B23E915E30CA70077873F /* ldblib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23AD15E30CA70077873F /* ldblib.c */; };
+		768B23EA15E30CA70077873F /* ldebug.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23AE15E30CA70077873F /* ldebug.c */; };
+		768B23EB15E30CA70077873F /* ldebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23AF15E30CA70077873F /* ldebug.h */; };
+		768B23EC15E30CA70077873F /* ldo.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B015E30CA70077873F /* ldo.c */; };
+		768B23ED15E30CA70077873F /* ldo.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23B115E30CA70077873F /* ldo.h */; };
+		768B23EE15E30CA70077873F /* ldump.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B215E30CA70077873F /* ldump.c */; };
+		768B23EF15E30CA70077873F /* lfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B315E30CA70077873F /* lfunc.c */; };
+		768B23F015E30CA70077873F /* lfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23B415E30CA70077873F /* lfunc.h */; };
+		768B23F115E30CA70077873F /* lgc.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B515E30CA70077873F /* lgc.c */; };
+		768B23F215E30CA70077873F /* lgc.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23B615E30CA70077873F /* lgc.h */; };
+		768B23F315E30CA70077873F /* linit.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B715E30CA70077873F /* linit.c */; };
+		768B23F415E30CA70077873F /* liolib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B815E30CA70077873F /* liolib.c */; };
+		768B23F515E30CA70077873F /* llex.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23B915E30CA70077873F /* llex.c */; };
+		768B23F615E30CA70077873F /* llex.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23BA15E30CA70077873F /* llex.h */; };
+		768B23F715E30CA70077873F /* llimits.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23BB15E30CA70077873F /* llimits.h */; };
+		768B23F815E30CA70077873F /* lmathlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23BC15E30CA70077873F /* lmathlib.c */; };
+		768B23F915E30CA70077873F /* lmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23BD15E30CA70077873F /* lmem.c */; };
+		768B23FA15E30CA70077873F /* lmem.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23BE15E30CA70077873F /* lmem.h */; };
+		768B23FB15E30CA70077873F /* loadlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23BF15E30CA70077873F /* loadlib.c */; };
+		768B23FC15E30CA70077873F /* lobject.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23C015E30CA70077873F /* lobject.c */; };
+		768B23FD15E30CA70077873F /* lobject.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23C115E30CA70077873F /* lobject.h */; };
+		768B23FE15E30CA70077873F /* lopcodes.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23C215E30CA70077873F /* lopcodes.c */; };
+		768B23FF15E30CA70077873F /* lopcodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23C315E30CA70077873F /* lopcodes.h */; };
+		768B240015E30CA70077873F /* loslib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23C415E30CA70077873F /* loslib.c */; };
+		768B240115E30CA70077873F /* lparser.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23C515E30CA70077873F /* lparser.c */; };
+		768B240215E30CA70077873F /* lparser.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23C615E30CA70077873F /* lparser.h */; };
+		768B240315E30CA70077873F /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23C715E30CA70077873F /* lstate.c */; };
+		768B240415E30CA70077873F /* lstate.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23C815E30CA70077873F /* lstate.h */; };
+		768B240515E30CA70077873F /* lstring.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23C915E30CA70077873F /* lstring.c */; };
+		768B240615E30CA70077873F /* lstring.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23CA15E30CA70077873F /* lstring.h */; };
+		768B240715E30CA70077873F /* lstrlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23CB15E30CA70077873F /* lstrlib.c */; };
+		768B240815E30CA70077873F /* ltable.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23CC15E30CA70077873F /* ltable.c */; };
+		768B240915E30CA70077873F /* ltable.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23CD15E30CA70077873F /* ltable.h */; };
+		768B240A15E30CA70077873F /* ltablib.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23CE15E30CA70077873F /* ltablib.c */; };
+		768B240B15E30CA70077873F /* ltm.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23CF15E30CA70077873F /* ltm.c */; };
+		768B240C15E30CA70077873F /* ltm.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23D015E30CA70077873F /* ltm.h */; };
+		768B240D15E30CA70077873F /* lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23D115E30CA70077873F /* lua.c */; };
+		768B240E15E30CA70077873F /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23D215E30CA70077873F /* lua.h */; };
+		768B241015E30CA70077873F /* luac.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23D415E30CA70077873F /* luac.c */; };
+		768B241115E30CA70077873F /* luaconf.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23D515E30CA70077873F /* luaconf.h */; };
+		768B241215E30CA70077873F /* lualib.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23D615E30CA70077873F /* lualib.h */; };
+		768B241315E30CA70077873F /* lundump.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23D715E30CA70077873F /* lundump.c */; };
+		768B241415E30CA70077873F /* lundump.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23D815E30CA70077873F /* lundump.h */; };
+		768B241515E30CA70077873F /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23D915E30CA70077873F /* lvm.c */; };
+		768B241615E30CA70077873F /* lvm.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23DA15E30CA70077873F /* lvm.h */; };
+		768B241715E30CA70077873F /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23DB15E30CA70077873F /* lzio.c */; };
+		768B241815E30CA70077873F /* lzio.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23DC15E30CA70077873F /* lzio.h */; };
+		768B241915E30CA70077873F /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 768B23DD15E30CA70077873F /* Makefile */; };
+		768B243215E3160C0077873F /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B241B15E3160C0077873F /* lzio.c */; };
+		768B243615E3160C0077873F /* lauxlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242115E3160C0077873F /* lauxlib.h */; };
+		768B243715E3160C0077873F /* ldo.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242215E3160C0077873F /* ldo.h */; };
+		768B243815E3160C0077873F /* lfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242315E3160C0077873F /* lfunc.h */; };
+		768B243915E3160C0077873F /* lgc.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242415E3160C0077873F /* lgc.h */; };
+		768B243A15E3160C0077873F /* llimits.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242515E3160C0077873F /* llimits.h */; };
+		768B243B15E3160C0077873F /* lobject.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242615E3160C0077873F /* lobject.h */; };
+		768B243C15E3160C0077873F /* lopcodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242715E3160C0077873F /* lopcodes.h */; };
+		768B243D15E3160C0077873F /* lstate.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242815E3160C0077873F /* lstate.h */; };
+		768B243E15E3160C0077873F /* lstring.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242915E3160C0077873F /* lstring.h */; };
+		768B243F15E3160C0077873F /* ltm.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242A15E3160C0077873F /* ltm.h */; };
+		768B244015E3160C0077873F /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242B15E3160C0077873F /* lua.h */; };
+		768B244115E3160C0077873F /* lzio.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242C15E3160C0077873F /* lzio.h */; };
+		768B244215E3160C0077873F /* pdep.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B242D15E3160C0077873F /* pdep.h */; };
+		768B244315E3160C0077873F /* pdep.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B242F15E3160C0077873F /* pdep.c */; };
+		768B244415E3160C0077873F /* pluto.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B243015E3160C0077873F /* pluto.c */; };
+		768B244515E3160C0077873F /* pluto.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B243115E3160C0077873F /* pluto.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		762D84C915CC1AF100FAF876 /* ElectroCraft_CPUProj.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ElectroCraft_CPUProj.xcconfig; sourceTree = "<group>"; };
-		762D84CA15CC1AF100FAF876 /* ElectroCraft_CPUTarget.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ElectroCraft_CPUTarget.xcconfig; sourceTree = "<group>"; };
-		762D84CB15CC1AF100FAF876 /* ElectroCraft_CPU.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElectroCraft_CPU.h; sourceTree = "<group>"; };
-		762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraft_CPU.cpp; sourceTree = "<group>"; };
-		762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftMemory.cpp; sourceTree = "<group>"; };
-		762D84D715CC279300FAF876 /* ElectroCraftMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftMemory.h; sourceTree = "<group>"; };
-		762D84DA15CC2B5800FAF876 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
-		762D84DB15CC2B5800FAF876 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libElectroCraftCPU.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftTerminal.cpp; sourceTree = "<group>"; };
-		7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftTerminal.h; sourceTree = "<group>"; };
-		7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECTerminal.h; sourceTree = "<group>"; };
-		76679FD515D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECCPU.h; sourceTree = "<group>"; };
-		766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftStorage.cpp; sourceTree = "<group>"; };
-		766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftStorage.h; sourceTree = "<group>"; };
-		766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOPortHandler.cpp; sourceTree = "<group>"; };
-		766CAF8215D2B40D00EF08A4 /* IOPortHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPortHandler.h; sourceTree = "<group>"; };
-		766CAF8615D2B43F00EF08A4 /* IOPortDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOPortDevice.h; sourceTree = "<group>"; };
-		766CAF8915D2D72500EF08A4 /* ElectroCraftKeyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftKeyboard.cpp; sourceTree = "<group>"; };
-		766CAF8A15D2D72500EF08A4 /* ElectroCraftKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftKeyboard.h; sourceTree = "<group>"; };
-		766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECKeyboard.h; sourceTree = "<group>"; };
-		768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECInterface.h; sourceTree = "<group>"; };
-		768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h; sourceTree = "<group>"; };
-		768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JNIInterface.cpp; sourceTree = "<group>"; };
-		768BD50A15CF19F000AD9E16 /* ElectroCraftVGA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftVGA.cpp; sourceTree = "<group>"; };
-		768BD50B15CF19F000AD9E16 /* ElectroCraftVGA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftVGA.h; sourceTree = "<group>"; };
-		768BD50E15CF1E2200AD9E16 /* MemoryMappedIODevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MemoryMappedIODevice.h; sourceTree = "<group>"; };
-		768BD50F15CF20F900AD9E16 /* ElectroCraftClock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftClock.cpp; sourceTree = "<group>"; };
-		768BD51015CF20F900AD9E16 /* ElectroCraftClock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftClock.h; sourceTree = "<group>"; };
-		768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftTickable.h; sourceTree = "<group>"; };
-		768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = info_cerios_electrocraft_core_computer_XECVGACard.h; sourceTree = "<group>"; };
-		76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElectroCraftStack.cpp; sourceTree = "<group>"; };
-		76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElectroCraftStack.h; sourceTree = "<group>"; };
+		768B239D15E30C5F0077873F /* jnlua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jnlua.c; sourceTree = "<group>"; };
+		768B23A215E30CA70077873F /* lapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lapi.c; sourceTree = "<group>"; };
+		768B23A315E30CA70077873F /* lapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lapi.h; sourceTree = "<group>"; };
+		768B23A415E30CA70077873F /* lauxlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lauxlib.c; sourceTree = "<group>"; };
+		768B23A515E30CA70077873F /* lauxlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lauxlib.h; sourceTree = "<group>"; };
+		768B23A615E30CA70077873F /* lbaselib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbaselib.c; sourceTree = "<group>"; };
+		768B23A815E30CA70077873F /* lcode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lcode.c; sourceTree = "<group>"; };
+		768B23A915E30CA70077873F /* lcode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lcode.h; sourceTree = "<group>"; };
+		768B23AD15E30CA70077873F /* ldblib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldblib.c; sourceTree = "<group>"; };
+		768B23AE15E30CA70077873F /* ldebug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldebug.c; sourceTree = "<group>"; };
+		768B23AF15E30CA70077873F /* ldebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ldebug.h; sourceTree = "<group>"; };
+		768B23B015E30CA70077873F /* ldo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldo.c; sourceTree = "<group>"; };
+		768B23B115E30CA70077873F /* ldo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ldo.h; sourceTree = "<group>"; };
+		768B23B215E30CA70077873F /* ldump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ldump.c; sourceTree = "<group>"; };
+		768B23B315E30CA70077873F /* lfunc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lfunc.c; sourceTree = "<group>"; };
+		768B23B415E30CA70077873F /* lfunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfunc.h; sourceTree = "<group>"; };
+		768B23B515E30CA70077873F /* lgc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lgc.c; sourceTree = "<group>"; };
+		768B23B615E30CA70077873F /* lgc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lgc.h; sourceTree = "<group>"; };
+		768B23B715E30CA70077873F /* linit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = linit.c; sourceTree = "<group>"; };
+		768B23B815E30CA70077873F /* liolib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = liolib.c; sourceTree = "<group>"; };
+		768B23B915E30CA70077873F /* llex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = llex.c; sourceTree = "<group>"; };
+		768B23BA15E30CA70077873F /* llex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llex.h; sourceTree = "<group>"; };
+		768B23BB15E30CA70077873F /* llimits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llimits.h; sourceTree = "<group>"; };
+		768B23BC15E30CA70077873F /* lmathlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lmathlib.c; sourceTree = "<group>"; };
+		768B23BD15E30CA70077873F /* lmem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lmem.c; sourceTree = "<group>"; };
+		768B23BE15E30CA70077873F /* lmem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lmem.h; sourceTree = "<group>"; };
+		768B23BF15E30CA70077873F /* loadlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loadlib.c; sourceTree = "<group>"; };
+		768B23C015E30CA70077873F /* lobject.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lobject.c; sourceTree = "<group>"; };
+		768B23C115E30CA70077873F /* lobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lobject.h; sourceTree = "<group>"; };
+		768B23C215E30CA70077873F /* lopcodes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lopcodes.c; sourceTree = "<group>"; };
+		768B23C315E30CA70077873F /* lopcodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lopcodes.h; sourceTree = "<group>"; };
+		768B23C415E30CA70077873F /* loslib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loslib.c; sourceTree = "<group>"; };
+		768B23C515E30CA70077873F /* lparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lparser.c; sourceTree = "<group>"; };
+		768B23C615E30CA70077873F /* lparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lparser.h; sourceTree = "<group>"; };
+		768B23C715E30CA70077873F /* lstate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lstate.c; sourceTree = "<group>"; };
+		768B23C815E30CA70077873F /* lstate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstate.h; sourceTree = "<group>"; };
+		768B23C915E30CA70077873F /* lstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lstring.c; sourceTree = "<group>"; };
+		768B23CA15E30CA70077873F /* lstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstring.h; sourceTree = "<group>"; };
+		768B23CB15E30CA70077873F /* lstrlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lstrlib.c; sourceTree = "<group>"; };
+		768B23CC15E30CA70077873F /* ltable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ltable.c; sourceTree = "<group>"; };
+		768B23CD15E30CA70077873F /* ltable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ltable.h; sourceTree = "<group>"; };
+		768B23CE15E30CA70077873F /* ltablib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ltablib.c; sourceTree = "<group>"; };
+		768B23CF15E30CA70077873F /* ltm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ltm.c; sourceTree = "<group>"; };
+		768B23D015E30CA70077873F /* ltm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ltm.h; sourceTree = "<group>"; };
+		768B23D115E30CA70077873F /* lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lua.c; sourceTree = "<group>"; };
+		768B23D215E30CA70077873F /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
+		768B23D415E30CA70077873F /* luac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = luac.c; sourceTree = "<group>"; };
+		768B23D515E30CA70077873F /* luaconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = luaconf.h; sourceTree = "<group>"; };
+		768B23D615E30CA70077873F /* lualib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lualib.h; sourceTree = "<group>"; };
+		768B23D715E30CA70077873F /* lundump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lundump.c; sourceTree = "<group>"; };
+		768B23D815E30CA70077873F /* lundump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lundump.h; sourceTree = "<group>"; };
+		768B23D915E30CA70077873F /* lvm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lvm.c; sourceTree = "<group>"; };
+		768B23DA15E30CA70077873F /* lvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lvm.h; sourceTree = "<group>"; };
+		768B23DB15E30CA70077873F /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
+		768B23DC15E30CA70077873F /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
+		768B23DD15E30CA70077873F /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		768B241B15E3160C0077873F /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
+		768B242115E3160C0077873F /* lauxlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lauxlib.h; sourceTree = "<group>"; };
+		768B242215E3160C0077873F /* ldo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ldo.h; sourceTree = "<group>"; };
+		768B242315E3160C0077873F /* lfunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfunc.h; sourceTree = "<group>"; };
+		768B242415E3160C0077873F /* lgc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lgc.h; sourceTree = "<group>"; };
+		768B242515E3160C0077873F /* llimits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llimits.h; sourceTree = "<group>"; };
+		768B242615E3160C0077873F /* lobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lobject.h; sourceTree = "<group>"; };
+		768B242715E3160C0077873F /* lopcodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lopcodes.h; sourceTree = "<group>"; };
+		768B242815E3160C0077873F /* lstate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstate.h; sourceTree = "<group>"; };
+		768B242915E3160C0077873F /* lstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstring.h; sourceTree = "<group>"; };
+		768B242A15E3160C0077873F /* ltm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ltm.h; sourceTree = "<group>"; };
+		768B242B15E3160C0077873F /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
+		768B242C15E3160C0077873F /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
+		768B242D15E3160C0077873F /* pdep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pdep.h; sourceTree = "<group>"; };
+		768B242E15E3160C0077873F /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		768B242F15E3160C0077873F /* pdep.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pdep.c; sourceTree = "<group>"; };
+		768B243015E3160C0077873F /* pluto.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pluto.c; sourceTree = "<group>"; };
+		768B243115E3160C0077873F /* pluto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pluto.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,57 +174,117 @@
 		762D84B915CC1AF100FAF876 = {
 			isa = PBXGroup;
 			children = (
-				768BD4FE15CEF1CA00AD9E16 /* JNI */,
-				762D84C615CC1AF100FAF876 /* ElectroCraft CPU */,
+				768B241A15E3160C0077873F /* pluto */,
+				768B23A115E30CA70077873F /* lua */,
+				768B239A15E30C5F0077873F /* jnlua */,
 				762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */,
 			);
 			sourceTree = "<group>";
 		};
-		762D84C615CC1AF100FAF876 /* ElectroCraft CPU */ = {
+		768B239A15E30C5F0077873F /* jnlua */ = {
 			isa = PBXGroup;
 			children = (
-				762D84C915CC1AF100FAF876 /* ElectroCraft_CPUProj.xcconfig */,
-				762D84CA15CC1AF100FAF876 /* ElectroCraft_CPUTarget.xcconfig */,
-				762D84CB15CC1AF100FAF876 /* ElectroCraft_CPU.h */,
-				762D84CD15CC1AF100FAF876 /* ElectroCraft_CPU.cpp */,
-				762D84D715CC279300FAF876 /* ElectroCraftMemory.h */,
-				762D84D615CC279300FAF876 /* ElectroCraftMemory.cpp */,
-				762D84DB15CC2B5800FAF876 /* Utils.h */,
-				762D84DA15CC2B5800FAF876 /* Utils.cpp */,
-				76D9EA1315CD7EDA007D64D2 /* ElectroCraftStack.cpp */,
-				76D9EA1415CD7EDA007D64D2 /* ElectroCraftStack.h */,
-				768BD50A15CF19F000AD9E16 /* ElectroCraftVGA.cpp */,
-				768BD50B15CF19F000AD9E16 /* ElectroCraftVGA.h */,
-				768BD50E15CF1E2200AD9E16 /* MemoryMappedIODevice.h */,
-				768BD50F15CF20F900AD9E16 /* ElectroCraftClock.cpp */,
-				768BD51015CF20F900AD9E16 /* ElectroCraftClock.h */,
-				768BD51415CF212A00AD9E16 /* ElectroCraftTickable.h */,
-				7632B19715D162FC00F3A3A7 /* ElectroCraftTerminal.cpp */,
-				7632B19815D162FC00F3A3A7 /* ElectroCraftTerminal.h */,
-				766CAF7C15D2A94E00EF08A4 /* ElectroCraftStorage.cpp */,
-				766CAF7D15D2A94E00EF08A4 /* ElectroCraftStorage.h */,
-				766CAF8115D2B40D00EF08A4 /* IOPortHandler.cpp */,
-				766CAF8215D2B40D00EF08A4 /* IOPortHandler.h */,
-				766CAF8615D2B43F00EF08A4 /* IOPortDevice.h */,
-				766CAF8915D2D72500EF08A4 /* ElectroCraftKeyboard.cpp */,
-				766CAF8A15D2D72500EF08A4 /* ElectroCraftKeyboard.h */,
+				768B239D15E30C5F0077873F /* jnlua.c */,
 			);
-			path = "ElectroCraft CPU";
+			name = jnlua;
+			path = "ElectroCraft CPU/jnlua";
 			sourceTree = "<group>";
 		};
-		768BD4FE15CEF1CA00AD9E16 /* JNI */ = {
+		768B23A115E30CA70077873F /* lua */ = {
 			isa = PBXGroup;
 			children = (
-				76679FD515D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h */,
-				766CAF8D15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h */,
-				7632B1A415D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h */,
-				768BD51715CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h */,
-				768BD4FF15CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h */,
-				768BD50115CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h */,
-				768BD50615CEF1F500AD9E16 /* JNIInterface.cpp */,
+				768B23A215E30CA70077873F /* lapi.c */,
+				768B23A315E30CA70077873F /* lapi.h */,
+				768B23A415E30CA70077873F /* lauxlib.c */,
+				768B23A515E30CA70077873F /* lauxlib.h */,
+				768B23A615E30CA70077873F /* lbaselib.c */,
+				768B23A815E30CA70077873F /* lcode.c */,
+				768B23A915E30CA70077873F /* lcode.h */,
+				768B23AD15E30CA70077873F /* ldblib.c */,
+				768B23AE15E30CA70077873F /* ldebug.c */,
+				768B23AF15E30CA70077873F /* ldebug.h */,
+				768B23B015E30CA70077873F /* ldo.c */,
+				768B23B115E30CA70077873F /* ldo.h */,
+				768B23B215E30CA70077873F /* ldump.c */,
+				768B23B315E30CA70077873F /* lfunc.c */,
+				768B23B415E30CA70077873F /* lfunc.h */,
+				768B23B515E30CA70077873F /* lgc.c */,
+				768B23B615E30CA70077873F /* lgc.h */,
+				768B23B715E30CA70077873F /* linit.c */,
+				768B23B815E30CA70077873F /* liolib.c */,
+				768B23B915E30CA70077873F /* llex.c */,
+				768B23BA15E30CA70077873F /* llex.h */,
+				768B23BB15E30CA70077873F /* llimits.h */,
+				768B23BC15E30CA70077873F /* lmathlib.c */,
+				768B23BD15E30CA70077873F /* lmem.c */,
+				768B23BE15E30CA70077873F /* lmem.h */,
+				768B23BF15E30CA70077873F /* loadlib.c */,
+				768B23C015E30CA70077873F /* lobject.c */,
+				768B23C115E30CA70077873F /* lobject.h */,
+				768B23C215E30CA70077873F /* lopcodes.c */,
+				768B23C315E30CA70077873F /* lopcodes.h */,
+				768B23C415E30CA70077873F /* loslib.c */,
+				768B23C515E30CA70077873F /* lparser.c */,
+				768B23C615E30CA70077873F /* lparser.h */,
+				768B23C715E30CA70077873F /* lstate.c */,
+				768B23C815E30CA70077873F /* lstate.h */,
+				768B23C915E30CA70077873F /* lstring.c */,
+				768B23CA15E30CA70077873F /* lstring.h */,
+				768B23CB15E30CA70077873F /* lstrlib.c */,
+				768B23CC15E30CA70077873F /* ltable.c */,
+				768B23CD15E30CA70077873F /* ltable.h */,
+				768B23CE15E30CA70077873F /* ltablib.c */,
+				768B23CF15E30CA70077873F /* ltm.c */,
+				768B23D015E30CA70077873F /* ltm.h */,
+				768B23D115E30CA70077873F /* lua.c */,
+				768B23D215E30CA70077873F /* lua.h */,
+				768B23D415E30CA70077873F /* luac.c */,
+				768B23D515E30CA70077873F /* luaconf.h */,
+				768B23D615E30CA70077873F /* lualib.h */,
+				768B23D715E30CA70077873F /* lundump.c */,
+				768B23D815E30CA70077873F /* lundump.h */,
+				768B23D915E30CA70077873F /* lvm.c */,
+				768B23DA15E30CA70077873F /* lvm.h */,
+				768B23DB15E30CA70077873F /* lzio.c */,
+				768B23DC15E30CA70077873F /* lzio.h */,
+				768B23DD15E30CA70077873F /* Makefile */,
 			);
-			name = JNI;
-			path = "ElectroCraft CPU/JNI";
+			name = lua;
+			path = "ElectroCraft CPU/lua";
+			sourceTree = "<group>";
+		};
+		768B241A15E3160C0077873F /* pluto */ = {
+			isa = PBXGroup;
+			children = (
+				768B241B15E3160C0077873F /* lzio.c */,
+				768B242015E3160C0077873F /* pdep */,
+				768B242F15E3160C0077873F /* pdep.c */,
+				768B243015E3160C0077873F /* pluto.c */,
+				768B243115E3160C0077873F /* pluto.h */,
+			);
+			name = pluto;
+			path = "ElectroCraft CPU/pluto";
+			sourceTree = "<group>";
+		};
+		768B242015E3160C0077873F /* pdep */ = {
+			isa = PBXGroup;
+			children = (
+				768B242115E3160C0077873F /* lauxlib.h */,
+				768B242215E3160C0077873F /* ldo.h */,
+				768B242315E3160C0077873F /* lfunc.h */,
+				768B242415E3160C0077873F /* lgc.h */,
+				768B242515E3160C0077873F /* llimits.h */,
+				768B242615E3160C0077873F /* lobject.h */,
+				768B242715E3160C0077873F /* lopcodes.h */,
+				768B242815E3160C0077873F /* lstate.h */,
+				768B242915E3160C0077873F /* lstring.h */,
+				768B242A15E3160C0077873F /* ltm.h */,
+				768B242B15E3160C0077873F /* lua.h */,
+				768B242C15E3160C0077873F /* lzio.h */,
+				768B242D15E3160C0077873F /* pdep.h */,
+				768B242E15E3160C0077873F /* README */,
+			);
+			path = pdep;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -145,21 +294,43 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				76D9EA1615CD7EDA007D64D2 /* ElectroCraftStack.h in Headers */,
-				768BD50215CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface.h in Headers */,
-				768BD50415CEF1CA00AD9E16 /* info_cerios_electrocraft_core_computer_XECInterface_AssembledData.h in Headers */,
-				768BD50D15CF19F000AD9E16 /* ElectroCraftVGA.h in Headers */,
-				768BD51215CF20F900AD9E16 /* ElectroCraftClock.h in Headers */,
-				768BD51615CF212A00AD9E16 /* ElectroCraftTickable.h in Headers */,
-				768BD51815CF602D00AD9E16 /* info_cerios_electrocraft_core_computer_XECVGACard.h in Headers */,
-				7632B19A15D162FC00F3A3A7 /* ElectroCraftTerminal.h in Headers */,
-				7632B1A515D176EB00F3A3A7 /* info_cerios_electrocraft_core_computer_XECTerminal.h in Headers */,
-				766CAF7F15D2A94E00EF08A4 /* ElectroCraftStorage.h in Headers */,
-				766CAF8415D2B40D00EF08A4 /* IOPortHandler.h in Headers */,
-				766CAF8815D2B43F00EF08A4 /* IOPortDevice.h in Headers */,
-				766CAF8C15D2D72500EF08A4 /* ElectroCraftKeyboard.h in Headers */,
-				766CAF8E15D2DA8800EF08A4 /* info_cerios_electrocraft_core_computer_XECKeyboard.h in Headers */,
-				76679FD615D96B3D009C265B /* info_cerios_electrocraft_core_computer_XECCPU.h in Headers */,
+				768B23DF15E30CA70077873F /* lapi.h in Headers */,
+				768B23E115E30CA70077873F /* lauxlib.h in Headers */,
+				768B23E515E30CA70077873F /* lcode.h in Headers */,
+				768B23EB15E30CA70077873F /* ldebug.h in Headers */,
+				768B23ED15E30CA70077873F /* ldo.h in Headers */,
+				768B23F015E30CA70077873F /* lfunc.h in Headers */,
+				768B23F215E30CA70077873F /* lgc.h in Headers */,
+				768B23F615E30CA70077873F /* llex.h in Headers */,
+				768B23F715E30CA70077873F /* llimits.h in Headers */,
+				768B23FA15E30CA70077873F /* lmem.h in Headers */,
+				768B23FD15E30CA70077873F /* lobject.h in Headers */,
+				768B23FF15E30CA70077873F /* lopcodes.h in Headers */,
+				768B240215E30CA70077873F /* lparser.h in Headers */,
+				768B240415E30CA70077873F /* lstate.h in Headers */,
+				768B240615E30CA70077873F /* lstring.h in Headers */,
+				768B240915E30CA70077873F /* ltable.h in Headers */,
+				768B240C15E30CA70077873F /* ltm.h in Headers */,
+				768B240E15E30CA70077873F /* lua.h in Headers */,
+				768B241115E30CA70077873F /* luaconf.h in Headers */,
+				768B241215E30CA70077873F /* lualib.h in Headers */,
+				768B241415E30CA70077873F /* lundump.h in Headers */,
+				768B241615E30CA70077873F /* lvm.h in Headers */,
+				768B241815E30CA70077873F /* lzio.h in Headers */,
+				768B243615E3160C0077873F /* lauxlib.h in Headers */,
+				768B243715E3160C0077873F /* ldo.h in Headers */,
+				768B243815E3160C0077873F /* lfunc.h in Headers */,
+				768B243915E3160C0077873F /* lgc.h in Headers */,
+				768B243A15E3160C0077873F /* llimits.h in Headers */,
+				768B243B15E3160C0077873F /* lobject.h in Headers */,
+				768B243C15E3160C0077873F /* lopcodes.h in Headers */,
+				768B243D15E3160C0077873F /* lstate.h in Headers */,
+				768B243E15E3160C0077873F /* lstring.h in Headers */,
+				768B243F15E3160C0077873F /* ltm.h in Headers */,
+				768B244015E3160C0077873F /* lua.h in Headers */,
+				768B244115E3160C0077873F /* lzio.h in Headers */,
+				768B244215E3160C0077873F /* pdep.h in Headers */,
+				768B244515E3160C0077873F /* pluto.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,17 +385,42 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				762D853A15CCD8AD00FAF876 /* ElectroCraft_CPU.cpp in Sources */,
-				762D853B15CCD8AD00FAF876 /* ElectroCraftMemory.cpp in Sources */,
-				762D853C15CCD8AD00FAF876 /* Utils.cpp in Sources */,
-				76D9EA1515CD7EDA007D64D2 /* ElectroCraftStack.cpp in Sources */,
-				768BD50815CEF1F500AD9E16 /* JNIInterface.cpp in Sources */,
-				768BD50C15CF19F000AD9E16 /* ElectroCraftVGA.cpp in Sources */,
-				768BD51115CF20F900AD9E16 /* ElectroCraftClock.cpp in Sources */,
-				7632B19915D162FC00F3A3A7 /* ElectroCraftTerminal.cpp in Sources */,
-				766CAF7E15D2A94E00EF08A4 /* ElectroCraftStorage.cpp in Sources */,
-				766CAF8315D2B40D00EF08A4 /* IOPortHandler.cpp in Sources */,
-				766CAF8B15D2D72500EF08A4 /* ElectroCraftKeyboard.cpp in Sources */,
+				768B23A015E30C5F0077873F /* jnlua.c in Sources */,
+				768B23DE15E30CA70077873F /* lapi.c in Sources */,
+				768B23E015E30CA70077873F /* lauxlib.c in Sources */,
+				768B23E215E30CA70077873F /* lbaselib.c in Sources */,
+				768B23E415E30CA70077873F /* lcode.c in Sources */,
+				768B23E915E30CA70077873F /* ldblib.c in Sources */,
+				768B23EA15E30CA70077873F /* ldebug.c in Sources */,
+				768B23EC15E30CA70077873F /* ldo.c in Sources */,
+				768B23EE15E30CA70077873F /* ldump.c in Sources */,
+				768B23EF15E30CA70077873F /* lfunc.c in Sources */,
+				768B23F115E30CA70077873F /* lgc.c in Sources */,
+				768B23F315E30CA70077873F /* linit.c in Sources */,
+				768B23F415E30CA70077873F /* liolib.c in Sources */,
+				768B23F515E30CA70077873F /* llex.c in Sources */,
+				768B23F815E30CA70077873F /* lmathlib.c in Sources */,
+				768B23F915E30CA70077873F /* lmem.c in Sources */,
+				768B23FB15E30CA70077873F /* loadlib.c in Sources */,
+				768B23FC15E30CA70077873F /* lobject.c in Sources */,
+				768B23FE15E30CA70077873F /* lopcodes.c in Sources */,
+				768B240015E30CA70077873F /* loslib.c in Sources */,
+				768B240115E30CA70077873F /* lparser.c in Sources */,
+				768B240315E30CA70077873F /* lstate.c in Sources */,
+				768B240515E30CA70077873F /* lstring.c in Sources */,
+				768B240715E30CA70077873F /* lstrlib.c in Sources */,
+				768B240815E30CA70077873F /* ltable.c in Sources */,
+				768B240A15E30CA70077873F /* ltablib.c in Sources */,
+				768B240B15E30CA70077873F /* ltm.c in Sources */,
+				768B240D15E30CA70077873F /* lua.c in Sources */,
+				768B241015E30CA70077873F /* luac.c in Sources */,
+				768B241315E30CA70077873F /* lundump.c in Sources */,
+				768B241515E30CA70077873F /* lvm.c in Sources */,
+				768B241715E30CA70077873F /* lzio.c in Sources */,
+				768B241915E30CA70077873F /* Makefile in Sources */,
+				768B243215E3160C0077873F /* lzio.c in Sources */,
+				768B244315E3160C0077873F /* pdep.c in Sources */,
+				768B244415E3160C0077873F /* pluto.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +443,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
+					"LUA_USE_MACOSX=1",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
@@ -255,6 +452,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/**";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -273,12 +471,14 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "LUA_USE_MACOSX=1";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/**";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
@@ -287,9 +487,8 @@
 		762D853815CCD89A00FAF876 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/**";
-				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -297,9 +496,8 @@
 		762D853915CCD89A00FAF876 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/**";
-				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

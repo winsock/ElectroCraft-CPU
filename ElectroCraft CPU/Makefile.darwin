@@ -1,0 +1,18 @@
+CC = gcc
+JDK_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include
+JDK_PLATFORM_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/darwin
+C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
+OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
+LD_FLAGS = -DLUA_USE_MACOSX=1 -dynamiclib -undefined suppress -flat_namespace -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
+CC_FLAGS = --export-dynamic
+
+all: libElectroCraftCPU.dylib
+
+libElectroCraftCPU.dylib: $(OBJ_FILES)
+	$(CC) $(LD_FLAGS) -o $@ $^
+
+obj/%.o: pluto/%.c jnlua/%.c lua/%.c
+	$(CC) $(CC_FLAGS) -c -o $@ $<
+	
+clean:
+	rm -f libElectroCraftCPU.so

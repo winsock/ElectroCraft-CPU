@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/140/tags/0.9.4/jnlua/native/Win32-x64
+END
+jnlua5.1.dll
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/140/tags/0.9.4/jnlua/native/Win32-x64/jnlua5.1.dll
+END
+javavm.dll
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/140/tags/0.9.4/jnlua/native/Win32-x64/javavm.dll
+END

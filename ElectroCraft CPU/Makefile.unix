@@ -1,0 +1,18 @@
+CC = gcc
+JDK_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include
+JDK_PLATFORM_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/linux
+C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
+OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
+LD_FLAGS = -shared -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
+CC_FLAGS = --export-dynamic
+
+all: libElectroCraftCPU.so
+
+libElectroCraftCPU.so: $(OBJ_FILES)
+	$(CC) $(LD_FLAGS) -o $@ $^
+
+obj/%.o: pluto/%.c jnlua/%.c lua/%.c
+	$(CC) $(CC_FLAGS) -c -o $@ $<
+	
+clean:
+	rm -f libElectroCraftCPU.so
