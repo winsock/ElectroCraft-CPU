@@ -1,7 +1,7 @@
 SHELL := C:\msys\1.0\bin\bash.exe
 CC = C:/MinGW/bin/gcc.exe
-JDK_INCLUDE = "C:/Program Files/Java/jdk1.7.0_03/include"
-JDK_PLATFORM_INCLUDE = "C:/Program Files/Java/jdk1.7.0_03/include/win32"
+JDK_INCLUDE = C:/Program\ Files/Java/jdk1.7.0_03/include
+JDK_PLATFORM_INCLUDE = C:/Program\ Files/Java/jdk1.7.0_03/include/win32
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
 OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
 LD_FLAGS = -shared -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
