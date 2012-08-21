@@ -1,6 +1,6 @@
 CC = gcc
-JDK_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include
-JDK_PLATFORM_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/linux
+JDK_INCLUDE = /usr/lib/jvm/java-6-openjdk-amd64/include
+JDK_PLATFORM_INCLUDE = /usr/lib/jvm/java-6-openjdk-amd64/include/linux
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
 OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
 LD_FLAGS = -shared -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
