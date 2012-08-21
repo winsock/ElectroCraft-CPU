@@ -1,3 +1,4 @@
+SHELL := C:\msys\1.0\bin\bash.exe
 CC = gcc
 JDK_INCLUDE = "C:/Program Files/Java/jdk1.7.0_03/include"
 JDK_PLATFORM_INCLUDE = "C:/Program Files/Java/jdk1.7.0_03/include/win32"

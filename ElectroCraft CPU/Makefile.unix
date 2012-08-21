@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 CC = gcc
 JDK_INCLUDE = /usr/lib/jvm/java-6-openjdk-amd64/include
 JDK_PLATFORM_INCLUDE = /usr/lib/jvm/java-6-openjdk-amd64/include/linux
