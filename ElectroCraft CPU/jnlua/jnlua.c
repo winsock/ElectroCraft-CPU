@@ -14,7 +14,11 @@
 
 /* Include uintptr_t */
 #ifdef LUA_WIN
+#ifdef _WIN32
+#include <stdint.h>
+#else
 #include <stddef.h>
+#endif
 #define JNLUA_THREADLOCAL static __declspec(thread)
 #endif
 #ifdef LUA_USE_POSIX
