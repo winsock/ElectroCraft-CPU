@@ -3,9 +3,9 @@ CC := gcc.exe
 JDK_INCLUDE := "C:/Program Files/Java/jdk1.7.0_03/include"
 JDK_PLATFORM_INCLUDE := "C:/Program Files/Java/jdk1.7.0_03/include/win32"
 C_FILES := $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
-OBJ_FILES := $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
-LD_FLAGS := -shared -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
-CC_FLAGS := --export-dynamic
+OBJ_FILES := $(patsubst src/%.c,obj/%.o,$(C_FILES))
+LD_FLAGS := -shared -static -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
+CC_FLAGS := -O2 -W3 -DNDEBUG -DLUA_BUILD_AS_DLL
 
 all: libElectroCraftCPU32.dll
 
