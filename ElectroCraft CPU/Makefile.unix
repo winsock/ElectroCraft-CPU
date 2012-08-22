@@ -2,7 +2,7 @@ CC = gcc
 JDK_INCLUDE = /usr/lib/jvm/java-6-openjdk-amd64/include
 JDK_PLATFORM_INCLUDE = /usr/lib/jvm/java-6-openjdk-amd64/include/linux
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
-OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
+OBJ_FILES = $(patsubst src/%.c,obj/%.o,$(C_FILES))
 LD_FLAGS = -DLUA_USE_LINUX=1 -shared -fPIC -lpthread -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
 CC_FLAGS = --export-dynamic -c -fno-strict-aliasing -fPIC -O2 -Wall -DNDEBUG -D_REENTRANT -DLUA_USE_LINUX
 
