@@ -7,10 +7,10 @@
 #ifndef lstate_h
 #define lstate_h
 
-#include "../../lua/lua.h"
+#include "lua.h"
 
-#include "../../lua/lobject.h"
-#include "../../lua/ltm.h"
+#include "lobject.h"
+#include "ltm.h"
 #include "lzio.h"
 
 

@@ -16,7 +16,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "../lua/lua.h"
+#include "lua.h"
 #include "pluto.h"
 
 #define USE_PDEP
@@ -40,11 +40,10 @@
 #endif
 
 #include <string.h>
-#include <stdint.h>	/*for intptr_t*/
 
 
 
-/* #define PLUTO_DEBUG */
+#define PLUTO_DEBUG
 
 
 
@@ -287,13 +286,6 @@ static void pushclosure(lua_State *L, Closure *closure)
 	LIF(A,pushobject)(L, &o);
 }
 
-static void pushstring(lua_State *L, TString *s)
-{
-	TValue o;
-	setsvalue(L, &o, s);
-	LIF(A,pushobject)(L, &o);
-}
-
 static void persistfunction(PersistInfo *pi)
 {
 					/* perms reftbl ... func */
@@ -427,57 +419,11 @@ static void persistproto(PersistInfo *pi)
 		}
 	}
 					/* perms reftbl ... proto */
-
 	/* Serialize code */
 	{
 		pi->writer(pi->L, &p->sizecode, sizeof(int), pi->ud);
 		pi->writer(pi->L, p->code, sizeof(Instruction) * p->sizecode, pi->ud);
 	}
-
-	/* Serialize upvalue names */
-	{
-		int i;
-		pi->writer(pi->L, &p->sizeupvalues, sizeof(int), pi->ud);
-		for(i=0; i<p->sizeupvalues; i++)
-		{
-			pushstring(pi->L, p->upvalues[i]);
-			persist(pi);
-			lua_pop(pi->L, 1);
-		}
-	}
-	/* Serialize local variable infos */
-	{
-		int i;
-		pi->writer(pi->L, &p->sizelocvars, sizeof(int), pi->ud);
-		for(i=0; i<p->sizelocvars; i++)
-		{
-			pushstring(pi->L, p->locvars[i].varname);
-			persist(pi);
-			lua_pop(pi->L, 1);
-
-			pi->writer(pi->L, &p->locvars[i].startpc, sizeof(int), pi->ud);
-			pi->writer(pi->L, &p->locvars[i].endpc, sizeof(int), pi->ud);
-		}
-	}
-
-	/* Serialize source string */
-	pushstring(pi->L, p->source);
-	persist(pi);
-	lua_pop(pi->L, 1);
-
-	/* Serialize line numbers */
-	{
-		pi->writer(pi->L, &p->sizelineinfo, sizeof(int), pi->ud);
-		if (p->sizelineinfo)
-		{
-			pi->writer(pi->L, p->lineinfo, sizeof(int) * p->sizelineinfo, pi->ud);
-		}
-	}
-
-	/* Serialize linedefined and lastlinedefined */
-	pi->writer(pi->L, &p->linedefined, sizeof(int), pi->ud);
-	pi->writer(pi->L, &p->lastlinedefined, sizeof(int), pi->ud);
-
 	/* Serialize misc values */
 	{
 		pi->writer(pi->L, &p->nups, sizeof(lu_byte), pi->ud);
@@ -615,46 +561,29 @@ static void persiststring(PersistInfo *pi)
  */
 static void persist(PersistInfo *pi)
 {
-	/* Grab the object's type. */
-	int type = lua_type(pi->L, -1);
-	int simple = type == LUA_TNIL 
-		|| type == LUA_TBOOLEAN 
-		|| type == LUA_TNUMBER 
-		|| type == LUA_TLIGHTUSERDATA;
-  
-	/* Increment the number of objects persisted. */
-	++(pi->counter);
-  
-	/* If the type isn't simple, check to see if
-	   one is already in the reftable. */
-	if(!simple) {
-
-		/* perms reftbl ... obj */
-		lua_checkstack(pi->L, 2);
-		/* If the object has already been written, write a reference to it */
-		lua_pushvalue(pi->L, -1);
-		/* perms reftbl ... obj obj */
-		lua_rawget(pi->L, 2);
-		/* perms reftbl ... obj ref? */
-		if(!lua_isnil(pi->L, -1)) {
-			/* perms reftbl ... obj ref */
-			int zero = 0;
-			int ref = (intptr_t)lua_touserdata(pi->L, -1);
-			pi->writer(pi->L, &zero, sizeof(int), pi->ud);
-			pi->writer(pi->L, &ref, sizeof(int), pi->ud);
-			lua_pop(pi->L, 1);
-			/* perms reftbl ... obj ref */
-#ifdef PLUTO_DEBUG
-			printindent(pi->level);
-			printf("0 %d\n", ref);
-#endif
-			return;
-		}
-		/* perms reftbl ... obj nil */
+					/* perms reftbl ... obj */
+	lua_checkstack(pi->L, 2);
+	/* If the object has already been written, write a reference to it */
+	lua_pushvalue(pi->L, -1);
+					/* perms reftbl ... obj obj */
+	lua_rawget(pi->L, 2);
+					/* perms reftbl ... obj ref? */
+	if(!lua_isnil(pi->L, -1)) {
+					/* perms reftbl ... obj ref */
+		int zero = 0;
+		int ref = (int)lua_touserdata(pi->L, -1);
+		pi->writer(pi->L, &zero, sizeof(int), pi->ud);
+		pi->writer(pi->L, &ref, sizeof(int), pi->ud);
 		lua_pop(pi->L, 1);
-
+					/* perms reftbl ... obj ref */
+#ifdef PLUTO_DEBUG
+		printindent(pi->level);
+		printf("0 %d\n", ref);
+#endif
+		return;
 	}
-
+					/* perms reftbl ... obj nil */
+	lua_pop(pi->L, 1);
 					/* perms reftbl ... obj */
 	/* If the object is nil, write the pseudoreference 0 */
 	if(lua_isnil(pi->L, -1)) {
@@ -674,17 +603,12 @@ static void persist(PersistInfo *pi)
 		int one = 1;
 		pi->writer(pi->L, &one, sizeof(int), pi->ud);
 	}
-
-	/* put the value in the reftable if necessary.
-	   Simple types don't need to be put in the reftable. */
-	if(!simple) {
-		lua_pushvalue(pi->L, -1);
-		/* perms reftbl ... obj obj */
-		lua_pushlightuserdata(pi->L, (void*)((intptr_t) pi->counter));
-		/* perms reftbl ... obj obj ref */
-		lua_rawset(pi->L, 2);
-		/* perms reftbl ... obj */
-	}
+	lua_pushvalue(pi->L, -1);
+					/* perms reftbl ... obj obj */
+	lua_pushlightuserdata(pi->L, (void*)(++(pi->counter)));
+					/* perms reftbl ... obj obj ref */
+	lua_rawset(pi->L, 2);
+					/* perms reftbl ... obj */
 
 	pi->writer(pi->L, &pi->counter, sizeof(int), pi->ud);
 
@@ -872,7 +796,7 @@ static void registerobject(int ref, UnpersistInfo *upi)
 {
 					/* perms reftbl ... obj */
 	lua_checkstack(upi->L, 2);
-	lua_pushlightuserdata(upi->L, (void*)(intptr_t)ref);
+	lua_pushlightuserdata(upi->L, (void*)ref);
 					/* perms reftbl ... obj ref */
 	lua_pushvalue(upi->L, -2);
 					/* perms reftbl ... obj ref obj */
@@ -913,10 +837,10 @@ static void unpersistnumber(UnpersistInfo *upi)
 static void unpersiststring(UnpersistInfo *upi)
 {
 					/* perms reftbl sptbl ref */
-	size_t length;
+	int length;
 	char* string;
 	lua_checkstack(upi->L, 1);
-	verify(LIF(Z,read)(&upi->zio, &length, sizeof(size_t)) == 0);
+	verify(LIF(Z,read)(&upi->zio, &length, sizeof(int)) == 0);
 	string = pdep_newvector(upi->L, length, char);
 	verify(LIF(Z,read)(&upi->zio, string, length) == 0);
 	lua_pushlstring(upi->L, string, length);
@@ -926,7 +850,6 @@ static void unpersiststring(UnpersistInfo *upi)
 
 static void unpersistspecialtable(int ref, UnpersistInfo *upi)
 {
-	(void) ref; 			/* unused */
 					/* perms reftbl ... */
 	lua_checkstack(upi->L, 1);
 	unpersist(upi);
@@ -1059,6 +982,7 @@ static void boxupval_start(lua_State *L)
 static void boxupval_finish(lua_State *L)
 {
 					/* ... func obj */
+	UpVal *uv;
 	LClosure *lcl = (LClosure *) clvalue(getobject(L, -2));
 
 	lcl->upvals[0]->u.value = *getobject(L, -1);
@@ -1152,8 +1076,10 @@ static void unpersistfunction(int ref, UnpersistInfo *upi)
 static void unpersistupval(int ref, UnpersistInfo *upi)
 {
 					/* perms reftbl ... */
+	UpVal *uv;
 	lua_checkstack(upi->L, 2);
 
+	/* the upval will initially point to nil */
 	boxupval_start(upi->L);
 					/* perms reftbl ... func */
 	registerobject(ref, upi);
@@ -1176,9 +1102,6 @@ static void unpersistproto(int ref, UnpersistInfo *upi)
 	 * source, and valid code, even before we actually read in the real
 	 * code. */
 	TString *source = pdep_newlstr(upi->L, "", 0);
-
-	(void) ref;			/* unused */
-
 	p = pdep_newproto(upi->L);
 	p->source = source;
 	p->sizecode=1;
@@ -1233,59 +1156,6 @@ static void unpersistproto(int ref, UnpersistInfo *upi)
 		verify(LIF(Z,read)(&upi->zio, p->code,
 			sizeof(Instruction) * p->sizecode) == 0);
 	}
-
-	/* Read in upvalue names */
-	{
-		verify(LIF(Z,read)(&upi->zio, &p->sizeupvalues, sizeof(int)) == 0);
-		if (p->sizeupvalues)
-		{
-			LIF(M,reallocvector)(upi->L, p->upvalues, 0, p->sizeupvalues, TString *);
-			for(i=0; i<p->sizeupvalues; i++)
-			{
-				unpersist(upi);
-				p->upvalues[i] = pdep_newlstr(upi->L, lua_tostring(upi->L, -1), strlen(lua_tostring(upi->L, -1)));
-				lua_pop(upi->L, 1);
-			}
-		}
-	}
-
-	/* Read in local variable infos */
-	{
-		verify(LIF(Z,read)(&upi->zio, &p->sizelocvars, sizeof(int)) == 0);
-		if (p->sizelocvars)
-		{
-			LIF(M,reallocvector)(upi->L, p->locvars, 0, p->sizelocvars, LocVar);
-			for(i=0; i<p->sizelocvars; i++)
-			{
-				unpersist(upi);
-				p->locvars[i].varname = pdep_newlstr(upi->L, lua_tostring(upi->L, -1), strlen(lua_tostring(upi->L, -1)));
-				lua_pop(upi->L, 1);
-
-				verify(LIF(Z,read)(&upi->zio, &p->locvars[i].startpc, sizeof(int)) == 0);
-				verify(LIF(Z,read)(&upi->zio, &p->locvars[i].endpc, sizeof(int)) == 0);
-			}
-		}
-	}
-
-	/* Read in source string*/
-	unpersist(upi);
-	p->source = pdep_newlstr(upi->L, lua_tostring(upi->L, -1), strlen(lua_tostring(upi->L, -1)));
-	lua_pop(upi->L, 1);
-
-	/* Read in line numbers */
-	{
-		verify(LIF(Z,read)(&upi->zio, &p->sizelineinfo, sizeof(int)) == 0);
-		if (p->sizelineinfo)
-		{
-			LIF(M,reallocvector)(upi->L, p->lineinfo, 0, p->sizelineinfo, int);
-			verify(LIF(Z,read)(&upi->zio, p->lineinfo,
-			sizeof(int) * p->sizelineinfo) == 0);
-		}
-	}
-
-	/* Read in linedefined and lastlinedefined */
-	verify(LIF(Z,read)(&upi->zio, &p->linedefined, sizeof(int)) == 0);
-	verify(LIF(Z,read)(&upi->zio, &p->lastlinedefined, sizeof(int)) == 0);
 
 	/* Read in misc values */
 	{
@@ -1484,7 +1354,6 @@ static void unpersistuserdata(int ref, UnpersistInfo *upi)
 
 static void unpersistpermanent(int ref, UnpersistInfo *upi)
 {
-	(void) ref;			/* unused */
 					/* perms reftbl ... */
 	lua_checkstack(upi->L, 2);
 	unpersist(upi);
@@ -1499,12 +1368,12 @@ static void unpersistpermanent(int ref, UnpersistInfo *upi)
 }
 
 /* For debugging only; not called when lua_assert is empty */
-int inreftable(lua_State *L, int ref)
+static int inreftable(lua_State *L, int ref)
 {
 	int res;
 	lua_checkstack(L, 1);
 					/* perms reftbl ... */
-	lua_pushlightuserdata(L, (void*)(intptr_t)ref);
+	lua_pushlightuserdata(L, (void*)ref);
 					/* perms reftbl ... ref */
 	lua_gettable(L, 2);
 					/* perms reftbl ... obj? */
@@ -1592,7 +1461,7 @@ static void unpersist(UnpersistInfo *upi)
 			lua_pushnil(upi->L);
 					/* perms reftbl ... nil */
 		} else {
-			lua_pushlightuserdata(upi->L, (void*)(intptr_t)ref);
+			lua_pushlightuserdata(upi->L, (void*)ref);
 					/* perms reftbl ... ref */
 			lua_gettable(upi->L, 2);
 					/* perms reftbl ... obj? */
@@ -1639,9 +1508,6 @@ typedef struct LoadInfo_t {
 
 static const char *bufreader(lua_State *L, void *ud, size_t *sz) {
 	LoadInfo *li = (LoadInfo *)ud;
-
-	(void) L;			/* unused*/
-
 	if(li->size == 0) {
 		return NULL;
 	}
@@ -1683,7 +1549,7 @@ static luaL_reg pluto_reg[] = {
 	{ NULL, NULL }
 };
 
-LUALIB_API int luaopen_pluto(lua_State *L) {
+__declspec(dllexport) LUALIB_API int luaopen_pluto(lua_State *L) {
 	luaL_openlib(L, "pluto", pluto_reg, 0);
 	return 1;
 }

@@ -1,16 +1,16 @@
 #ifndef PDEP_H
 #define PDEP_H
 
-#include "../../lua/lua.h"
-#include "../../lua/ldo.h"
-#include "../../lua/lfunc.h"
-#include "../../lua/lgc.h"
-#include "../../lua/llimits.h"
-#include "../../lua/lobject.h"
-#include "../../lua/lopcodes.h"
-#include "../../lua/lstate.h"
-#include "../../lua/lstring.h"
-#include "../../lua/lauxlib.h"
+#include "lua.h"
+#include "ldo.h"
+#include "lfunc.h"
+#include "lgc.h"
+#include "llimits.h"
+#include "lobject.h"
+#include "lopcodes.h"
+#include "lstate.h"
+#include "lstring.h"
+#include "lauxlib.h"
 
 
 #define pdep_reallocv(L,b,on,n,e) \

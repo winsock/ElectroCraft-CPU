@@ -8,7 +8,7 @@
 #define lfunc_h
 
 
-#include "../../lua/lobject.h"
+#include "lobject.h"
 
 
 #define sizeCclosure(n)	(cast(int, sizeof(CClosure)) + \

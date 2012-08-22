@@ -12,8 +12,8 @@
 #include <stdarg.h>
 
 
-#include "../../lua/llimits.h"
-#include "../../lua/lua.h"
+#include "llimits.h"
+#include "lua.h"
 
 
 /* tags for values visible from Lua */

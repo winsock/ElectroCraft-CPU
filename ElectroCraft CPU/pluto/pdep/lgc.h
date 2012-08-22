@@ -8,7 +8,7 @@
 #define lgc_h
 
 
-#include "../../lua/lobject.h"
+#include "lobject.h"
 
 
 /*

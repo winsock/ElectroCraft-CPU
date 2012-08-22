@@ -7,7 +7,7 @@
 #ifndef lopcodes_h
 #define lopcodes_h
 
-#include "../../lua/llimits.h"
+#include "llimits.h"
 
 
 /*===========================================================================

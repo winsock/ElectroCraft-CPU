@@ -8,9 +8,9 @@
 #define lstring_h
 
 
-#include "../../lua/lgc.h"
-#include "../../lua/lobject.h"
-#include "../../lua/lstate.h"
+#include "lgc.h"
+#include "lobject.h"
+#include "lstate.h"
 
 
 #define sizestring(s)	(sizeof(union TString)+((s)->len+1)*sizeof(char))

@@ -8,8 +8,8 @@
 #define ldo_h
 
 
-#include "../../lua/lobject.h"
-#include "../../lua/lstate.h"
+#include "lobject.h"
+#include "lstate.h"
 #include "lzio.h"
 
 

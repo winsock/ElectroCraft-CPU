@@ -8,7 +8,7 @@
 #define ltm_h
 
 
-#include "../../lua/lobject.h"
+#include "lobject.h"
 
 
 /*
