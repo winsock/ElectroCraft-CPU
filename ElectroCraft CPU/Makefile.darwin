@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-CC = gcc
+CC = clang++
 JDK_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include
 JDK_PLATFORM_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/darwin
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
