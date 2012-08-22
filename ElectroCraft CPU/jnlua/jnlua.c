@@ -8,6 +8,7 @@
 #include <setjmp.h>
 #include <jni.h>
 #include "../lua/lua.h"
+#include "../pluto/pluto.h"
 #include "../lua/lauxlib.h"
 #include "../lua/lualib.h"
 
@@ -317,6 +318,9 @@ static int openlib_protected (lua_State *L) {
 		openfunc = luaopen_package;
 		libname = LUA_LOADLIBNAME;
 		break;
+    case 8:
+        openfunc = luaopen_pluto;
+        libname = "pluto";
 	default:
 		return 0;
 	} 
@@ -331,7 +335,7 @@ JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_lua_1openlib (JNIEnv *env, j
 	JNLUA_ENV(env);
 	L = getluathread(obj);
 	if (checkstack(L, JNLUA_MINSTACK)
-			&& checkarg(lib >= 0 && lib <= 7, "illegal library")) {
+			&& checkarg(lib >= 0 && lib <= 8, "illegal library")) {
 		openlib_lib = lib;
 		lua_pushcfunction(L, openlib_protected);
 		JNLUA_PCALL(L, 0, 0);

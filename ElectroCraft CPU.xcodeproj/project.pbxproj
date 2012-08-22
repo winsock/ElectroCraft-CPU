@@ -63,6 +63,23 @@
 		768B241715E30CA70077873F /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 768B23DB15E30CA70077873F /* lzio.c */; };
 		768B241815E30CA70077873F /* lzio.h in Headers */ = {isa = PBXBuildFile; fileRef = 768B23DC15E30CA70077873F /* lzio.h */; };
 		768B241915E30CA70077873F /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 768B23DD15E30CA70077873F /* Makefile */; };
+		76A41CD815E48A66000C93C4 /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 76A41CC515E48A66000C93C4 /* lzio.c */; };
+		76A41CD915E48A66000C93C4 /* lauxlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CC715E48A66000C93C4 /* lauxlib.h */; };
+		76A41CDA15E48A66000C93C4 /* ldo.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CC815E48A66000C93C4 /* ldo.h */; };
+		76A41CDB15E48A66000C93C4 /* lfunc.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CC915E48A66000C93C4 /* lfunc.h */; };
+		76A41CDC15E48A66000C93C4 /* lgc.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CCA15E48A66000C93C4 /* lgc.h */; };
+		76A41CDD15E48A66000C93C4 /* llimits.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CCB15E48A66000C93C4 /* llimits.h */; };
+		76A41CDE15E48A66000C93C4 /* lobject.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CCC15E48A66000C93C4 /* lobject.h */; };
+		76A41CDF15E48A66000C93C4 /* lopcodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CCD15E48A66000C93C4 /* lopcodes.h */; };
+		76A41CE015E48A66000C93C4 /* lstate.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CCE15E48A66000C93C4 /* lstate.h */; };
+		76A41CE115E48A66000C93C4 /* lstring.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CCF15E48A66000C93C4 /* lstring.h */; };
+		76A41CE215E48A66000C93C4 /* ltm.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CD015E48A66000C93C4 /* ltm.h */; };
+		76A41CE315E48A66000C93C4 /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CD115E48A66000C93C4 /* lua.h */; };
+		76A41CE415E48A66000C93C4 /* lzio.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CD215E48A66000C93C4 /* lzio.h */; };
+		76A41CE515E48A66000C93C4 /* pdep.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CD315E48A66000C93C4 /* pdep.h */; };
+		76A41CE615E48A66000C93C4 /* pdep.c in Sources */ = {isa = PBXBuildFile; fileRef = 76A41CD515E48A66000C93C4 /* pdep.c */; };
+		76A41CE715E48A66000C93C4 /* pluto.c in Sources */ = {isa = PBXBuildFile; fileRef = 76A41CD615E48A66000C93C4 /* pluto.c */; };
+		76A41CE815E48A66000C93C4 /* pluto.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A41CD715E48A66000C93C4 /* pluto.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -123,6 +140,24 @@
 		768B23DB15E30CA70077873F /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
 		768B23DC15E30CA70077873F /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
 		768B23DD15E30CA70077873F /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		76A41CC515E48A66000C93C4 /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
+		76A41CC715E48A66000C93C4 /* lauxlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lauxlib.h; sourceTree = "<group>"; };
+		76A41CC815E48A66000C93C4 /* ldo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ldo.h; sourceTree = "<group>"; };
+		76A41CC915E48A66000C93C4 /* lfunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfunc.h; sourceTree = "<group>"; };
+		76A41CCA15E48A66000C93C4 /* lgc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lgc.h; sourceTree = "<group>"; };
+		76A41CCB15E48A66000C93C4 /* llimits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = llimits.h; sourceTree = "<group>"; };
+		76A41CCC15E48A66000C93C4 /* lobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lobject.h; sourceTree = "<group>"; };
+		76A41CCD15E48A66000C93C4 /* lopcodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lopcodes.h; sourceTree = "<group>"; };
+		76A41CCE15E48A66000C93C4 /* lstate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstate.h; sourceTree = "<group>"; };
+		76A41CCF15E48A66000C93C4 /* lstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstring.h; sourceTree = "<group>"; };
+		76A41CD015E48A66000C93C4 /* ltm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ltm.h; sourceTree = "<group>"; };
+		76A41CD115E48A66000C93C4 /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
+		76A41CD215E48A66000C93C4 /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
+		76A41CD315E48A66000C93C4 /* pdep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pdep.h; sourceTree = "<group>"; };
+		76A41CD415E48A66000C93C4 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		76A41CD515E48A66000C93C4 /* pdep.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pdep.c; sourceTree = "<group>"; };
+		76A41CD615E48A66000C93C4 /* pluto.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pluto.c; sourceTree = "<group>"; };
+		76A41CD715E48A66000C93C4 /* pluto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pluto.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +174,7 @@
 		762D84B915CC1AF100FAF876 = {
 			isa = PBXGroup;
 			children = (
+				76A41CC415E48A66000C93C4 /* pluto */,
 				768B23A115E30CA70077873F /* lua */,
 				768B239A15E30C5F0077873F /* jnlua */,
 				762D853615CCD89A00FAF876 /* libElectroCraftCPU.dylib */,
@@ -217,6 +253,40 @@
 			path = "ElectroCraft CPU/lua";
 			sourceTree = "<group>";
 		};
+		76A41CC415E48A66000C93C4 /* pluto */ = {
+			isa = PBXGroup;
+			children = (
+				76A41CC515E48A66000C93C4 /* lzio.c */,
+				76A41CC615E48A66000C93C4 /* pdep */,
+				76A41CD515E48A66000C93C4 /* pdep.c */,
+				76A41CD615E48A66000C93C4 /* pluto.c */,
+				76A41CD715E48A66000C93C4 /* pluto.h */,
+			);
+			name = pluto;
+			path = "ElectroCraft CPU/pluto";
+			sourceTree = "<group>";
+		};
+		76A41CC615E48A66000C93C4 /* pdep */ = {
+			isa = PBXGroup;
+			children = (
+				76A41CC715E48A66000C93C4 /* lauxlib.h */,
+				76A41CC815E48A66000C93C4 /* ldo.h */,
+				76A41CC915E48A66000C93C4 /* lfunc.h */,
+				76A41CCA15E48A66000C93C4 /* lgc.h */,
+				76A41CCB15E48A66000C93C4 /* llimits.h */,
+				76A41CCC15E48A66000C93C4 /* lobject.h */,
+				76A41CCD15E48A66000C93C4 /* lopcodes.h */,
+				76A41CCE15E48A66000C93C4 /* lstate.h */,
+				76A41CCF15E48A66000C93C4 /* lstring.h */,
+				76A41CD015E48A66000C93C4 /* ltm.h */,
+				76A41CD115E48A66000C93C4 /* lua.h */,
+				76A41CD215E48A66000C93C4 /* lzio.h */,
+				76A41CD315E48A66000C93C4 /* pdep.h */,
+				76A41CD415E48A66000C93C4 /* README */,
+			);
+			path = pdep;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -247,6 +317,20 @@
 				768B241415E30CA70077873F /* lundump.h in Headers */,
 				768B241615E30CA70077873F /* lvm.h in Headers */,
 				768B241815E30CA70077873F /* lzio.h in Headers */,
+				76A41CD915E48A66000C93C4 /* lauxlib.h in Headers */,
+				76A41CDA15E48A66000C93C4 /* ldo.h in Headers */,
+				76A41CDB15E48A66000C93C4 /* lfunc.h in Headers */,
+				76A41CDC15E48A66000C93C4 /* lgc.h in Headers */,
+				76A41CDD15E48A66000C93C4 /* llimits.h in Headers */,
+				76A41CDE15E48A66000C93C4 /* lobject.h in Headers */,
+				76A41CDF15E48A66000C93C4 /* lopcodes.h in Headers */,
+				76A41CE015E48A66000C93C4 /* lstate.h in Headers */,
+				76A41CE115E48A66000C93C4 /* lstring.h in Headers */,
+				76A41CE215E48A66000C93C4 /* ltm.h in Headers */,
+				76A41CE315E48A66000C93C4 /* lua.h in Headers */,
+				76A41CE415E48A66000C93C4 /* lzio.h in Headers */,
+				76A41CE515E48A66000C93C4 /* pdep.h in Headers */,
+				76A41CE815E48A66000C93C4 /* pluto.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,6 +418,9 @@
 				768B241515E30CA70077873F /* lvm.c in Sources */,
 				768B241715E30CA70077873F /* lzio.c in Sources */,
 				768B241915E30CA70077873F /* Makefile in Sources */,
+				76A41CD815E48A66000C93C4 /* lzio.c in Sources */,
+				76A41CE615E48A66000C93C4 /* pdep.c in Sources */,
+				76A41CE715E48A66000C93C4 /* pluto.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

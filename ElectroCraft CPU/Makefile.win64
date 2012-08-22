@@ -4,8 +4,8 @@ JDK_INCLUDE = "C:/Program Files/Java/jdk1.6.0_34/include"
 JDK_PLATFORM_INCLUDE = "C:/Program Files/Java/jdk1.6.0_34/include/win32"
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
 OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
-LD_FLAGS = -DLUA_BUILD_AS_DLL -shared -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
-CC_FLAGS = -c -O2 -W3 -DNDEBUG -DLUA_BUILD_AS_DLL
+LD_FLAGS = -shared -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
+CC_FLAGS = -O2 -W3 -DNDEBUG -DLUA_BUILD_AS_DLL
 
 all: libElectroCraftCPU64.dll
 
