@@ -1619,6 +1619,45 @@ JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_lua_1tablemove (JNIEnv *env,
 	}
 }
 
+// ElectroCraft
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_persist (JNIEnv *env, jobject obj, jobject outputStream) {
+    lua_State *L;
+	Stream stream = { outputStream, NULL, NULL, 0 };
+    
+	JNLUA_ENV(env);
+	L = getluastate(obj);
+	if (checkstack(L, JNLUA_MINSTACK)
+        && checknelems(L, 1)
+        && (stream.byte_array = newbytearray(1024))) {
+		pluto_persist(L, writehandler, &stream);
+	}
+	if (stream.bytes) {
+		(*env)->ReleaseByteArrayElements(env, stream.byte_array, stream.bytes, JNI_ABORT);
+	}
+	if (stream.byte_array) {
+		(*env)->DeleteLocalRef(env, stream.byte_array);
+	}
+}
+
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_unpersist (JNIEnv *env, jobject obj, jobject inputStream) {
+    lua_State *L;
+	Stream stream = { inputStream, NULL, NULL, 0 };
+    
+	JNLUA_ENV(env);
+	L = getluastate(obj);
+	if (checkstack(L, JNLUA_MINSTACK)
+        && (stream.byte_array = newbytearray(1024))) {
+		pluto_unpersist(L, readhandler, &stream);
+	}
+	if (stream.bytes) {
+		(*env)->ReleaseByteArrayElements(env, stream.byte_array, stream.bytes, JNI_ABORT);
+	}
+	if (stream.byte_array) {
+		(*env)->DeleteLocalRef(env, stream.byte_array);
+	}
+}
+// ElectroCraft end
+
 /* ---- JNI ---- */
 /* Handles the loading of this library. */
 JNIEXPORT jint JNICALL JNI_OnLoad (JavaVM *vm, void *reserved) {
