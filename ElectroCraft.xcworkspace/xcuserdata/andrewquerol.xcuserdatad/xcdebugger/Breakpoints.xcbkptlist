@@ -81,5 +81,18 @@
          landmarkName = "Java_com_naef_jnlua_LuaState_persist()"
          landmarkType = "7">
       </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
+         timestampString = "371686304.175491"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "1425"
+         endingLineNumber = "1425"
+         landmarkName = "Java_com_naef_jnlua_LuaState_lua_1resume()"
+         landmarkType = "7">
+      </FileBreakpoint>
    </FileBreakpoints>
 </Bucket>

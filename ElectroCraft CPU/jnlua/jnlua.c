@@ -1656,6 +1656,43 @@ JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_unpersist (JNIEnv *env, jobj
 		(*env)->DeleteLocalRef(env, stream.byte_array);
 	}
 }
+
+static int shouldKill = 0;
+static int countdown = 10;
+
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_kill (JNIEnv *env, jobject obj) {
+    shouldKill = 1;
+}
+
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_reset_1kill (JNIEnv *env, jobject obj) {
+    shouldKill = 0;
+    countdown = 10;
+}
+
+void kill_hook(lua_State* L, lua_Debug *ar)
+{
+    if (shouldKill > 0 || countdown <= 0) {
+        lua_sethook(L, kill_hook, LUA_MASKLINE, 0);
+        luaL_error(L, "Too long without yielding!");
+        printf("Too long without yielding!");
+    } else {
+        countdown--;
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_install_1kill_1hook (JNIEnv *env, jobject obj) {
+    lua_State *L;
+    JNLUA_ENV(env);
+	L = getluastate(obj);
+    lua_sethook(L, kill_hook, LUA_MASKLINE, 100);
+}
+
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_disable_1kill_1hook(JNIEnv *env, jobject obj) {
+    lua_State *L;
+    JNLUA_ENV(env);
+	L = getluastate(obj);
+    lua_sethook(L, kill_hook, LUA_MASKLINE, 0);
+}
 // ElectroCraft end
 
 /* ---- JNI ---- */
