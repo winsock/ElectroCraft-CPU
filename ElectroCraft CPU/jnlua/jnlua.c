@@ -43,6 +43,10 @@
 }
 #define lua_absindex(L, index) (index > 0 || index <= LUA_REGISTRYINDEX) ? index : lua_gettop(L) + index + 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
 /* ---- Types ---- */
 /* Structure for reading and writing Java streams. */
 typedef struct StreamStruct  {
@@ -2306,3 +2310,6 @@ static int writehandler (lua_State *L, const void *data, size_t size, void *ud) 
 	}
 	return 0;
 }
+#ifdef __cplusplus
+}
+#endif
