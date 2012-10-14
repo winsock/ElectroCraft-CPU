@@ -1661,41 +1661,36 @@ JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_unpersist (JNIEnv *env, jobj
 	}
 }
 
-static int shouldKill = 0;
-static int countdown = 10;
-
-JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_kill (JNIEnv *env, jobject obj) {
-    shouldKill = 1;
-}
-
-JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_reset_1kill (JNIEnv *env, jobject obj) {
-    shouldKill = 0;
-    countdown = 10;
-}
-
+static int lines = 100000;
+static int lineCount = 0;
+    
 void kill_hook(lua_State* L, lua_Debug *ar)
 {
-    if (shouldKill > 0 || countdown <= 0) {
-        lua_sethook(L, kill_hook, LUA_MASKLINE, 0);
-        luaL_error(L, "Too long without yielding!");
-        printf("Too long without yielding!");
+    if (lineCount > lines) {
+        lua_yield(L, 0);
+        if (lua_isstring(L, -1)) {
+            if (strcmp(lua_tostring(L, -1), "kill") == 0) {
+                lua_pushliteral(L, "Killed");
+                lua_error(L);
+            }
+        }
+        lineCount = 0;
     } else {
-        countdown--;
+        lineCount++;
     }
 }
-
-JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_install_1kill_1hook (JNIEnv *env, jobject obj) {
+    
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_install_1kill_1hook (JNIEnv *env, jobject obj, jint number) {
     lua_State *L;
     JNLUA_ENV(env);
-	L = getluastate(obj);
-    lua_sethook(L, kill_hook, LUA_MASKLINE, 100);
+    L = getluastate(obj);
+    lua_sethook(L, kill_hook, LUA_MASKLINE, number);
+    lines = number;
 }
-
-JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_disable_1kill_1hook(JNIEnv *env, jobject obj) {
-    lua_State *L;
-    JNLUA_ENV(env);
-	L = getluastate(obj);
-    lua_sethook(L, kill_hook, LUA_MASKLINE, 0);
+    
+JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_reset_1kill (JNIEnv *env, jobject obj, jint number) {
+    lines = number;
+    lineCount = 0;
 }
 // ElectroCraft end
 

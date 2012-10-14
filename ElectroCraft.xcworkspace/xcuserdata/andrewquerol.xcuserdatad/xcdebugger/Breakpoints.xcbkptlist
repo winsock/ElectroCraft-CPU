@@ -73,11 +73,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/jnlua/jnlua.c"
-         timestampString = "369281503.963958"
+         timestampString = "371761770.898654"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1625"
-         endingLineNumber = "1625"
+         startingLineNumber = "1629"
+         endingLineNumber = "1629"
          landmarkName = "Java_com_naef_jnlua_LuaState_persist()"
          landmarkType = "7">
       </FileBreakpoint>
@@ -86,12 +86,38 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/jnlua/jnlua.c"
-         timestampString = "371686304.175491"
+         timestampString = "371761770.898654"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1425"
-         endingLineNumber = "1425"
+         startingLineNumber = "1429"
+         endingLineNumber = "1429"
          landmarkName = "Java_com_naef_jnlua_LuaState_lua_1resume()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
+         timestampString = "371926867.195439"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "2017"
+         endingLineNumber = "2017"
+         landmarkName = "tostring()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
+         timestampString = "371928222.225131"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "1673"
+         endingLineNumber = "1673"
+         landmarkName = "kill_hook()"
          landmarkType = "7">
       </FileBreakpoint>
    </FileBreakpoints>
