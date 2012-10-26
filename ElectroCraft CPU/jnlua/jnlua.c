@@ -1624,16 +1624,44 @@ JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_lua_1tablemove (JNIEnv *env,
 }
 
 // ElectroCraft
+JNIEXPORT jstring JNICALL Java_com_naef_jnlua_LuaState_getLocal (JNIEnv *env, jobject obj, jint stack, jint index, jint threadindex) {
+    lua_State *L;    
+	JNLUA_ENV(env);
+	L = getluathread(obj);
+    lua_State *thread = lua_tothread(L, threadindex);
+    lua_Debug ar;
+    int code = lua_getstack(thread, stack, &ar);
+    if (code != 1) {
+        return NULL;
+    }
+    code = lua_getinfo(thread, "f", &ar);
+    if (code != 1) {
+        return NULL;
+    }
+    const char *value = lua_getlocal(thread, &ar, index);
+    if (value != NULL) {
+        lua_xmove(thread, L, 1);
+        return (*env)->NewStringUTF(env, value);
+    }
+    return NULL;
+}
+
 JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_persist (JNIEnv *env, jobject obj, jobject outputStream) {
     lua_State *L;
 	Stream stream = { outputStream, NULL, NULL, 0 };
     
 	JNLUA_ENV(env);
-	L = getluastate(obj);
+	L = getluathread(obj);
 	if (checkstack(L, JNLUA_MINSTACK)
-        && checknelems(L, 1)
-        && (stream.byte_array = newbytearray(1024))) {
-		pluto_persist(L, writehandler, &stream);
+        && checknelems(L, 2)
+        && (stream.byte_array = newbytearray(4096))) {
+        
+        if (lua_isthread(L, -2)) {
+            pluto_persist(lua_tothread(L, -2), writehandler, &stream);
+        } else {
+            pluto_persist(L, writehandler, &stream);
+        }
+        
 	}
 	if (stream.bytes) {
 		(*env)->ReleaseByteArrayElements(env, stream.byte_array, stream.bytes, JNI_ABORT);
@@ -1648,9 +1676,9 @@ JNIEXPORT void JNICALL Java_com_naef_jnlua_LuaState_unpersist (JNIEnv *env, jobj
 	Stream stream = { inputStream, NULL, NULL, 0 };
     
 	JNLUA_ENV(env);
-	L = getluastate(obj);
+	L = getluathread(obj);
 	if (checkstack(L, JNLUA_MINSTACK)
-        && (stream.byte_array = newbytearray(1024))) {
+        && (stream.byte_array = newbytearray(4096))) {
 		pluto_unpersist(L, readhandler, &stream);
 	}
 	if (stream.bytes) {

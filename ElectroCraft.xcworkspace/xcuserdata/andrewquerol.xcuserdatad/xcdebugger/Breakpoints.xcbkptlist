@@ -76,19 +76,6 @@
          timestampString = "371761770.898654"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1629"
-         endingLineNumber = "1629"
-         landmarkName = "Java_com_naef_jnlua_LuaState_persist()"
-         landmarkType = "7">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
-         timestampString = "371761770.898654"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
          startingLineNumber = "1429"
          endingLineNumber = "1429"
          landmarkName = "Java_com_naef_jnlua_LuaState_lua_1resume()"
@@ -99,11 +86,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/jnlua/jnlua.c"
-         timestampString = "371926867.195439"
+         timestampString = "372880072.416484"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "2017"
-         endingLineNumber = "2017"
+         startingLineNumber = "2041"
+         endingLineNumber = "2041"
          landmarkName = "tostring()"
          landmarkType = "7">
       </FileBreakpoint>
@@ -112,12 +99,64 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "ElectroCraft CPU/jnlua/jnlua.c"
-         timestampString = "371928222.225131"
+         timestampString = "372880023.093515"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1673"
-         endingLineNumber = "1673"
-         landmarkName = "kill_hook()"
+         startingLineNumber = "2328"
+         endingLineNumber = "2328"
+         landmarkName = "writehandler()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
+         timestampString = "372882809.202483"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "2290"
+         endingLineNumber = "2290"
+         landmarkName = "readhandler()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
+         timestampString = "372882810.995538"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "2293"
+         endingLineNumber = "2293"
+         landmarkName = "readhandler()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/jnlua/jnlua.c"
+         timestampString = "372882818.048865"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "2302"
+         endingLineNumber = "2302"
+         landmarkName = "readhandler()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "ElectroCraft CPU/pluto/pluto.c"
+         timestampString = "372894602.456191"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "104"
+         endingLineNumber = "104"
+         landmarkName = "persistspecialobject()"
          landmarkType = "7">
       </FileBreakpoint>
    </FileBreakpoints>
