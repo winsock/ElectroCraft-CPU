@@ -146,18 +146,5 @@
          landmarkName = "readhandler()"
          landmarkType = "7">
       </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "ElectroCraft CPU/pluto/pluto.c"
-         timestampString = "372894602.456191"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "104"
-         endingLineNumber = "104"
-         landmarkName = "persistspecialobject()"
-         landmarkType = "7">
-      </FileBreakpoint>
    </FileBreakpoints>
 </Bucket>

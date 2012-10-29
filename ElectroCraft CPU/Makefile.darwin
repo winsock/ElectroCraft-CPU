@@ -4,8 +4,8 @@ JDK_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include
 JDK_PLATFORM_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/darwin
 C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
 OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
-LD_FLAGS = -DLUA_USE_MACOSX=1 -dynamiclib -undefined suppress -flat_namespace -pthread -lpthread -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
-CC_FLAGS = --export-dynamic
+LD_FLAGS = -arch i386 -arch x86_64 -DLUA_USE_MACOSX=1 -dynamiclib -undefined suppress -flat_namespace -pthread -lpthread -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
+CC_FLAGS = -arch i386 -arch x86_64 --export-dynamic
 
 all: libElectroCraftCPU.dylib
 
