@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>BED18CDE-7F37-4586-A31D-2192B3A19BF1</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ElectroCraft CPU</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>2257DFF6EFA230C1A2E6DBDA8F90966E2151BD2F</key>
+		<string>https://github.com/fnuecke/eris</string>
+		<key>747A59C8D81086FF292517F3B8E64EC667D8D190</key>
+		<string>https://github.com/winsock/ElectroCraft-CPU.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ElectroCraft CPU.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>2257DFF6EFA230C1A2E6DBDA8F90966E2151BD2F</key>
+		<string>../..eris/</string>
+		<key>747A59C8D81086FF292517F3B8E64EC667D8D190</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/winsock/ElectroCraft-CPU.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>747A59C8D81086FF292517F3B8E64EC667D8D190</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>747A59C8D81086FF292517F3B8E64EC667D8D190</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ElectroCraft-CPU</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>2257DFF6EFA230C1A2E6DBDA8F90966E2151BD2F</string>
+			<key>IDESourceControlWCCName</key>
+			<string>eris</string>
+		</dict>
+	</array>
+</dict>
+</plist>

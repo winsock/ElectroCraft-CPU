@@ -1,19 +1,18 @@
 SHELL := /bin/bash
 CC = clang
-JDK_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include
-JDK_PLATFORM_INCLUDE = /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/include/darwin
-C_FILES = $(wildcard pluto/*.c) $(wildcard lua/*.c) $(wildcard jnlua/*.c)
+JVM_HOME = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/System/Library/Frameworks/JavaVM.framework
+JVM_LIB = /Library/Java/JavaVirtualMachines/jre7/Contents/Home/lib/server
+C_FILES = $(wildcard eris/*.c) $(wildcard jnlua/*.c)
 OBJ_FILES = $(patsubst src/%.cpp,obj/%.o,$(C_FILES))
-LD_FLAGS = -arch i386 -arch x86_64 -DLUA_USE_MACOSX=1 -dynamiclib -undefined suppress -flat_namespace -pthread -lpthread -I$(JDK_INCLUDE) -I$(JDK_PLATFORM_INCLUDE)
-CC_FLAGS = -arch i386 -arch x86_64 --export-dynamic
+LD_FLAGS = -dynamiclib -m64 -ljvm -fno-strict-aliasing -m64 -fPIC -O2 -Wall -DNDEBUG -D_REENTRANT -DLUA_USE_LINUX -DLUA_USE_MACOSX=1 -DLUA_COMPAT_5_2
 
-all: libElectroCraftCPU.dylib
+all: libElectroCraftCPU.jnilib
 
-libElectroCraftCPU.dylib: $(OBJ_FILES)
-	$(CC) $(LD_FLAGS) -o $@ $^
+libElectroCraftCPU.jnilib: $(OBJ_FILES)
+	$(CC) $(LD_FLAGS) -L$(JVM_LIB) -I$(JVM_HOME)/Headers -o $@ $^
 
-obj/%.o: pluto/%.c jnlua/%.c lua/%.c
-	$(CC) $(CC_FLAGS) -c -o $@ $<
+obj/%.o: eris/%.c jnlua/%.c
+	$(CC) -c -o $@ $<
 	
 clean:
 	rm -f libElectroCraftCPU.so
